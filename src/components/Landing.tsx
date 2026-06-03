@@ -96,7 +96,7 @@ export function Landing() {
             CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
           </span>
           <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 46, lineHeight: 1.08, letterSpacing: "-0.02em", margin: `${space.md}px 0` }}>
-            ¿Tu finca sobrevive la <span style={{ color: C.glacier }}>próxima década</span> de agua?
+            Riega menos, <span style={{ color: C.emerald }}>cosecha igual</span>, paga <span style={{ color: C.glacier }}>menos luz</span>.
           </h1>
           <p style={{ fontSize: fz.lg, color: th.soft, lineHeight: 1.6, maxWidth: 520 }}>
             WaterSense audita tu riego cruzando <b style={{ color: th.ink }}>coste de energía</b>, <b style={{ color: th.ink }}>desperdicio de agua</b> y <b style={{ color: th.ink }}>salud del cultivo</b>.
