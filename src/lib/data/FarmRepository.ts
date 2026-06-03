@@ -13,5 +13,6 @@ export interface FarmRepository {
   getWells(): Promise<Well[]>;
   getRegions(): Promise<Region[]>;
   getCropProfile(crop: CropType): Promise<CropProfile | null>;
+  getCrops(): Promise<CropProfile[]>;
   getCosts(): Promise<CostItem[]>;
 }

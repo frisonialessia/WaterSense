@@ -35,6 +35,12 @@ export interface Parcel {
   stress: number;
   lat?: number;
   lng?: number;
+  /**
+   * Field outline as a ring of [lng, lat] points (GeoJSON order).
+   * Today these are simulated around the centroid; with Supabase this
+   * is the polygon the farmer drew on the map.
+   */
+  boundary?: [number, number][];
 }
 
 export interface Well {
@@ -51,6 +57,8 @@ export interface Well {
   /** accumulated starts */
   starts: number;
   ok: boolean;
+  lat?: number;
+  lng?: number;
 }
 
 export interface TariffWindow {

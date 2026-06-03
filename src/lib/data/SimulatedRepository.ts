@@ -15,7 +15,34 @@ const CROPS: Record<CropType, CropProfile> = {
   "Maíz forrajero": { crop: "Maíz forrajero", laminaM: 1.0, waterM3ha: 10000, costHa: 7600, freqDays: 6, yieldKgHa: 55000 },
 };
 
-const PARCELS: Parcel[] = [
+// Deterministic pseudo-random in [0,1) from a seed, so boundaries are
+// stable across renders (no hydration mismatch) yet look irregular.
+const rnd = (n: number): number => {
+  const x = Math.sin(n) * 43758.5453;
+  return x - Math.floor(x);
+};
+
+/**
+ * Build a plausible, slightly irregular field outline around a centroid,
+ * sized from hectares. Simulated geometry — with Supabase this becomes the
+ * polygon the farmer actually drew.
+ */
+function fieldBoundary(lng: number, lat: number, hectares: number, seed: number): [number, number][] {
+  const sideM = Math.sqrt(hectares * 10000); // square-equivalent side, meters
+  const dLat = sideM / 2 / 111_000;
+  const dLng = sideM / 2 / (111_000 * Math.cos((lat * Math.PI) / 180));
+  const j = (k: number) => 0.75 + rnd(seed * 17.3 + k) * 0.5; // 0.75..1.25 jitter
+  const ring: [number, number][] = [
+    [lng - dLng * j(1), lat + dLat * j(2)],
+    [lng + dLng * j(3), lat + dLat * j(4)],
+    [lng + dLng * j(5), lat - dLat * j(6)],
+    [lng - dLng * j(7), lat - dLat * j(8)],
+  ];
+  ring.push(ring[0]);
+  return ring;
+}
+
+const PARCELS_BASE: Omit<Parcel, "boundary">[] = [
   { id: "nogal", name: "Parcela del nogal", crop: "Nogal pecanero", hectares: 9.2, stress: 0.22, lat: 28.196, lng: -105.476 },
   { id: "alfalfa", name: "Parcela de alfalfa", crop: "Alfalfa", hectares: 7.5, stress: 0.31, lat: 28.188, lng: -105.477 },
   { id: "chile", name: "Parcela del chile", crop: "Chile jalapeño", hectares: 5.1, stress: 0.82, lat: 28.1875, lng: -105.464 },
@@ -23,10 +50,15 @@ const PARCELS: Parcel[] = [
   { id: "maiz", name: "Parcela de maíz", crop: "Maíz forrajero", hectares: 8.2, stress: 0.58, lat: 28.184, lng: -105.471 },
 ];
 
+const PARCELS: Parcel[] = PARCELS_BASE.map((p, i) => ({
+  ...p,
+  boundary: p.lat != null && p.lng != null ? fieldBoundary(p.lng, p.lat, p.hectares, i + 1) : undefined,
+}));
+
 const WELLS: Well[] = [
-  { id: "grande", name: "Pozo grande", currentFlowLph: 7900, sustainableFlowLph: 8200, depthM: 78, ratedStarts: 20000, starts: 12400, ok: true },
-  { id: "chico", name: "Pozo chico", currentFlowLph: 4300, sustainableFlowLph: 4000, depthM: 120, ratedStarts: 20000, starts: 18900, ok: false },
-  { id: "norte", name: "Pozo norte", currentFlowLph: 5100, sustainableFlowLph: 6000, depthM: 95, ratedStarts: 18000, starts: 9800, ok: true },
+  { id: "grande", name: "Pozo grande", currentFlowLph: 7900, sustainableFlowLph: 8200, depthM: 78, ratedStarts: 20000, starts: 12400, ok: true, lat: 28.19, lng: -105.4775 },
+  { id: "chico", name: "Pozo chico", currentFlowLph: 4300, sustainableFlowLph: 4000, depthM: 120, ratedStarts: 20000, starts: 18900, ok: false, lat: 28.1935, lng: -105.4655 },
+  { id: "norte", name: "Pozo norte", currentFlowLph: 5100, sustainableFlowLph: 6000, depthM: 95, ratedStarts: 18000, starts: 9800, ok: true, lat: 28.195, lng: -105.463 },
 ];
 
 const REGIONS: Region[] = [
@@ -56,6 +88,9 @@ export class SimulatedRepository implements FarmRepository {
   }
   async getCropProfile(crop: CropType): Promise<CropProfile | null> {
     return CROPS[crop] ?? null;
+  }
+  async getCrops(): Promise<CropProfile[]> {
+    return Object.values(CROPS);
   }
   async getCosts(): Promise<CostItem[]> {
     return COSTS;

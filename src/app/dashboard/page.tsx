@@ -6,12 +6,14 @@ import { assessPump } from "@/lib/brain/pumpHealth";
 import { Dashboard } from "@/components/Dashboard";
 
 export default async function DashboardPage() {
-  const [costs, parcels, wells] = await Promise.all([
+  const [costs, parcels, wells, regions, crops] = await Promise.all([
     repository.getCosts(),
     repository.getParcels(),
     repository.getWells(),
+    repository.getRegions(),
+    repository.getCrops(),
   ]);
   const pumps = wells.map((w) => assessPump(w, w.ok ? 0 : 18));
 
-  return <Dashboard data={{ costs, parcels, wells, pumps }} />;
+  return <Dashboard data={{ costs, parcels, wells, pumps, regions, crops }} />;
 }
