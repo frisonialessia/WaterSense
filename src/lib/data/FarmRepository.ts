@@ -15,4 +15,6 @@ export interface FarmRepository {
   getCropProfile(crop: CropType): Promise<CropProfile | null>;
   getCrops(): Promise<CropProfile[]>;
   getCosts(): Promise<CostItem[]>;
+  /** 24 hourly electricity prices ($/kWh), index 0..23. */
+  getTariffCurve(): Promise<number[]>;
 }

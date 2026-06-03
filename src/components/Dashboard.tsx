@@ -9,15 +9,14 @@ import { Sidebar, type ViewId } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { KpiStrip } from "./KpiStrip";
 import { DocsView } from "./views/DocsView";
+import { CostosView } from "./views/CostosView";
 import { Placeholder } from "./views/Placeholder";
 
-// MapLibre is heavy — load the map only when the user opens that view.
-const MapView = dynamic(() => import("./views/MapView").then((m) => m.MapView), {
-  ssr: false,
-  loading: () => (
-    <div style={{ padding: 30, fontSize: 13, color: "#84A0A8" }}>Cargando mapa…</div>
-  ),
-});
+const loader = (label: string) => () => <div style={{ padding: 30, fontSize: 13, color: "#84A0A8" }}>{label}</div>;
+
+// Heavy deps (MapLibre, Recharts) load only when their view is opened.
+const MapView = dynamic(() => import("./views/MapView").then((m) => m.MapView), { ssr: false, loading: loader("Cargando mapa…") });
+const FuturoView = dynamic(() => import("./views/FuturoView").then((m) => m.FuturoView), { ssr: false, loading: loader("Cargando proyección…") });
 
 export interface DashboardData {
   costs: CostItem[];
@@ -26,6 +25,7 @@ export interface DashboardData {
   pumps: PumpHealth[];
   regions: Region[];
   crops: CropProfile[];
+  tariffCurve: number[];
 }
 
 export function Dashboard({ data }: { data: DashboardData }) {
@@ -45,6 +45,10 @@ export function Dashboard({ data }: { data: DashboardData }) {
         <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           {view === "mapa" ? (
             <MapView th={th} mode={mode} tr={tr} parcels={data.parcels} wells={data.wells} regions={data.regions} crops={data.crops} />
+          ) : view === "costos" ? (
+            <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={data.parcels} />
+          ) : view === "futuro" ? (
+            <FuturoView th={th} tr={tr} />
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : (

@@ -95,6 +95,14 @@ export class SimulatedRepository implements FarmRepository {
   async getCosts(): Promise<CostItem[]> {
     return COSTS;
   }
+  async getTariffCurve(): Promise<number[]> {
+    // Simulated spot price shape (CENACE-like): cheap pre-dawn, peak evening.
+    return Array.from({ length: 24 }, (_, h) => {
+      const base =
+        1.8 + Math.sin(((h - 15) / 24) * 6.28) * 0.9 + (h >= 18 && h <= 22 ? 0.8 : 0) - (h >= 1 && h <= 5 ? 0.5 : 0);
+      return Math.max(0.6, Math.round(base * 100) / 100);
+    });
+  }
 }
 
 // single shared instance used by API routes today
