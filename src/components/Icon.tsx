@@ -17,6 +17,11 @@ const PATHS: Record<string, string> = {
   rain: "M7 14a5 5 0 0 1-1-9.9A6 6 0 0 1 18 6a4 4 0 0 1 0 8M8 18l-1 2M12 18l-1 2M16 18l-1 2",
   cloud: "M7 16a5 5 0 0 1-1-9.9A6 6 0 0 1 18 8a4 4 0 0 1 0 8H7z",
   bolt2: "M11 3L5 13h5l-1 8 7-11h-5l1-7z",
+  moon: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z",
+  arrow: "M5 12h14M13 6l6 6-6 6",
+  shield: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z",
+  scale: "M12 3v18M7 7l-4 7h8l-4-7zM17 7l-4 7h8l-4-7zM5 21h14",
+  spark: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18",
 };
 
 export type IconName = keyof typeof PATHS;

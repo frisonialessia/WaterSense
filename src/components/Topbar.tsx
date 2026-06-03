@@ -1,6 +1,7 @@
 "use client";
 
-import { C, FONT, type Lang, type Theme, type ThemeMode } from "@/lib/theme";
+import { C, FONT, radius, space, fz, type Lang, type Theme, type ThemeMode } from "@/lib/theme";
+import { Icon } from "./Icon";
 import type { ViewId } from "./Sidebar";
 
 function Seg<V extends string>({
@@ -15,12 +16,21 @@ function Seg<V extends string>({
   opts: { v: V; l: string }[];
 }) {
   return (
-    <div style={{ display: "flex", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: 999, padding: 3, cursor: "pointer", fontSize: 12 }}>
+    <div style={{ display: "flex", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: 2, cursor: "pointer", fontSize: fz.xs }}>
       {opts.map((o) => (
         <div
           key={o.v}
           onClick={() => set(o.v)}
-          style={{ padding: "5px 12px", borderRadius: 999, whiteSpace: "nowrap", background: val === o.v ? C.cyan : "transparent", color: val === o.v ? "#fff" : th.mute, transition: ".2s" }}
+          style={{
+            padding: "4px 11px",
+            borderRadius: radius.sm,
+            whiteSpace: "nowrap",
+            fontWeight: val === o.v ? 600 : 500,
+            background: val === o.v ? th.panel : "transparent",
+            color: val === o.v ? th.ink : th.mute,
+            boxShadow: val === o.v ? "0 1px 2px rgba(11,32,48,.08)" : "none",
+            transition: ".15s",
+          }}
         >
           {o.l}
         </div>
@@ -54,15 +64,27 @@ export function Topbar({
     pozos: tr("Mis pozos", "Salud de pozos"),
     docs: tr("Ayuda", "Documentación"),
   };
+  const iconBtn: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 30,
+    height: 30,
+    cursor: "pointer",
+    background: th.panel2,
+    border: `1px solid ${th.line}`,
+    borderRadius: radius.md,
+    color: th.soft,
+  };
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 26px", borderBottom: `1px solid ${th.line}`, background: th.panel, gap: 14 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: `${space.md}px ${space.x2}px`, borderBottom: `1px solid ${th.line}`, background: th.panel, gap: space.md }}>
       <div>
-        <h1 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: 19, letterSpacing: "-0.02em" }}>{titles[view]}</h1>
-        <div style={{ fontSize: 12, color: th.soft, marginTop: 2 }}>
-          {tr("Rancho El Álamo · Delicias, Chihuahua", "28.190° N, 105.470° W · Delicias, Chihuahua")}
+        <h1 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.lg, letterSpacing: "-0.01em" }}>{titles[view]}</h1>
+        <div className="mono" style={{ fontSize: fz.micro, color: th.mute, marginTop: 2 }}>
+          {tr("Rancho El Álamo · Delicias, Chihuahua", "28.190° N · 105.470° O · Delicias, Chihuahua")}
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: space.sm }}>
         <Seg<Lang>
           th={th}
           val={lang}
@@ -76,23 +98,20 @@ export function Topbar({
           style={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 8,
-            fontSize: 12,
+            gap: 7,
+            fontSize: fz.xs,
             color: th.soft,
             background: th.panel2,
             border: `1px solid ${th.line}`,
-            padding: "7px 13px",
-            borderRadius: 999,
+            padding: "6px 11px",
+            borderRadius: radius.md,
           }}
         >
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.teal, boxShadow: `0 0 8px ${C.teal}`, animation: "pulse 2s infinite" }} />
-          {tr("Todo en línea", "8 sensores · 3 pozos")}
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emerald }} />
+          <span className="mono">{tr("En línea", "8 sensores · 3 pozos")}</span>
         </div>
-        <div
-          onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-          style={{ cursor: "pointer", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: 999, padding: "7px 11px", fontSize: 13 }}
-        >
-          {mode === "dark" ? "☾" : "☀"}
+        <div onClick={() => setMode(mode === "dark" ? "light" : "dark")} style={iconBtn} title={tr("Cambiar tema", "Tema")}>
+          <Icon name={mode === "dark" ? "sun" : "moon"} size={15} color={th.soft} />
         </div>
       </div>
     </div>

@@ -1,13 +1,13 @@
 "use client";
 
-import type { Theme } from "@/lib/theme";
+import { cardStyle, space, fz, radius, C, type Theme } from "@/lib/theme";
 
 export function DocsView({ th, tr }: { th: Theme; tr: (s: string, t: string) => string }) {
   const docs = [
     {
       q: tr("¿Qué es la 'sed del cultivo'?", "¿Qué es el NDWI?"),
       a: tr(
-        "Es qué tan seca está tu planta, medida desde satélite. Verde lima = bien regada, rojo = necesita agua ya.",
+        "Es qué tan seca está tu planta, medida desde satélite. Verde = bien regada, rojo = necesita agua ya.",
         "Normalized Difference Water Index: índice satelital (Sentinel-2) de contenido de agua en vegetación. 0=sano, 1=estrés severo."
       ),
     },
@@ -34,17 +34,22 @@ export function DocsView({ th, tr }: { th: Theme; tr: (s: string, t: string) => 
     },
   ];
   return (
-    <div style={{ padding: 30, maxWidth: 760 }}>
-      {docs.map((d, i) => (
-        <div
-          key={i}
-          className="card"
-          style={{ animationDelay: `${i * 0.07}s`, background: th.panel, border: `1px solid ${th.line}`, borderRadius: 14, padding: "18px 20px", marginBottom: 12 }}
-        >
-          <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 7 }}>{d.q}</div>
-          <div style={{ fontSize: 13.5, color: th.soft, lineHeight: 1.6 }}>{d.a}</div>
-        </div>
-      ))}
+    <div style={{ padding: space.x3, maxWidth: 880 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md }}>
+        {docs.map((d, i) => (
+          <div key={i} className="card" style={{ ...cardStyle(th), animationDelay: `${i * 0.05}s`, padding: `${space.lg}px ${space.xl}px` }}>
+            <div style={{ display: "flex", gap: space.md, alignItems: "flex-start" }}>
+              <span className="mono" style={{ fontSize: fz.xs, color: C.glacier, border: `1px solid ${C.glacier}33`, borderRadius: radius.sm, padding: "1px 6px", marginTop: 2 }}>
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: fz.md, marginBottom: 6 }}>{d.q}</div>
+                <div style={{ fontSize: fz.sm, color: th.soft, lineHeight: 1.6 }}>{d.a}</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

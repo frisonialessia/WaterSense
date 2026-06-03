@@ -4,6 +4,8 @@
 // No business data lives here — see SimulatedRepository.
 // ============================================================
 
+import type { CSSProperties } from "react";
+
 /** Brand palette. Glacier = brand/actions, emerald = positive/health. */
 export const C = {
   glacier: "#2270B8",
@@ -57,3 +59,41 @@ export type Lang = "simple" | "tech";
 /** Translator helper: pick simple (farmer) vs technical wording. */
 export const makeTr = (lang: Lang) => (simple: string, tech: string) =>
   lang === "simple" ? simple : tech;
+
+// ============================================================
+// Design tokens — "dense control-room" system.
+// One scale for everything, so the UI reads systematic, not
+// eyeballed. Components consume these instead of magic numbers.
+// ============================================================
+
+/** Spacing scale (px), base 4. */
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, x2: 24, x3: 32, x4: 48 } as const;
+
+/** Corner radii (px). Capped low — dense terminals are crisp, not bubbly. */
+export const radius = { sm: 4, md: 6, lg: 10, pill: 999 } as const;
+
+/** Type scale (px). Five steps + hero. Numbers ride the mono class. */
+export const fz = { micro: 11, xs: 12, sm: 13, md: 15, lg: 18, xl: 24, hero: 34 } as const;
+
+/** Layered, restrained shadows tuned to the navy ink. */
+export const shadow = {
+  sm: "0 1px 2px rgba(11,32,48,.05)",
+  md: "0 2px 10px rgba(11,32,48,.07)",
+  lg: "0 12px 36px rgba(11,32,48,.12)",
+} as const;
+
+/** Uppercase micro-label used for section headers across the terminal. */
+export const labelStyle = (th: Theme): CSSProperties => ({
+  fontSize: fz.micro,
+  textTransform: "uppercase",
+  letterSpacing: ".09em",
+  color: th.mute,
+  fontWeight: 600,
+});
+
+/** Standard panel/card surface. */
+export const cardStyle = (th: Theme): CSSProperties => ({
+  background: th.panel,
+  border: `1px solid ${th.line}`,
+  borderRadius: radius.lg,
+});

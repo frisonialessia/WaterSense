@@ -1,7 +1,7 @@
 "use client";
 
 import type { CostItem } from "@/types/domain";
-import { C, FONT, fmt, type Theme, type ThemeMode } from "@/lib/theme";
+import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 
@@ -35,86 +35,104 @@ export function Sidebar({
   return (
     <aside
       style={{
-        width: 240,
+        width: 218,
         background: th.panel,
         borderRight: `1px solid ${th.line}`,
-        padding: "20px 15px",
+        padding: `${space.lg}px ${space.md}px`,
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "4px 8px", marginBottom: 22 }}>
-        <Logo size={30} light={mode === "dark"} />
-        <b style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 18, letterSpacing: "-0.03em" }}>WaterSense</b>
-      </div>
-      {ITEMS.map((it) => (
-        <div
-          key={it.id}
-          className="nav"
-          onClick={() => setView(it.id)}
+      <div style={{ display: "flex", alignItems: "center", gap: space.sm, padding: `0 ${space.sm}px`, marginBottom: space.x2 }}>
+        <Logo size={26} light={mode === "dark"} />
+        <b style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.md, letterSpacing: "-0.02em", flex: 1 }}>WaterSense</b>
+        <span
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "9px 10px",
-            borderRadius: 9,
-            cursor: "pointer",
-            fontSize: 13.5,
-            marginBottom: 2,
-            transition: ".2s",
-            position: "relative",
-            background: view === it.id ? th.panel2 : "transparent",
-            color: view === it.id ? th.ink : th.soft,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: ".08em",
+            color: C.glacier,
+            border: `1px solid ${C.glacier}44`,
+            borderRadius: radius.sm,
+            padding: "2px 5px",
           }}
         >
-          {view === it.id && (
-            <span style={{ position: "absolute", left: 0, width: 3, height: 15, background: C.teal, borderRadius: 2, boxShadow: `0 0 8px ${C.teal}` }} />
-          )}
-          <span style={{ width: 18, display: "flex", justifyContent: "center" }}>
-            <Icon name={it.icon} size={16} color={view === it.id ? C.teal : th.mute} />
-          </span>
-          {tr(it.s, it.t)}
-        </div>
-      ))}
-      <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: ".12em", color: th.mute, padding: "0 10px", margin: "18px 0 8px" }}>
-        {tr("Gasto del mes", "Costos mensuales")}
+          DEMO
+        </span>
       </div>
-      <div style={{ padding: "0 6px" }}>
-        {costs.map((c) => (
-          <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 6px", fontSize: 12 }}>
-            <span style={{ color: th.soft, display: "flex", alignItems: "center", gap: 7 }}>
-              <Icon name={c.icon} size={13} color={th.soft} />
-              {tr(c.label.split(" ")[0], c.label)}
+
+      <div style={{ ...labelStyle(th), padding: `0 ${space.sm}px`, marginBottom: space.sm }}>{tr("Navegación", "Vistas")}</div>
+      {ITEMS.map((it) => {
+        const active = view === it.id;
+        return (
+          <div
+            key={it.id}
+            className="nav"
+            onClick={() => setView(it.id)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: space.sm + 2,
+              padding: "7px 9px",
+              borderRadius: radius.md,
+              cursor: "pointer",
+              fontSize: fz.sm,
+              fontWeight: active ? 600 : 500,
+              marginBottom: 1,
+              transition: "background .15s,color .15s",
+              position: "relative",
+              background: active ? th.panel2 : "transparent",
+              color: active ? th.ink : th.soft,
+            }}
+          >
+            {active && <span style={{ position: "absolute", left: 0, top: 7, bottom: 7, width: 2, background: C.glacier, borderRadius: 2 }} />}
+            <span style={{ width: 18, display: "flex", justifyContent: "center" }}>
+              <Icon name={it.icon} size={16} color={active ? C.glacier : th.mute} />
             </span>
-            <span className="mono" style={{ color: th.mute }}>${(c.month / 1000).toFixed(1)}k</span>
+            {tr(it.s, it.t)}
+          </div>
+        );
+      })}
+
+      <div style={{ ...labelStyle(th), padding: `0 ${space.sm}px`, margin: `${space.lg}px 0 ${space.sm}px` }}>{tr("Gasto del mes", "Costos mensuales")}</div>
+      <div style={{ padding: `0 ${space.xs}px` }}>
+        {costs.map((c) => (
+          <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 6px", fontSize: fz.xs }}>
+            <span style={{ color: th.soft, display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
+              <Icon name={c.icon} size={12} color={th.mute} />
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tr(c.label.split(" ")[0], c.label)}</span>
+            </span>
+            <span className="mono" style={{ color: th.soft }}>${(c.month / 1000).toFixed(1)}k</span>
           </div>
         ))}
-        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 6px 0", marginTop: 6, borderTop: `1px solid ${th.line}`, fontSize: 12.5 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: `${space.sm}px 6px 0`, marginTop: 4, borderTop: `1px solid ${th.line}`, fontSize: fz.xs }}>
           <span style={{ fontWeight: 600 }}>Total</span>
-          <span className="mono" style={{ fontWeight: 700, color: C.teal }}>${fmt(total)}</span>
+          <span className="mono" style={{ fontWeight: 700, color: th.ink }}>${fmt(total)}</span>
         </div>
       </div>
-      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 10, padding: "12px 8px 0", borderTop: `1px solid ${th.line}` }}>
+
+      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: space.sm, padding: `${space.md}px ${space.xs}px 0`, borderTop: `1px solid ${th.line}` }}>
         <div
           style={{
-            width: 34,
-            height: 34,
-            borderRadius: "50%",
+            width: 32,
+            height: 32,
+            borderRadius: radius.md,
             background: `linear-gradient(135deg,${C.glacier},${C.emerald})`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontWeight: 600,
-            fontSize: 13,
+            fontWeight: 700,
+            fontSize: fz.xs,
             color: "#fff",
+            flexShrink: 0,
           }}
         >
           R
         </div>
-        <div>
-          <div style={{ fontSize: 13, fontWeight: 500 }}>Rancho El Álamo</div>
-          <div style={{ fontSize: 11.5, color: th.mute }}>38 ha · Chihuahua</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: fz.sm, fontWeight: 600 }}>Rancho El Álamo</div>
+          <div style={{ fontSize: fz.micro, color: th.mute }}>38 ha · Chihuahua</div>
         </div>
       </div>
     </aside>
