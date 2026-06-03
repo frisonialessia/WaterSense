@@ -69,3 +69,17 @@ export interface Region {
   /** reference evapotranspiration, mm/day */
   et0: number;
 }
+
+export interface CostItem {
+  id: string;
+  /** human label, e.g. "Luz (CFE)" */
+  label: string;
+  /** icon name used by the UI (see components/Icon) */
+  icon: string;
+  /** this month's cost, $ */
+  month: number;
+  /** percentage change vs. previous month (negative = cheaper) */
+  trend: number;
+  /** short human note, e.g. "tarifa nocturna aprovechada" */
+  note: string;
+}

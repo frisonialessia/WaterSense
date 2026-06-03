@@ -5,7 +5,7 @@
 // ============================================================
 
 import type { FarmRepository } from "./FarmRepository";
-import type { Parcel, Well, Region, CropProfile, CropType } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem } from "@/types/domain";
 
 const CROPS: Record<CropType, CropProfile> = {
   "Nogal pecanero": { crop: "Nogal pecanero", laminaM: 1.9, waterM3ha: 19000, costHa: 14200, freqDays: 7, yieldKgHa: 3200 },
@@ -36,6 +36,14 @@ const REGIONS: Region[] = [
   { id: "cuauhtemoc", name: "Cuauhtémoc, Chihuahua", postalCode: "31500", lat: 28.405, lng: -106.866, altitudeM: 2060, et0: 5.9 },
 ];
 
+const COSTS: CostItem[] = [
+  { id: "luz", label: "Luz (CFE)", icon: "bolt", month: 18450, trend: -12, note: "tarifa nocturna aprovechada" },
+  { id: "agua", label: "Agua / derechos", icon: "drop", month: 6200, trend: -4, note: "cuota CONAGUA + bombeo" },
+  { id: "diesel", label: "Diésel (respaldo)", icon: "fuel", month: 3100, trend: 8, note: "bomba chica sin red" },
+  { id: "mano", label: "Mano de obra riego", icon: "user", month: 9800, trend: 0, note: "3 jornaleros" },
+  { id: "mant", label: "Mantenimiento bombas", icon: "wrench", month: 2400, trend: -22, note: "arranques suavizados" },
+];
+
 export class SimulatedRepository implements FarmRepository {
   async getParcels(): Promise<Parcel[]> {
     return PARCELS;
@@ -48,6 +56,9 @@ export class SimulatedRepository implements FarmRepository {
   }
   async getCropProfile(crop: CropType): Promise<CropProfile | null> {
     return CROPS[crop] ?? null;
+  }
+  async getCosts(): Promise<CostItem[]> {
+    return COSTS;
   }
 }
 

@@ -6,11 +6,12 @@
 // and nothing else changes.
 // ============================================================
 
-import type { Parcel, Well, Region, CropProfile, CropType } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem } from "@/types/domain";
 
 export interface FarmRepository {
   getParcels(): Promise<Parcel[]>;
   getWells(): Promise<Well[]>;
   getRegions(): Promise<Region[]>;
   getCropProfile(crop: CropType): Promise<CropProfile | null>;
+  getCosts(): Promise<CostItem[]>;
 }
