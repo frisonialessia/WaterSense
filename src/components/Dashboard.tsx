@@ -169,7 +169,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           {view === "mapa" ? (
             <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={wells} regions={data.regions} crops={data.crops} />
           ) : view === "costos" ? (
-            <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={allParcels} />
+            <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={allParcels} crops={data.crops} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
           ) : view === "estudio" ? (

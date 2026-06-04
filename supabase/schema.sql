@@ -51,6 +51,12 @@ create table if not exists ranches (
   main_crop   text references crops (crop),
   tariff_type text not null default 'Nocturna (CFE)',
   notes       text default '',
+  -- Campos que el usuario llena en Ajustes (alimentan energía y cumplimiento):
+  concession_m3_year numeric,         -- volumen concesionado CONAGUA (m³/año)
+  concession_title   text,            -- núm. de título REPDA
+  contracted_kw      numeric,         -- carga contratada CFE (kW)
+  cfe_service        text,            -- número de servicio / RPU
+  phone              text,            -- teléfono / WhatsApp para alertas
   created_at  timestamptz not null default now()
 );
 
@@ -84,6 +90,7 @@ create table if not exists parcels (
   well_id           uuid references wells (id) on delete set null
 );
 
+-- Resumen mensual por rubro (lo que ve el panel de un vistazo).
 create table if not exists cost_items (
   id        uuid primary key default uuid_generate_v4(),
   ranch_id  uuid references ranches (id) on delete cascade,
@@ -93,6 +100,27 @@ create table if not exists cost_items (
   trend     numeric not null default 0,
   note      text default ''
 );
+
+-- Libro de gastos: cada movimiento que registra el usuario. Permite derivar
+-- $/m³, $/kWh, $/ha y la proyección — etiquetable por parcela y por consumo.
+create table if not exists cost_entries (
+  id            uuid primary key default uuid_generate_v4(),
+  ranch_id      uuid references ranches (id) on delete cascade,
+  category      text not null,          -- luz | agua | diesel | mano | fert | agroq | ...
+  amount        numeric not null,       -- monto en MXN
+  spent_on      date not null,
+  recurring     boolean not null default false,
+  period        text,                   -- semanal | quincenal | mensual (nómina)
+  workers       integer,                -- nómina: # de jornaleros
+  workers_list  jsonb,                  -- nómina desglosada [{name, amount}]
+  parcel_id     uuid references parcels (id) on delete set null,  -- a qué parcela
+  quantity      numeric,                -- consumo ligado (m³ de agua, kWh de luz, L de diésel)
+  unit          text,                   -- 'm³' | 'kWh' | 'L'
+  note          text default '',
+  file_url      text,                   -- comprobante (Storage)
+  created_at    timestamptz not null default now()
+);
+create index if not exists cost_entries_ranch_idx on cost_entries (ranch_id, spent_on);
 
 -- ---------- Fase 4: lecturas de fuentes reales ----------
 -- Energía (CENACE), clima (Open-Meteo/CONAGUA), acuífero (CONAGUA piezometría),
@@ -117,7 +145,11 @@ create table if not exists water_concessions (
   volume_m3_year  numeric not null,
   lat             numeric,
   lng             numeric,
-  status          text not null default 'vigente'
+  status          text not null default 'vigente',
+  -- ranch_id no nulo = vecino que el propio usuario agregó; nulo = dato REPDA global
+  ranch_id              uuid references ranches (id) on delete cascade,
+  distance_km           numeric,
+  level_trend_m_per_year numeric          -- abatimiento observado (negativo = baja)
 );
 
 -- ============================================================
@@ -152,3 +184,29 @@ create policy "own cost_items" on cost_items
 create policy "own readings" on readings
   for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
   with check (ranch_id in (select id from ranches where user_id = auth.uid()));
+
+alter table cost_entries enable row level security;
+create policy "own cost_entries" on cost_entries
+  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
+  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
+
+-- Concesiones: las globales (REPDA, ranch_id nulo) son de lectura pública; las
+-- que el usuario agrega (vecinos) solo las maneja su dueño.
+alter table water_concessions enable row level security;
+create policy "concessions readable" on water_concessions
+  for select using (ranch_id is null or ranch_id in (select id from ranches where user_id = auth.uid()));
+create policy "own concessions write" on water_concessions
+  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
+  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
+
+-- ============================================================
+-- Vistas de apoyo para métricas (gasto mensual y por parcela)
+-- ============================================================
+create or replace view monthly_spend as
+  select ranch_id,
+         date_trunc('month', spent_on)::date as month,
+         sum(amount)                          as total,
+         sum(amount) filter (where unit = 'm³')  as water_m3,
+         sum(amount) filter (where unit = 'kWh') as energy_kwh
+  from cost_entries
+  group by ranch_id, date_trunc('month', spent_on);

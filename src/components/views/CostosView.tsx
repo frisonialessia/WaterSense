@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { CostItem, Parcel } from "@/types/domain";
+import type { CostItem, Parcel, CropProfile } from "@/types/domain";
 import { C, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
+import { irrigationEfficiency } from "@/lib/brain/irrigationFactors";
 import { Icon } from "../Icon";
 import { HourlyPrices } from "./HourlyPrices";
 
@@ -19,6 +20,8 @@ interface CostEntry {
   workers?: number; // nómina
   period?: Period; // nómina
   workersList?: { name: string; amount: number }[]; // nómina desglosada
+  parcelId?: string; // a qué parcela se carga el gasto (opcional)
+  quantity?: number; // m³ de agua / kWh de luz / L de diésel (opcional)
 }
 interface CustomCat {
   id: string;
@@ -31,17 +34,26 @@ const FIXED_CATS = [
   { id: "diesel", label: "Diésel", icon: "fuel" },
   { id: "mano", label: "Nómina / raya", icon: "user" },
   { id: "mant", label: "Mantenimiento", icon: "wrench" },
-  { id: "fert", label: "Fertilizante / insumos", icon: "leaf" },
+  { id: "fert", label: "Fertilizante / nutrición", icon: "leaf" },
+  { id: "agroq", label: "Agroquímicos", icon: "shield" },
+  { id: "semilla", label: "Semilla / planta", icon: "spark" },
+  { id: "maq", label: "Maquinaria / labores", icon: "sliders" },
+  { id: "cosecha", label: "Cosecha / empaque", icon: "scale" },
   { id: "flete", label: "Fletes / transporte", icon: "map" },
+  { id: "renta", label: "Renta / predial", icon: "home" },
+  { id: "credito", label: "Crédito / seguro", icon: "book" },
   { id: "otro", label: "Otro", icon: "coin" },
 ];
+
+// Energy/water tagging → lets us derive $/m³ and kWh later. Unit per category.
+const UNIT_FOR: Record<string, string> = { agua: "m³", luz: "kWh", diesel: "L" };
 
 const PERIOD_MULT: Record<Period, number> = { semanal: 4.33, quincenal: 2, mensual: 1 };
 // Temporada de riego (abr–sep) sube luz/diésel; resto baja.
 const seasonFactor = (m: number) => ([3, 4, 5, 6, 7, 8].includes(m) ? 1.12 : 0.92);
 const monthLabel = (d: Date) => d.toLocaleDateString("es-MX", { month: "short" }).replace(".", "");
 
-export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme; tr: (s: string, t: string) => string; costs: CostItem[]; tariffCurve: number[]; parcels: Parcel[] }) {
+export function CostosView({ th, tr, costs, tariffCurve, parcels, crops }: { th: Theme; tr: (s: string, t: string) => string; costs: CostItem[]; tariffCurve: number[]; parcels: Parcel[]; crops: CropProfile[] }) {
   const fixedBaseline = costs.reduce((s, c) => s + c.month, 0);
   const [open, setOpen] = useState<string | null>("luz");
 
@@ -87,6 +99,9 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
   const [newCat, setNewCat] = useState("");
   const [payrollMode, setPayrollMode] = useState<"total" | "list">("total");
   const [workerRows, setWorkerRows] = useState<{ name: string; amount: string }[]>([{ name: "", amount: "" }]);
+  const [parcelId, setParcelId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const qtyUnit = UNIT_FOR[cat]; // shows a quantity field for agua/luz/diésel
 
   const isPayroll = cat === "mano";
   const workersTotal = workerRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
@@ -109,11 +124,14 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
       workers: isPayroll ? (usingList ? validRows?.length : Number(workers) || undefined) : undefined,
       period: isPayroll ? period : undefined,
       workersList: validRows,
+      parcelId: parcelId || undefined,
+      quantity: qtyUnit && parseFloat(quantity) > 0 ? parseFloat(quantity) : undefined,
     };
     setEntries((e) => [entry, ...e]);
     setAmount("");
     setFileName("");
     setWorkerRows([{ name: "", amount: "" }]);
+    setQuantity("");
   };
   const remove = (id: string) => setEntries((e) => e.filter((x) => x.id !== id));
   const addCategory = () => {
@@ -156,7 +174,36 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
   }, [fixedBaseline, recurringMonthly, now]);
   const avgProjected = Math.round(projection.reduce((s, p) => s + p.value, 0) / projection.length);
 
+  // Water-productivity indicators: kg/m³, $/m³, $/kg — derived from the same
+  // crop × surface × irrigation-efficiency model used across the app.
+  const cropMap = useMemo(() => Object.fromEntries(crops.map((c) => [c.crop, c])) as Record<string, CropProfile>, [crops]);
+  const prod = useMemo(() => {
+    let water = 0;
+    let yieldKg = 0;
+    for (const p of parcels) {
+      const cp = cropMap[p.crop];
+      if (!cp) continue;
+      water += cp.waterM3ha * p.hectares * irrigationEfficiency(p.irrigationSystem);
+      yieldKg += cp.yieldKgHa * p.hectares;
+    }
+    const annualCost = (fixedBaseline + recurringMonthly) * 12;
+    return {
+      water: Math.round(water),
+      yieldKg: Math.round(yieldKg),
+      costPerM3: water ? annualCost / water : 0,
+      kgPerM3: water ? yieldKg / water : 0,
+      costPerKg: yieldKg ? annualCost / yieldKg : 0,
+    };
+  }, [parcels, cropMap, fixedBaseline, recurringMonthly]);
+
   const inputStyle: React.CSSProperties = { background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: "8px 10px", color: th.ink, fontSize: fz.xs, outline: "none", fontFamily: "inherit" };
+
+  const Metric = ({ label, value, color }: { label: string; value: string; color?: string }) => (
+    <div>
+      <div style={{ ...labelStyle(th), marginBottom: 4 }}>{label}</div>
+      <div className="mono" style={{ fontSize: fz.lg, fontWeight: 700, color: color ?? th.ink }}>{value}</div>
+    </div>
+  );
 
   const Bars = ({ data, color }: { data: { label: string; value: number }[]; color: string }) => {
     const max = Math.max(1, ...data.map((d) => d.value));
@@ -175,6 +222,22 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
 
   return (
     <div style={{ padding: space.x3 }}>
+      {/* water-productivity indicators */}
+      {prod.water > 0 && (
+        <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginBottom: space.md }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: space.sm, marginBottom: space.md }}>
+            <div style={{ fontWeight: 600 }}>{tr("Productividad del agua", "Indicadores por m³")}</div>
+            <span style={{ fontSize: fz.xs, color: th.mute }}>{tr("según tu producción y consumo del año", "cultivo × superficie × eficiencia de riego")}</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 150px),1fr))", gap: space.md }}>
+            <Metric label={tr("Agua al año", "Agua/año")} value={`${fmt(prod.water)} m³`} />
+            <Metric label={tr("Cosecha por m³", "kg/m³")} value={`${prod.kgPerM3.toFixed(1)} kg`} color={C.emerald} />
+            <Metric label={tr("Costo por m³", "$/m³")} value={`$${prod.costPerM3.toFixed(2)}`} color={C.glacier} />
+            <Metric label={tr("Costo por kilo", "$/kg")} value={`$${prod.costPerKg.toFixed(2)}`} color={C.glacier} />
+          </div>
+        </div>
+      )}
+
       {/* fixed monthly costs (simulated baseline) */}
       <div className="card" style={{ ...cardStyle(th), overflow: "hidden" }}>
         <div style={{ padding: `${space.lg}px ${space.xl}px`, borderBottom: `1px solid ${th.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -250,6 +313,16 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
             <span style={{ ...inputStyle, display: "inline-flex", alignItems: "center", gap: 6 }}>{tr("Total raya", "Total")}: <b className="mono" style={{ color: th.ink }}>${fmt(Math.round(workersTotal))}</b></span>
           )}
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} aria-label={tr("Fecha", "Fecha")} />
+          <select value={parcelId} onChange={(e) => setParcelId(e.target.value)} style={inputStyle} aria-label={tr("Parcela", "Parcela")}>
+            <option value="">{tr("Todo el rancho", "Todo el rancho")}</option>
+            {parcels.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
+          </select>
+          {qtyUnit && (
+            <div style={{ display: "flex", alignItems: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, paddingRight: 10 }}>
+              <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder={tr(`Consumo`, "Consumo")} style={{ ...inputStyle, border: "none", background: "transparent", width: 90 }} aria-label={tr("Consumo", "Consumo")} />
+              <span style={{ color: th.mute, fontSize: fz.xs }}>{qtyUnit}</span>
+            </div>
+          )}
         </div>
 
         {isPayroll && (
@@ -342,6 +415,8 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
                   </div>
                   <div className="mono" style={{ fontSize: fz.micro, color: th.mute }}>
                     {e.date}
+                    {e.parcelId ? ` · ${parcels.find((p) => p.id === e.parcelId)?.name ?? tr("parcela", "parcela")}` : ""}
+                    {e.quantity ? ` · ${fmt(e.quantity)} ${UNIT_FOR[e.category] ?? ""}` : ""}
                     {e.workers ? ` · ${e.workers} ${tr("jornaleros", "jorn.")} · ${e.period}` : ""}
                     {e.fileName ? ` · ${e.fileName}` : ""}
                   </div>
