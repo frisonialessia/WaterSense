@@ -146,7 +146,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 360px),1fr))", gap: space.lg }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: space.lg }}>
         {/* levers */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("Mueve las palancas", "Variables del escenario")}</div>
