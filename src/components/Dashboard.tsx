@@ -208,6 +208,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
     setCostItems((prev) => [...prev, { id, label, icon: "coin", month: 0, trend: 0, note: "" }]);
     return id;
   };
+  const removeCost = (id: string) => setCostItems((prev) => prev.filter((c) => c.id !== id));
 
   return (
     <div className="ws-app-shell" style={{ background: th.bg, color: th.ink, display: "flex", transition: "background .35s" }}>
@@ -223,7 +224,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           {view === "mapa" ? (
             <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={wells} regions={data.regions} crops={data.crops} />
           ) : view === "costos" ? (
-            <CostosView th={th} tr={tr} costs={costItems} tariffCurve={data.tariffCurve} parcels={allParcels} crops={data.crops} onUpdateCost={updateCost} onAddCost={addCost} />
+            <CostosView th={th} tr={tr} costs={costItems} tariffCurve={data.tariffCurve} parcels={allParcels} crops={data.crops} onUpdateCost={updateCost} onAddCost={addCost} onRemoveCost={removeCost} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
           ) : view === "estudio" ? (

@@ -53,7 +53,7 @@ const PERIOD_MULT: Record<Period, number> = { semanal: 4.33, quincenal: 2, mensu
 const seasonFactor = (m: number) => ([3, 4, 5, 6, 7, 8].includes(m) ? 1.12 : 0.92);
 const monthLabel = (d: Date) => d.toLocaleDateString("es-MX", { month: "short" }).replace(".", "");
 
-export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdateCost, onAddCost }: { th: Theme; tr: (s: string, t: string) => string; costs: CostItem[]; tariffCurve: number[]; parcels: Parcel[]; crops: CropProfile[]; onUpdateCost: (id: string, patch: Partial<CostItem>) => void; onAddCost: (label: string) => string }) {
+export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdateCost, onAddCost, onRemoveCost }: { th: Theme; tr: (s: string, t: string) => string; costs: CostItem[]; tariffCurve: number[]; parcels: Parcel[]; crops: CropProfile[]; onUpdateCost: (id: string, patch: Partial<CostItem>) => void; onAddCost: (label: string) => string; onRemoveCost: (id: string) => void }) {
   const fixedBaseline = costs.reduce((s, c) => s + c.month, 0);
   const [open, setOpen] = useState<string | null>("luz");
   const [addingFixed, setAddingFixed] = useState(false);
@@ -259,6 +259,7 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
         </div>
         {costs.map((c, i) => {
           const isLuz = c.id === "luz";
+          const isCustom = c.id.startsWith("cost-"); // rubro creado por el usuario
           const isOpen = open === c.id;
           return (
             <div key={c.id} style={{ borderBottom: i < costs.length - 1 ? `1px solid ${th.line}` : "none" }}>
@@ -285,6 +286,12 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
               {isOpen && (
                 <div style={{ background: th.panel2, borderTop: `1px solid ${th.line}`, padding: `${space.md}px ${space.xl}px` }}>
                   <div style={{ display: "flex", gap: space.lg, flexWrap: "wrap", alignItems: "flex-end" }}>
+                    {isCustom && (
+                      <label style={{ fontSize: fz.xs, color: th.soft, minWidth: 180 }}>
+                        <div style={{ marginBottom: 4 }}>{tr("Nombre del rubro", "Nombre")}</div>
+                        <input value={c.label} onChange={(e) => onUpdateCost(c.id, { label: e.target.value })} style={{ ...inputStyle, width: "100%" }} />
+                      </label>
+                    )}
                     <label style={{ fontSize: fz.xs, color: th.soft }}>
                       <div style={{ marginBottom: 4 }}>{tr("Monto mensual", "Monto / mes")}</div>
                       <div style={{ display: "flex", alignItems: "center", background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.md, paddingLeft: 10 }}>
@@ -300,6 +307,9 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
                       <div style={{ marginBottom: 4 }}>{tr("Cambio % vs. mes pasado", "Tendencia %")}</div>
                       <input type="number" value={c.trend} onChange={(e) => onUpdateCost(c.id, { trend: Math.round(parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, width: 90 }} />
                     </label>
+                    {isCustom && (
+                      <button onClick={() => { onRemoveCost(c.id); if (open === c.id) setOpen(null); }} style={{ background: "none", border: `1px solid ${C.critical}55`, color: C.critical, borderRadius: radius.md, padding: "8px 14px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer" }}>{tr("Eliminar rubro", "Eliminar")}</button>
+                    )}
                   </div>
                   {isLuz && (
                     <div style={{ marginTop: space.md, marginLeft: -space.xl, marginRight: -space.xl, marginBottom: -space.md, borderTop: `1px solid ${th.line}` }}>
