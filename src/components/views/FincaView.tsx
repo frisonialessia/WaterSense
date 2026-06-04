@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary } from "@/types/domain";
-import { C, FONT, cardStyle, fmt, space, fz, radius, type Theme } from "@/lib/theme";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, CropType } from "@/types/domain";
+import { projectYield } from "@/lib/brain/yieldModel";
+import { assessStressRisk } from "@/lib/brain/stressRisk";
+import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
 import { Icon } from "../Icon";
 import type { ViewId } from "../Sidebar";
 
@@ -10,8 +12,7 @@ function useCount(target: number, dur = 1100) {
   const [v, setV] = useState(0);
   const started = useRef(false);
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
+    started.current = false;
     const t0 = performance.now();
     const tick = (now: number) => {
       const p = Math.min(1, (now - t0) / dur);
@@ -19,7 +20,7 @@ function useCount(target: number, dur = 1100) {
       if (p < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
-  }, [target]);
+  }, [target, dur]);
   return Math.round(v);
 }
 
@@ -30,6 +31,8 @@ export function FincaView({
   tr,
   setView,
   parcels,
+  crops,
+  tariffCurve,
   forecast,
   actions,
   savings,
@@ -38,6 +41,8 @@ export function FincaView({
   tr: (s: string, t: string) => string;
   setView: (v: ViewId) => void;
   parcels: Parcel[];
+  crops: CropProfile[];
+  tariffCurve: number[];
   forecast: WeatherDay[];
   actions: ScheduledAction[];
   savings: SavingsSummary;
@@ -47,40 +52,57 @@ export function FincaView({
   const rainDay = forecast.find((f) => f.rainMm >= 10);
   const healthy = parcels.filter((p) => p.stress < 0.5).length;
 
+  const cropMap = useMemo(() => {
+    const m = {} as Record<CropType, CropProfile>;
+    crops.forEach((c) => (m[c.crop] = c));
+    return m;
+  }, [crops]);
+
+  // ── Predicción de cosecha (farm-level) ─────────────────────
+  const harvest = useMemo(() => {
+    let revenue = 0,
+      lost = 0;
+    for (const p of parcels) {
+      const c = cropMap[p.crop];
+      if (!c) continue;
+      const y = projectYield({ yieldKgHa: c.yieldKgHa, hectares: p.hectares, stress: p.stress, pricePerKg: c.pricePerKg });
+      revenue += y.revenue;
+      lost += y.lostRevenue;
+    }
+    const potential = revenue + lost;
+    const pct = potential ? Math.round((revenue / potential) * 100) : 100;
+    return { revenue, lost, pct };
+  }, [parcels, cropMap]);
+
+  // ── Punto de no retorno (most-stressed parcel) ─────────────
+  const risk = useMemo(() => {
+    const driest = [...parcels].sort((a, b) => b.stress - a.stress)[0];
+    const c = driest ? cropMap[driest.crop] : undefined;
+    if (!driest || !c) return null;
+    const r = assessStressRisk({ stress: driest.stress, hectares: driest.hectares, yieldKgHa: c.yieldKgHa, pricePerKg: c.pricePerKg });
+    return { ...r, parcel: driest };
+  }, [parcels, cropMap]);
+  const riskColor = risk?.level === "urgent" ? C.critical : C.alert;
+
+  // ── What-if: hora de riego → ahorro en vivo ────────────────
+  const cheapest = useMemo(() => (tariffCurve.length ? tariffCurve.indexOf(Math.min(...tariffCurve)) : 2), [tariffCurve]);
+  const peakPrice = useMemo(() => (tariffCurve.length ? Math.max(...tariffCurve) : 2.6), [tariffCurve]);
+  const [waterHour, setWaterHour] = useState(cheapest);
+  useEffect(() => setWaterHour(cheapest), [cheapest]);
+  const monthlyKwh = 9000; // representative monthly pumping energy
+  const priceAt = tariffCurve[waterHour] ?? 1.8;
+  const whatIfSaved = Math.max(0, Math.round((peakPrice - priceAt) * monthlyKwh));
+
   const cards = [
-    {
-      l: tr("Hoy debes regar", "Acción prioritaria"),
-      v: tr("Parcela del chile", "Parcela chile"),
-      s: tr("a las 2am · ahorras $90", "tarifa baja · 02:00"),
-      c: C.alert,
-      action: done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar"),
-      onAct: () => setDone(true),
-      solid: !done,
-    },
-    {
-      l: tr("Tus cultivos", "Salud general"),
-      v: `${healthy} ${tr("sanos", "OK")}`,
-      s: `${parcels.length} ${tr("parcelas", "zonas")}`,
-      c: C.emerald,
-      action: tr("Ver mapa", "Ver mapa"),
-      onAct: () => setView("mapa"),
-      solid: false,
-    },
-    {
-      l: tr("Tus pozos", "Acuífero"),
-      v: tr("1 en cuidado", "1 alerta"),
-      s: tr("el pozo chico baja", "sobreexplotación"),
-      c: C.critical,
-      action: tr("Revisar pozos", "Revisar"),
-      onAct: () => setView("pozos"),
-      solid: false,
-    },
+    { l: tr("Hoy debes regar", "Acción prioritaria"), v: risk?.parcel.name ?? tr("Parcela del chile", "Parcela chile"), s: tr("a las 2am · ahorras $90", "tarifa baja · 02:00"), c: C.alert, action: done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar"), onAct: () => setDone(true), solid: !done },
+    { l: tr("Tus cultivos", "Salud general"), v: `${healthy} ${tr("sanos", "OK")}`, s: `${parcels.length} ${tr("parcelas", "zonas")}`, c: C.emerald, action: tr("Ver mapa", "Ver mapa"), onAct: () => setView("mapa"), solid: false },
+    { l: tr("Tus pozos", "Acuífero"), v: tr("1 en cuidado", "1 alerta"), s: tr("el pozo chico baja", "sobreexplotación"), c: C.glacier, action: tr("Revisar pozos", "Revisar"), onAct: () => setView("pozos"), solid: false },
   ];
 
   return (
     <div style={{ padding: space.x3, maxWidth: 1120 }}>
       {/* cover — the dashboard's one brand-gradient moment */}
-      <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: `${space.x2}px ${space.x2}px`, marginBottom: space.lg, position: "relative", overflow: "hidden", color: "#fff" }}>
+      <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: `${space.x2}px ${space.x2}px`, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff" }}>
         <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes", "Auditoría contrafactual")}</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: space.md, flexWrap: "wrap" }}>
           <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.hero }}>${fmt(saved)}</span>
@@ -91,21 +113,80 @@ export function FincaView({
         </span>
       </div>
 
+      {/* point-of-no-return alert (the one alert element) */}
+      {risk && risk.level !== "ok" && (
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: space.md, background: `${riskColor}12`, border: `1px solid ${riskColor}44`, borderRadius: radius.lg, padding: `${space.md}px ${space.lg}px`, marginBottom: space.md }}>
+          <span style={{ width: 34, height: 34, borderRadius: radius.md, background: `${riskColor}1f`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon name="drop" size={18} color={riskColor} />
+          </span>
+          <div style={{ flex: 1, fontSize: fz.sm, color: th.ink, lineHeight: 1.5 }}>
+            <b>{risk.parcel.name}</b>{" "}
+            {tr(
+              `alcanzará punto crítico de sed en ~${risk.hoursToCritical} h. Si no riegas, pérdida proyectada: `,
+              `→ umbral crítico en ~${risk.hoursToCritical} h. Pérdida proyectada por inacción: `
+            )}
+            <b className="mono" style={{ color: riskColor }}>${fmt(risk.projectedLoss)}</b>.
+          </div>
+          <button onClick={() => setView("mapa")} style={{ border: "none", background: riskColor, color: "#fff", borderRadius: radius.md, padding: "8px 14px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
+            {tr("Ver parcela", "Ver")}
+          </button>
+        </div>
+      )}
+
       {/* action cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: space.md, marginBottom: space.lg }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: space.md, marginBottom: space.md }}>
         {cards.map((x, i) => (
           <div key={i} className="card" style={{ ...cardStyle(th), animationDelay: `${i * 0.06}s`, padding: space.xl, display: "flex", flexDirection: "column" }}>
             <p style={{ fontSize: fz.xs, color: th.mute, marginBottom: 6 }}>{x.l}</p>
             <p style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.xl, color: x.c }}>{x.v}</p>
             <p style={{ fontSize: fz.xs, color: th.soft, marginTop: 6, marginBottom: space.lg }}>{x.s}</p>
-            <button
-              onClick={x.onAct}
-              style={{ marginTop: "auto", border: x.solid ? "none" : `1px solid ${th.line}`, background: x.solid ? C.glacier : th.panel2, color: x.solid ? "#fff" : th.ink, borderRadius: radius.md, padding: "9px 0", fontSize: fz.sm, fontWeight: 600, cursor: "pointer", transition: ".2s" }}
-            >
-              {x.action}
-            </button>
+            <button onClick={x.onAct} style={{ marginTop: "auto", border: x.solid ? "none" : `1px solid ${th.line}`, background: x.solid ? C.glacier : th.panel2, color: x.solid ? "#fff" : th.ink, borderRadius: radius.md, padding: "9px 0", fontSize: fz.sm, fontWeight: 600, cursor: "pointer", transition: ".2s" }}>{x.action}</button>
           </div>
         ))}
+      </div>
+
+      {/* yield projection + what-if */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space.md, marginBottom: space.md }}>
+        {/* yield = irrigation as investment */}
+        <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <div style={{ fontWeight: 600 }}>{tr("Cosecha proyectada", "Proyección de rendimiento")}</div>
+            <span className="mono" style={{ fontSize: fz.xs, color: harvest.pct >= 80 ? C.emerald : harvest.pct >= 60 ? C.alert : C.critical }}>{harvest.pct}% {tr("del potencial", "del potencial")}</span>
+          </div>
+          <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>{tr("Si riegas bien, esto vale tu cosecha", "Valor estimado de la producción según riego")}</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: space.sm }}>
+            <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, color: th.ink }}>${fmt(harvest.revenue)}</span>
+            <span style={{ fontSize: fz.xs, color: th.soft }}>{tr("ingreso estimado", "ingreso proyectado")}</span>
+          </div>
+          {/* potential bar */}
+          <div style={{ height: 7, borderRadius: 4, background: th.panel2, overflow: "hidden", margin: `${space.md}px 0 ${space.sm}px` }}>
+            <div style={{ height: "100%", width: `${harvest.pct}%`, background: C.emerald, borderRadius: 4 }} />
+          </div>
+          <div style={{ fontSize: fz.xs, color: th.soft }}>
+            {tr("Estás dejando de ganar ", "Merma por estrés hídrico: ")}
+            <b className="mono" style={{ color: C.alert }}>${fmt(harvest.lost)}</b>
+            {tr(" por sed de los cultivos.", " (recuperable con mejor riego).")}
+          </div>
+        </div>
+
+        {/* what-if: irrigation hour → live savings */}
+        <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <div style={{ fontWeight: 600 }}>{tr("¿Y si riego a otra hora?", "Simulación de horario")}</div>
+            <span className="mono" style={{ fontSize: fz.xs, color: th.mute }}>{waterHour}:00</span>
+          </div>
+          <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>{tr("Mueve la hora y mira cuánto ahorras al mes", "Ahorro mensual estimado según la hora de bombeo")}</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: space.sm }}>
+            <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, color: whatIfSaved > 0 ? C.emerald : th.mute }}>${fmt(whatIfSaved)}</span>
+            <span style={{ fontSize: fz.xs, color: th.soft }}>{tr("ahorro/mes vs. la hora más cara", "vs. hora pico")}</span>
+          </div>
+          <input type="range" min={0} max={23} value={waterHour} onChange={(e) => setWaterHour(+e.target.value)} style={{ width: "100%", accentColor: waterHour === cheapest ? C.emerald : C.glacier, cursor: "pointer", margin: `${space.md}px 0 4px` }} />
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: fz.micro, color: th.mute }}>
+            <span>0:00</span>
+            <span>{waterHour === cheapest ? <b style={{ color: C.emerald }}>{tr("¡hora más barata!", "óptimo")}</b> : <button onClick={() => setWaterHour(cheapest)} style={{ background: "none", border: "none", color: C.glacier, cursor: "pointer", fontSize: fz.micro, padding: 0 }}>{tr(`ir a la más barata (${cheapest}:00)`, `óptimo ${cheapest}:00`)}</button>}</span>
+            <span>23:00</span>
+          </div>
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: space.md }}>

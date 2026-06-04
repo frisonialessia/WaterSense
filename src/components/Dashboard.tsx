@@ -82,7 +82,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : (
-            <FincaView th={th} tr={tr} setView={setView} parcels={allParcels} forecast={data.forecast} actions={data.actions} savings={data.savings} />
+            <FincaView th={th} tr={tr} setView={setView} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
         </div>
       </main>

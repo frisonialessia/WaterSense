@@ -24,6 +24,8 @@ export interface CropProfile {
   freqDays: number;
   /** expected yield kg/ha */
   yieldKgHa: number;
+  /** farm-gate price, $/kg (simulated, realistic for Chihuahua) */
+  pricePerKg: number;
 }
 
 export interface Parcel {

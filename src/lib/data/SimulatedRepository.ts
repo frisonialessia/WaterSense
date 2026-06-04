@@ -8,11 +8,11 @@ import type { FarmRepository } from "./FarmRepository";
 import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends } from "@/types/domain";
 
 const CROPS: Record<CropType, CropProfile> = {
-  "Nogal pecanero": { crop: "Nogal pecanero", laminaM: 1.9, waterM3ha: 19000, costHa: 14200, freqDays: 7, yieldKgHa: 3200 },
-  "Alfalfa": { crop: "Alfalfa", laminaM: 1.7, waterM3ha: 17000, costHa: 12800, freqDays: 10, yieldKgHa: 18000 },
-  "Chile jalapeño": { crop: "Chile jalapeño", laminaM: 0.8, waterM3ha: 8000, costHa: 6400, freqDays: 4, yieldKgHa: 28000 },
-  "Manzano": { crop: "Manzano", laminaM: 1.1, waterM3ha: 11000, costHa: 8900, freqDays: 8, yieldKgHa: 35000 },
-  "Maíz forrajero": { crop: "Maíz forrajero", laminaM: 1.0, waterM3ha: 10000, costHa: 7600, freqDays: 6, yieldKgHa: 55000 },
+  "Nogal pecanero": { crop: "Nogal pecanero", laminaM: 1.9, waterM3ha: 19000, costHa: 14200, freqDays: 7, yieldKgHa: 3200, pricePerKg: 75 },
+  "Alfalfa": { crop: "Alfalfa", laminaM: 1.7, waterM3ha: 17000, costHa: 12800, freqDays: 10, yieldKgHa: 18000, pricePerKg: 4.5 },
+  "Chile jalapeño": { crop: "Chile jalapeño", laminaM: 0.8, waterM3ha: 8000, costHa: 6400, freqDays: 4, yieldKgHa: 28000, pricePerKg: 9 },
+  "Manzano": { crop: "Manzano", laminaM: 1.1, waterM3ha: 11000, costHa: 8900, freqDays: 8, yieldKgHa: 35000, pricePerKg: 8 },
+  "Maíz forrajero": { crop: "Maíz forrajero", laminaM: 1.0, waterM3ha: 10000, costHa: 7600, freqDays: 6, yieldKgHa: 55000, pricePerKg: 2.8 },
 };
 
 // Deterministic pseudo-random in [0,1) from a seed, so boundaries are
