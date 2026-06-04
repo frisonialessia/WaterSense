@@ -56,16 +56,8 @@ const monthLabel = (d: Date) => d.toLocaleDateString("es-MX", { month: "short" }
 export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdateCost, onAddCost, onRemoveCost }: { th: Theme; tr: (s: string, t: string) => string; costs: CostItem[]; tariffCurve: number[]; parcels: Parcel[]; crops: CropProfile[]; onUpdateCost: (id: string, patch: Partial<CostItem>) => void; onAddCost: (label: string) => string; onRemoveCost: (id: string) => void }) {
   const fixedBaseline = costs.reduce((s, c) => s + c.month, 0);
   const [open, setOpen] = useState<string | null>("luz");
-  const [addingFixed, setAddingFixed] = useState(false);
-  const [newFixed, setNewFixed] = useState("");
-  const createFixed = () => {
-    const label = newFixed.trim();
-    if (!label) return;
-    const id = onAddCost(label);
-    setNewFixed("");
-    setAddingFixed(false);
-    setOpen(id); // abre el nuevo para capturar el monto
-  };
+  const [costMode, setCostMode] = useState<"puntual" | "fijo">("puntual");
+  const [fixedName, setFixedName] = useState("");
 
   const [entries, setEntries] = useState<CostEntry[]>([]);
   const [customCats, setCustomCats] = useState<CustomCat[]>([]);
@@ -142,6 +134,17 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
     setFileName("");
     setWorkerRows([{ name: "", amount: "" }]);
     setQuantity("");
+  };
+  // Fijo mensual: crea un rubro recurrente en la lista de arriba.
+  const addFixed = () => {
+    const label = fixedName.trim();
+    const n = Math.round(parseFloat(amount) || 0);
+    if (!label || n <= 0) return;
+    const id = onAddCost(label);
+    onUpdateCost(id, { month: n });
+    setFixedName("");
+    setAmount("");
+    setOpen(id);
   };
   const remove = (id: string) => setEntries((e) => e.filter((x) => x.id !== id));
   const addCategory = () => {
@@ -252,8 +255,8 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
       <div className="card" style={{ ...cardStyle(th), overflow: "hidden" }}>
         <div style={{ padding: `${space.lg}px ${space.xl}px`, borderBottom: `1px solid ${th.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontWeight: 600 }}>{tr("Tus costos de este mes", "Costos operativos · mes")}</div>
-            <div style={{ fontSize: fz.xs, color: th.mute, marginTop: 2 }}>{tr("Toca cualquier rubro para ver el detalle y editar el monto", "Toca un rubro para desglosar y editar")}</div>
+            <div style={{ fontWeight: 600 }}>{tr("Costos fijos del mes", "Costos fijos · mensual")}</div>
+            <div style={{ fontSize: fz.xs, color: th.mute, marginTop: 2 }}>{tr("Se repiten cada mes. Toca un rubro para editar. Para agregar otro, usa «Fijo cada mes» abajo.", "Recurrentes mensuales · toca para editar")}</div>
           </div>
           <span className="mono" style={{ fontSize: fz.xl, fontWeight: 700, color: th.ink }}>${fmt(fixedBaseline)}</span>
         </div>
@@ -321,29 +324,40 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
             </div>
           );
         })}
-        <div style={{ padding: `${space.md}px ${space.xl}px`, borderTop: `1px solid ${th.line}` }}>
-          {addingFixed ? (
-            <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "center" }}>
-              <input value={newFixed} onChange={(e) => setNewFixed(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFixed()} autoFocus placeholder={tr("Nombre del costo (ej. Fertilizante, Renta…)", "Nombre del rubro")} style={{ ...inputStyle, flex: 1, minWidth: 220 }} />
-              <button onClick={createFixed} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer" }}>{tr("Crear", "Crear")}</button>
-              <button onClick={() => { setAddingFixed(false); setNewFixed(""); }} style={{ background: "none", border: "none", color: th.mute, fontSize: fz.xs, cursor: "pointer" }}>{tr("Cancelar", "Cancelar")}</button>
-            </div>
-          ) : (
-            <button onClick={() => setAddingFixed(true)} style={{ background: "none", border: `1px dashed ${th.line}`, color: C.glacier, borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", width: "100%" }}>+ {tr("Agregar otro costo", "Agregar rubro")}</button>
-          )}
-        </div>
       </div>
 
       {/* register a cost (manual + nómina + recibo) */}
       <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 3 }}>
-          <div style={{ fontWeight: 600 }}>{tr("Registrar un gasto", "Registrar gasto")}</div>
+          <div style={{ fontWeight: 600 }}>{tr("Agregar costo", "Agregar costo")}</div>
           {registeredThisMonth > 0 && <span className="mono" style={{ fontSize: fz.xs, color: th.soft }}>{tr("este mes:", "mes:")} <b style={{ color: th.ink }}>${fmt(registeredThisMonth)}</b></span>}
         </div>
         <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>
-          {tr("Nómina/raya, mantenimiento, diésel, fletes… con o sin comprobante. Marca lo que se repite cada mes.", "Captura manual o con comprobante; marca recurrentes para la proyección.")}
+          {costMode === "fijo"
+            ? tr("Un costo que se repite cada mes (renta, fertilizante, crédito…). Se suma a tus costos fijos de arriba.", "Rubro recurrente mensual; va a costos fijos.")
+            : tr("Un gasto con fecha y comprobante (nómina, diésel, fletes…). Va a tu historial; marca recurrente si se repite.", "Gasto con fecha; los recurrentes alimentan la proyección.")}
         </div>
 
+        <div style={{ display: "flex", gap: 6, marginBottom: space.md }}>
+          {(["puntual", "fijo"] as const).map((m) => (
+            <button key={m} onClick={() => setCostMode(m)} style={{ fontSize: fz.xs, fontWeight: 600, padding: "6px 13px", borderRadius: radius.pill, cursor: "pointer", border: `1px solid ${costMode === m ? C.glacier : th.line}`, background: costMode === m ? `${C.glacier}14` : th.panel2, color: costMode === m ? th.ink : th.soft }}>
+              {m === "puntual" ? tr("Gasto con fecha", "Puntual") : tr("Fijo cada mes", "Fijo mensual")}
+            </button>
+          ))}
+        </div>
+
+        {costMode === "fijo" ? (
+          <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "center" }}>
+            <input value={fixedName} onChange={(e) => setFixedName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addFixed()} placeholder={tr("Nombre (ej. Renta, Fertilizante…)", "Nombre del rubro")} style={{ ...inputStyle, flex: 1, minWidth: 220 }} />
+            <div style={{ display: "flex", alignItems: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, paddingLeft: 10 }}>
+              <span style={{ color: th.mute, fontSize: fz.xs }}>$</span>
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={tr("Monto al mes", "Monto/mes")} style={{ ...inputStyle, border: "none", background: "transparent", width: 130 }} />
+            </div>
+            <span style={{ fontSize: fz.micro, color: th.mute }}>{tr("se suma a tu gasto cada mes", "mensual fijo")}</span>
+            <button onClick={addFixed} style={{ border: "none", background: C.emerald, color: "#fff", borderRadius: radius.md, padding: "9px 18px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", marginLeft: "auto" }}>{tr("Agregar costo fijo", "Agregar fijo")}</button>
+          </div>
+        ) : (
+          <>
         <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "center", marginBottom: space.sm }}>
           <select value={cat} onChange={(e) => setCat(e.target.value)} style={inputStyle} aria-label={tr("Rubro", "Rubro")}>
             {allCats.map((c) => (<option key={c.id} value={c.id}>{c.label}</option>))}
@@ -430,6 +444,8 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
           </label>
           <button onClick={add} style={{ border: "none", background: C.emerald, color: "#fff", borderRadius: radius.md, padding: "9px 18px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", marginLeft: "auto" }}>{tr("Agregar gasto", "Agregar")}</button>
         </div>
+          </>
+        )}
       </div>
 
       {/* history + projection */}
