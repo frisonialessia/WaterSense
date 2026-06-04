@@ -115,7 +115,7 @@ export function Topbar({
     padding: 0,
   };
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: `${space.md}px ${space.x2}px`, borderBottom: `1px solid ${th.line}`, background: th.panel, gap: space.md }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: `${space.md}px ${space.x2}px`, borderBottom: `1px solid ${th.line}`, background: th.panel, gap: space.md, flexShrink: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: space.sm, minWidth: 0 }}>
         {onMenu && (
           <button onClick={onMenu} aria-label={tr("Menú", "Menú")} style={{ ...iconBtn, flexShrink: 0 }}>

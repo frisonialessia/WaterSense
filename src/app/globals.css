@@ -14,6 +14,17 @@ button {
   font-family: inherit;
 }
 
+/* App shell: lock to the REAL visible height (dvh) so on mobile the browser bar
+   never pushes the header out of view. Only inner content scrolls, never the
+   top bar or KPI strip. Falls back to vh where dvh isn't supported. */
+.ws-app-shell {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
 /* Skeleton shimmer for loading states (professional perceived-perf). */
 @keyframes ws-shimmer {
   0% {

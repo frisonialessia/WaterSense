@@ -46,6 +46,7 @@ export function KpiStrip({
         gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
         borderBottom: `1px solid ${th.line}`,
         background: th.panel,
+        flexShrink: 0,
       }}
     >
       {items.map((it, i) => (
