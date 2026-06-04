@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends, AquiferNeighborhood, RanchConfig } from "@/types/domain";
-import type { PumpHealth } from "@/lib/brain/pumpHealth";
+import { assessPump, type PumpHealth } from "@/lib/brain/pumpHealth";
 import { T, makeTr, type Lang, type ThemeMode } from "@/lib/theme";
 import { Sidebar, type ViewId } from "./Sidebar";
 import { Topbar } from "./Topbar";
@@ -105,6 +105,34 @@ export function Dashboard({ data }: { data: DashboardData }) {
     }
   }, [ranch]);
 
+  // Wells are editable in the PoC (rename / add / remove), persisted locally.
+  // Pump health is recomputed by the brain whenever the wells change.
+  const [wells, setWells] = useState<Well[]>(data.wells);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("watersense.wells");
+      if (raw) setWells(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("watersense.wells", JSON.stringify(wells));
+    } catch {
+      /* ignore */
+    }
+  }, [wells]);
+  const pumps = useMemo(() => wells.map((w) => assessPump(w, w.ok ? 0 : 18)), [wells]);
+  const updateWell = (id: string, patch: Partial<Well>) =>
+    setWells((prev) => prev.map((w) => (w.id === id ? { ...w, ...patch, ok: (patch.currentFlowLph ?? w.currentFlowLph) <= (patch.sustainableFlowLph ?? w.sustainableFlowLph) } : w)));
+  const addWell = () =>
+    setWells((prev) => [
+      ...prev,
+      { id: `well-${Date.now()}`, name: `Pozo nuevo ${prev.length + 1}`, currentFlowLph: 5000, sustainableFlowLph: 6000, depthM: 90, ratedStarts: 18000, starts: 2000, ok: true, lat: ranch.lat + (Math.random() - 0.5) * 0.01, lng: ranch.lng + (Math.random() - 0.5) * 0.01 },
+    ]);
+  const removeWell = (id: string) => setWells((prev) => prev.filter((w) => w.id !== id));
+
   return (
     <div style={{ minHeight: "100vh", height: "100vh", background: th.bg, color: th.ink, display: "flex", transition: "background .35s" }}>
       <style>{`.nav:hover{background:${th.panel2}!important;color:${th.ink}!important}`}</style>
@@ -114,10 +142,10 @@ export function Dashboard({ data }: { data: DashboardData }) {
       <Sidebar th={th} mode={mode} view={view} setView={go} tr={tr} costs={data.costs} ranch={ranch} mobile={isMobile} open={navOpen} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} ranch={ranch} regions={data.regions} onMenu={isMobile ? () => setNavOpen((o) => !o) : undefined} />
-        <KpiStrip th={th} tr={tr} costs={data.costs} parcels={allParcels} wells={data.wells} pumps={data.pumps} trends={data.trends} />
+        <KpiStrip th={th} tr={tr} costs={data.costs} parcels={allParcels} wells={wells} pumps={pumps} trends={data.trends} />
         <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           {view === "mapa" ? (
-            <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={data.wells} regions={data.regions} crops={data.crops} />
+            <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={wells} regions={data.regions} crops={data.crops} />
           ) : view === "costos" ? (
             <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={allParcels} />
           ) : view === "futuro" ? (
@@ -125,7 +153,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "estudio" ? (
             <StudyView th={th} tr={tr} ranch={ranch} />
           ) : view === "pozos" ? (
-            <PozosView th={th} tr={tr} wells={data.wells} pumps={data.pumps} aquifer={data.aquifer} />
+            <PozosView th={th} tr={tr} wells={wells} pumps={pumps} aquifer={data.aquifer} onUpdate={updateWell} onAdd={addWell} onRemove={removeWell} />
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : view === "ajustes" ? (
