@@ -134,6 +134,31 @@ export function Landing() {
         </div>
       </section>
 
+      {/* Anchor band — emotional hook + visual break between sections */}
+      <section style={{ position: "relative", background: `linear-gradient(110deg, ${C.brandNavy}, ${C.glacier} 58%, ${C.emerald})`, color: "#fff", overflow: "hidden" }}>
+        <svg viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true" style={{ position: "absolute", top: -1, left: 0, width: "100%", height: 56, display: "block" }}>
+          <path d="M0,42 C240,82 480,2 720,30 C960,58 1200,88 1440,40 L1440,0 L0,0 Z" fill={th.bg} />
+        </svg>
+        <div aria-hidden="true" style={{ position: "absolute", inset: 0, opacity: 0.08, backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "56px 56px" }} />
+        <div style={{ position: "relative", maxWidth: 980, margin: "0 auto", padding: `${space.x4 + space.lg}px ${space.x3}px ${space.x4}px`, textAlign: "center" }}>
+          <span className="mono" style={{ fontSize: fz.sm, fontWeight: 700, letterSpacing: ".12em", color: C.emeraldSoft }}>LA PREGUNTA QUE IMPORTA</span>
+          <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(30px, 5vw, 48px)", letterSpacing: "-0.02em", lineHeight: 1.1, margin: `${space.md}px 0` }}>
+            ¿Tu finca <span style={{ color: C.glacierSoft }}>sobrevive</span> la próxima década?
+          </h2>
+          <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", maxWidth: 680, margin: "0 auto", lineHeight: 1.6 }}>
+            WaterSense le pone <b style={{ color: "#fff" }}>fecha</b> y <b style={{ color: "#fff" }}>precio</b> a esa pregunta — y te muestra cómo ganar años de pozo.
+          </p>
+          <div style={{ display: "flex", gap: space.sm, justifyContent: "center", flexWrap: "wrap", margin: `${space.xl}px 0` }}>
+            {["Acuífero · sobreexplotado", "+12 años con el plan", "Riego en la hora más barata"].map((t) => (
+              <span key={t} style={{ fontSize: fz.sm, fontWeight: 600, background: "rgba(255,255,255,.13)", border: "1px solid rgba(255,255,255,.25)", borderRadius: radius.pill, padding: "8px 16px" }}>{t}</span>
+            ))}
+          </div>
+          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: C.brandNavy, fontSize: fz.md, fontWeight: 700, padding: "12px 24px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
+            Ver cuántos años le quedan a tu pozo <Icon name="arrow" size={16} color={C.brandNavy} />
+          </Link>
+        </div>
+      </section>
+
       {/* Why WaterSense — differentiators */}
       <section id="porque" style={{ background: th.panel, borderTop: `1px solid ${th.line}`, borderBottom: `1px solid ${th.line}` }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px` }}>

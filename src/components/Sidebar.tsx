@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { CostItem, RanchConfig } from "@/types/domain";
+import type { CostItem, RanchConfig, Region } from "@/types/domain";
 import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode, type Lang } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
@@ -32,6 +32,7 @@ export function Sidebar({
   tr,
   costs,
   ranch,
+  regions = [],
   mobile = false,
   open = false,
   lang,
@@ -44,6 +45,7 @@ export function Sidebar({
   tr: (s: string, t: string) => string;
   costs: CostItem[];
   ranch: RanchConfig;
+  regions?: Region[];
   mobile?: boolean;
   open?: boolean;
   lang?: Lang;
@@ -181,7 +183,7 @@ export function Sidebar({
         </div>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: fz.sm, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ranch.name}</div>
-          <div style={{ fontSize: fz.micro, color: th.mute }}>{ranch.hectares} ha · Chihuahua</div>
+          <div style={{ fontSize: fz.micro, color: th.mute, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ranch.hectares} ha · {(regions.find((r) => r.id === ranch.regionId)?.name ?? "Chihuahua").split(",")[0]}</div>
         </div>
       </div>
     </aside>
