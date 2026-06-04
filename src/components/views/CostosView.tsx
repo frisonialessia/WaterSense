@@ -18,6 +18,7 @@ interface CostEntry {
   fileName?: string;
   workers?: number; // nómina
   period?: Period; // nómina
+  workersList?: { name: string; amount: number }[]; // nómina desglosada
 }
 interface CustomCat {
   id: string;
@@ -84,12 +85,20 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
   const [period, setPeriod] = useState<Period>("semanal");
   const [addingCat, setAddingCat] = useState(false);
   const [newCat, setNewCat] = useState("");
+  const [payrollMode, setPayrollMode] = useState<"total" | "list">("total");
+  const [workerRows, setWorkerRows] = useState<{ name: string; amount: string }[]>([{ name: "", amount: "" }]);
 
   const isPayroll = cat === "mano";
+  const workersTotal = workerRows.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+  const usingList = isPayroll && payrollMode === "list";
+  const effectiveAmount = usingList ? workersTotal : parseFloat(amount) || 0;
 
   const add = () => {
-    const n = parseFloat(amount);
+    const n = usingList ? workersTotal : parseFloat(amount);
     if (!n || n <= 0) return;
+    const validRows = usingList
+      ? workerRows.filter((r) => (parseFloat(r.amount) || 0) > 0).map((r) => ({ name: r.name.trim() || tr("Trabajador", "Trabajador"), amount: Math.round(parseFloat(r.amount)) }))
+      : undefined;
     const entry: CostEntry = {
       id: `e-${Date.now()}`,
       category: cat,
@@ -97,12 +106,14 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
       date,
       recurring,
       fileName: fileName || undefined,
-      workers: isPayroll ? Number(workers) || undefined : undefined,
+      workers: isPayroll ? (usingList ? validRows?.length : Number(workers) || undefined) : undefined,
       period: isPayroll ? period : undefined,
+      workersList: validRows,
     };
     setEntries((e) => [entry, ...e]);
     setAmount("");
     setFileName("");
+    setWorkerRows([{ name: "", amount: "" }]);
   };
   const remove = (id: string) => setEntries((e) => e.filter((x) => x.id !== id));
   const addCategory = () => {
@@ -230,25 +241,55 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
               <button onClick={addCategory} style={{ ...inputStyle, cursor: "pointer", background: C.glacier, color: "#fff", border: "none", fontWeight: 600 }}>{tr("Crear", "Crear")}</button>
             </>
           )}
-          <div style={{ display: "flex", alignItems: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, paddingLeft: 10 }}>
-            <span style={{ color: th.mute, fontSize: fz.xs }}>$</span>
-            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={isPayroll ? tr("Total de la raya", "Total raya") : tr("Monto", "Monto")} style={{ ...inputStyle, border: "none", background: "transparent", width: 120 }} />
-          </div>
+          {!usingList ? (
+            <div style={{ display: "flex", alignItems: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, paddingLeft: 10 }}>
+              <span style={{ color: th.mute, fontSize: fz.xs }}>$</span>
+              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={isPayroll ? tr("Total de la raya", "Total raya") : tr("Monto", "Monto")} style={{ ...inputStyle, border: "none", background: "transparent", width: 120 }} />
+            </div>
+          ) : (
+            <span style={{ ...inputStyle, display: "inline-flex", alignItems: "center", gap: 6 }}>{tr("Total raya", "Total")}: <b className="mono" style={{ color: th.ink }}>${fmt(Math.round(workersTotal))}</b></span>
+          )}
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} aria-label={tr("Fecha", "Fecha")} />
         </div>
 
         {isPayroll && (
-          <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "center", marginBottom: space.sm }}>
-            <label style={{ fontSize: fz.xs, color: th.soft, display: "inline-flex", alignItems: "center", gap: 6 }}>
-              {tr("Jornaleros", "Jornaleros")}
-              <input type="number" value={workers} onChange={(e) => setWorkers(e.target.value)} style={{ ...inputStyle, width: 64 }} />
-            </label>
-            <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} style={inputStyle} aria-label={tr("Periodo", "Periodo")}>
-              <option value="semanal">{tr("Semanal", "Semanal")}</option>
-              <option value="quincenal">{tr("Quincenal", "Quincenal")}</option>
-              <option value="mensual">{tr("Mensual", "Mensual")}</option>
-            </select>
-            <span style={{ fontSize: fz.micro, color: th.mute }}>{tr("equivale a", "≈")} <b className="mono" style={{ color: th.ink }}>${fmt(Math.round((parseFloat(amount) || 0) * PERIOD_MULT[period]))}</b>/{tr("mes", "mes")}</span>
+          <div style={{ marginBottom: space.sm }}>
+            <div style={{ display: "flex", gap: 6, marginBottom: space.sm }}>
+              {(["total", "list"] as const).map((m) => (
+                <button key={m} onClick={() => setPayrollMode(m)} style={{ fontSize: fz.micro, fontWeight: 600, padding: "5px 11px", borderRadius: radius.pill, cursor: "pointer", border: `1px solid ${payrollMode === m ? C.glacier : th.line}`, background: payrollMode === m ? `${C.glacier}14` : th.panel2, color: payrollMode === m ? th.ink : th.soft }}>
+                  {m === "total" ? tr("Total rápido", "Total") : tr("Por trabajador", "Por trabajador")}
+                </button>
+              ))}
+            </div>
+            {usingList && (
+              <div style={{ marginBottom: space.sm }}>
+                {workerRows.map((r, i) => (
+                  <div key={i} style={{ display: "flex", gap: 6, marginBottom: 6, alignItems: "center" }}>
+                    <input value={r.name} onChange={(e) => setWorkerRows((rows) => rows.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} placeholder={tr("Nombre del trabajador", "Nombre")} style={{ ...inputStyle, flex: 1, minWidth: 120 }} />
+                    <div style={{ display: "flex", alignItems: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, paddingLeft: 10 }}>
+                      <span style={{ color: th.mute, fontSize: fz.xs }}>$</span>
+                      <input type="number" value={r.amount} onChange={(e) => setWorkerRows((rows) => rows.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} placeholder={tr("Monto", "Monto")} style={{ ...inputStyle, border: "none", background: "transparent", width: 100 }} />
+                    </div>
+                    <button onClick={() => setWorkerRows((rows) => (rows.length > 1 ? rows.filter((_, j) => j !== i) : rows))} aria-label={tr("Quitar", "Quitar")} style={{ background: "none", border: "none", cursor: "pointer", color: th.mute, fontSize: 13, padding: 2 }}>🗑</button>
+                  </div>
+                ))}
+                <button onClick={() => setWorkerRows((rows) => [...rows, { name: "", amount: "" }])} style={{ ...inputStyle, cursor: "pointer", color: C.glacier, fontWeight: 600 }}>+ {tr("trabajador", "trabajador")}</button>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "center" }}>
+              {!usingList && (
+                <label style={{ fontSize: fz.xs, color: th.soft, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  {tr("Jornaleros", "Jornaleros")}
+                  <input type="number" value={workers} onChange={(e) => setWorkers(e.target.value)} style={{ ...inputStyle, width: 64 }} />
+                </label>
+              )}
+              <select value={period} onChange={(e) => setPeriod(e.target.value as Period)} style={inputStyle} aria-label={tr("Periodo", "Periodo")}>
+                <option value="semanal">{tr("Semanal", "Semanal")}</option>
+                <option value="quincenal">{tr("Quincenal", "Quincenal")}</option>
+                <option value="mensual">{tr("Mensual", "Mensual")}</option>
+              </select>
+              <span style={{ fontSize: fz.micro, color: th.mute }}>{tr("equivale a", "≈")} <b className="mono" style={{ color: th.ink }}>${fmt(Math.round(effectiveAmount * PERIOD_MULT[period]))}</b>/{tr("mes", "mes")}</span>
+            </div>
           </div>
         )}
 
