@@ -169,7 +169,7 @@ export function FincaView({
       <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: `${space.x2}px ${space.x2}px`, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff" }}>
         <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes", "Auditoría contrafactual")}</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: space.md, flexWrap: "wrap" }}>
-          <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.hero }}>${fmt(saved)}</span>
+          <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(28px, 9vw, 40px)" }}>${fmt(saved)}</span>
           <span style={{ fontSize: fz.md, color: "rgba(255,255,255,.9)" }}>{tr("vs. regar como antes, sin WaterSense", "frente a patrón histórico")}</span>
         </div>
         <span style={{ display: "inline-block", marginTop: space.md, fontSize: fz.xs, fontWeight: 600, background: "rgba(255,255,255,.2)", padding: "4px 11px", borderRadius: radius.pill }}>

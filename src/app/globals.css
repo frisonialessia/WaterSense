@@ -57,6 +57,28 @@ button {
   }
 }
 
+/* Compact the dashboard top bar on phones (hide non-essential bits). */
+@media (max-width: 680px) {
+  .tb-hide-sm {
+    display: none !important;
+  }
+}
+
+/* KPI strip becomes a swipeable carousel on phones (saves vertical space). */
+@media (max-width: 760px) {
+  .kpi-strip {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .kpi-cell {
+    flex: 0 0 auto !important;
+    min-width: 64% !important;
+    scroll-snap-align: start;
+  }
+}
+
 /* On phones, the map view reflows: the map sits on top and the floating
    panels stack below it (instead of overlapping the map). */
 @media (max-width: 760px) {

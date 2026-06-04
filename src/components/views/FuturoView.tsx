@@ -124,7 +124,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
             </>
           ) : (
             <>
-              <span className="mono" style={{ fontWeight: 700, fontSize: fz.hero }}>{limitYear}</span>
+              <span className="mono" style={{ fontWeight: 700, fontSize: "clamp(30px, 10vw, 42px)" }}>{limitYear}</span>
               <span style={{ fontSize: fz.md, color: "rgba(255,255,255,.9)" }}>
                 {tr(`es el año en que tu pozo dejaría de dar agua (faltan ${(limitYear ?? BASE_YEAR) - BASE_YEAR} años)`, `año de inviabilidad estimado · ${(limitYear ?? BASE_YEAR) - BASE_YEAR} años`)}
               </span>

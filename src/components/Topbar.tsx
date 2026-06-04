@@ -132,6 +132,7 @@ export function Topbar({
           ]}
         />
         <div
+          className={online ? "tb-hide-sm" : undefined}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -155,7 +156,7 @@ export function Topbar({
           title={tr("Reporte para socios", "Reporte PDF")}
         >
           <Icon name="book" size={14} color={th.soft} />
-          {tr("Reporte", "Reporte")}
+          <span className="tb-hide-sm">{tr("Reporte", "Reporte")}</span>
         </Link>
         <button onClick={() => setMode(mode === "dark" ? "light" : "dark")} style={iconBtn} title={tr("Cambiar tema", "Tema")} aria-label={tr("Cambiar tema", "Cambiar tema")}>
           <Icon name={mode === "dark" ? "sun" : "moon"} size={15} color={th.soft} />

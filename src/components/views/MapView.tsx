@@ -56,6 +56,7 @@ export function MapView({
   const [layer, setLayer] = useState<Layer>("stress");
   const [selId, setSelId] = useState<string>(parcels[2]?.id ?? parcels[0]?.id ?? "");
   const [regionId, setRegionId] = useState<string>("");
+  const [collapsed, setCollapsed] = useState<{ calc: boolean; cal: boolean }>({ calc: false, cal: false });
 
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
@@ -316,6 +317,7 @@ export function MapView({
   const waterSaved = crop ? Math.round(crop.waterM3ha * sel.hectares * (1 - eff)) : 0;
   const costPerKg = crop && crop.yieldKgHa ? (crop.costHa / crop.yieldKgHa).toFixed(2) : "—";
 
+  const collapseBtn: React.CSSProperties = { background: "none", border: "none", cursor: "pointer", color: th.mute, fontSize: 16, lineHeight: 1, padding: "0 4px", fontWeight: 700 };
   const panel = (extra: React.CSSProperties): React.CSSProperties => ({
     position: "absolute",
     background: `${th.panel}f2`,
@@ -460,62 +462,74 @@ export function MapView({
         {/* crop cost calculator */}
         {sel && (
           <div className="ws-map-panel" style={panel({ top: space.md, right: space.md, width: 234 })}>
-            <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("Costo de riego", "Costo por cultivo")}</div>
-            <select value={sel.id} onChange={(e) => setSelId(e.target.value)} style={{ ...selectStyle, width: "100%", marginBottom: space.sm }} aria-label={tr("Parcela", "Parcela")}>
-              {parcels.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.sm }}>
-              {sel.crop} · {sel.hectares} ha{sel.irrigationSystem ? ` · ${sel.irrigationSystem}` : ""}{sel.soilType ? ` · ${tr("suelo", "suelo")} ${sel.soilType.toLowerCase()}` : ""}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: collapsed.calc ? 0 : space.sm }}>
+              <span style={labelStyle(th)}>{tr("Costo de riego", "Costo por cultivo")}</span>
+              <button onClick={() => setCollapsed((c) => ({ ...c, calc: !c.calc }))} style={collapseBtn} aria-label={tr("Plegar", "Plegar")}>{collapsed.calc ? "+" : "–"}</button>
             </div>
-            {growth && (
-              <div style={{ fontSize: fz.micro, color: th.soft, marginBottom: space.sm }}>
-                {tr("Etapa", "Etapa")}: <b style={{ color: th.ink }}>{growth.stage}</b> · {tr("demanda", "Kc")} {Math.round(growth.kc * 100)}%
-              </div>
-            )}
-            <Stat l={tr("Riega cada", "Frecuencia")} v={`${freqEff || crop?.freqDays || "—"} ${tr("días", "d")}`} />
-            <Stat l={tr("Agua al año", "Agua/año")} v={`${fmt(totalWater)} m³`} />
-            <Stat l={tr("Costo por hectárea", "$/ha año")} v={`$${fmt(crop?.costHa ?? 0)}`} c={C.glacier} />
-            <Stat l={tr("Costo por kilo", "$/kg")} v={`$${costPerKg}`} c={C.emerald} />
-            <Stat l={tr("Costo total al año", "Total/año")} v={`$${fmt(totalCost)}`} c={C.glacier} />
-            <Stat l={tr("Pozo asignado", "Pozo")} v={wellName ?? tr("sin asignar", "—")} last />
-            {eff < 1 && waterSaved > 0 && (
-              <div style={{ marginTop: space.sm, fontSize: fz.micro, color: C.emerald, fontWeight: 600 }}>
-                {tr(`Con ${sel.irrigationSystem?.toLowerCase()} ahorras ~${fmt(waterSaved)} m³/año`, `${sel.irrigationSystem}: −${fmt(waterSaved)} m³/año`)}
-              </div>
-            )}
-            {eff > 1 && (
-              <div style={{ marginTop: space.sm, fontSize: fz.micro, color: C.alert, fontWeight: 600 }}>
-                {tr(`Riego por gravedad: gastas ~${fmt(Math.abs(waterSaved))} m³/año de más`, `Gravedad: +${fmt(Math.abs(waterSaved))} m³/año`)}
-              </div>
+            {!collapsed.calc && (
+              <>
+                <select value={sel.id} onChange={(e) => setSelId(e.target.value)} style={{ ...selectStyle, width: "100%", marginBottom: space.sm }} aria-label={tr("Parcela", "Parcela")}>
+                  {parcels.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+                <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.sm }}>
+                  {sel.crop} · {sel.hectares} ha{sel.irrigationSystem ? ` · ${sel.irrigationSystem}` : ""}{sel.soilType ? ` · ${tr("suelo", "suelo")} ${sel.soilType.toLowerCase()}` : ""}
+                </div>
+                {growth && (
+                  <div style={{ fontSize: fz.micro, color: th.soft, marginBottom: space.sm }}>
+                    {tr("Etapa", "Etapa")}: <b style={{ color: th.ink }}>{growth.stage}</b> · {tr("demanda", "Kc")} {Math.round(growth.kc * 100)}%
+                  </div>
+                )}
+                <Stat l={tr("Riega cada", "Frecuencia")} v={`${freqEff || crop?.freqDays || "—"} ${tr("días", "d")}`} />
+                <Stat l={tr("Agua al año", "Agua/año")} v={`${fmt(totalWater)} m³`} />
+                <Stat l={tr("Costo por hectárea", "$/ha año")} v={`$${fmt(crop?.costHa ?? 0)}`} c={C.glacier} />
+                <Stat l={tr("Costo por kilo", "$/kg")} v={`$${costPerKg}`} c={C.emerald} />
+                <Stat l={tr("Costo total al año", "Total/año")} v={`$${fmt(totalCost)}`} c={C.glacier} />
+                <Stat l={tr("Pozo asignado", "Pozo")} v={wellName ?? tr("sin asignar", "—")} last />
+                {eff < 1 && waterSaved > 0 && (
+                  <div style={{ marginTop: space.sm, fontSize: fz.micro, color: C.emerald, fontWeight: 600 }}>
+                    {tr(`Con ${sel.irrigationSystem?.toLowerCase()} ahorras ~${fmt(waterSaved)} m³/año`, `${sel.irrigationSystem}: −${fmt(waterSaved)} m³/año`)}
+                  </div>
+                )}
+                {eff > 1 && (
+                  <div style={{ marginTop: space.sm, fontSize: fz.micro, color: C.alert, fontWeight: 600 }}>
+                    {tr(`Riego por gravedad: gastas ~${fmt(Math.abs(waterSaved))} m³/año de más`, `Gravedad: +${fmt(Math.abs(waterSaved))} m³/año`)}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
 
         {/* irrigation calendar */}
         <div className="ws-map-panel" style={panel({ bottom: space.md, left: space.md, right: space.md, padding: `${space.md}px ${space.lg}px` })}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: space.sm }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: collapsed.cal ? 0 : space.sm }}>
             <div style={labelStyle(th)}>{tr("Días de riego · próxima semana", "Calendario de riego · 7 días")}</div>
-            <span style={{ fontSize: fz.micro, color: th.mute }}>{tr("verde = toca regar", "programado por el motor")}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: space.sm }}>
+              {!collapsed.cal && <span className="tb-hide-sm" style={{ fontSize: fz.micro, color: th.mute }}>{tr("verde = toca regar", "programado por el motor")}</span>}
+              <button onClick={() => setCollapsed((c) => ({ ...c, cal: !c.cal }))} style={collapseBtn} aria-label={tr("Plegar", "Plegar")}>{collapsed.cal ? "+" : "–"}</button>
+            </div>
           </div>
-          <div style={{ display: "flex", gap: space.sm }}>
-            {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d, i) => {
-              const due = parcels.filter((p) => {
-                const f = cropMap[p.crop]?.freqDays ?? 7;
-                return (i + 1) % f === 0 || (i === 0 && p.stress > 0.6);
-              });
-              const rain = i === 3;
-              return (
-                <div key={i} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: radius.md, background: rain ? `${C.glacier}14` : due.length ? `${C.emerald}12` : th.panel2, border: `1px solid ${rain ? C.glacier + "44" : due.length ? C.emerald + "33" : th.line}` }}>
-                  <div style={{ fontSize: fz.micro, color: th.mute, marginBottom: 4 }}>{d}</div>
-                  <div className="mono" style={{ fontSize: fz.xs, fontWeight: 600, color: rain ? C.glacier : due.length ? C.emerald : th.mute }}>
-                    {rain ? tr("lluvia", "lluvia") : due.length ? `${due.length} ${tr("parc.", "p")}` : "—"}
+          {!collapsed.cal && (
+            <div style={{ display: "flex", gap: space.sm }}>
+              {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d, i) => {
+                const due = parcels.filter((p) => {
+                  const f = cropMap[p.crop]?.freqDays ?? 7;
+                  return (i + 1) % f === 0 || (i === 0 && p.stress > 0.6);
+                });
+                const rain = i === 3;
+                return (
+                  <div key={i} style={{ flex: 1, textAlign: "center", padding: "8px 4px", borderRadius: radius.md, background: rain ? `${C.glacier}14` : due.length ? `${C.emerald}12` : th.panel2, border: `1px solid ${rain ? C.glacier + "44" : due.length ? C.emerald + "33" : th.line}` }}>
+                    <div style={{ fontSize: fz.micro, color: th.mute, marginBottom: 4 }}>{d}</div>
+                    <div className="mono" style={{ fontSize: fz.xs, fontWeight: 600, color: rain ? C.glacier : due.length ? C.emerald : th.mute }}>
+                      {rain ? tr("lluvia", "lluvia") : due.length ? `${due.length} ${tr("parc.", "p")}` : "—"}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

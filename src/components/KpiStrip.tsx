@@ -40,6 +40,7 @@ export function KpiStrip({
 
   return (
     <div
+      className="kpi-strip"
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
@@ -50,6 +51,7 @@ export function KpiStrip({
       {items.map((it, i) => (
         <div
           key={it.label}
+          className="kpi-cell"
           style={{
             padding: `${space.md}px ${space.x2}px`,
             borderLeft: i === 0 ? "none" : `1px solid ${th.line}`,
