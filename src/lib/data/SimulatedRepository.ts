@@ -5,7 +5,7 @@
 // ============================================================
 
 import type { FarmRepository } from "./FarmRepository";
-import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends, AquiferNeighborhood } from "@/types/domain";
 
 const CROPS: Record<CropType, CropProfile> = {
   "Nogal pecanero": { crop: "Nogal pecanero", laminaM: 1.9, waterM3ha: 19000, costHa: 14200, freqDays: 7, yieldKgHa: 3200, pricePerKg: 75 },
@@ -143,6 +143,23 @@ export class SimulatedRepository implements FarmRepository {
       healthy: [3, 3, 2, 2, 3, 2, 2, 2],
       pumps: [72, 70, 69, 67, 66, 65, 64, 64],
       alerts: [0, 0, 1, 1, 0, 1, 1, 1],
+    };
+  }
+  async getAquiferNeighborhood(): Promise<AquiferNeighborhood> {
+    // Meoqui-Delicias (0833) is a real, officially overexploited aquifer.
+    // Concessions are simulated/anonymized; structured for real REPDA data.
+    return {
+      aquiferName: "Meoqui-Delicias (0833)",
+      status: "Sobreexplotado",
+      decreeYear: 2020,
+      totalUsersAprox: 2400,
+      concessions: [
+        { id: "c1", titular: "Productor agrícola (vecino N)", uso: "Agrícola", volumeM3Year: 480000, distanceKm: 1.2, status: "vigente" },
+        { id: "c2", titular: "Junta de agua potable", uso: "Público urbano", volumeM3Year: 1200000, distanceKm: 3.4, status: "vigente" },
+        { id: "c3", titular: "Unión de productores (nuez)", uso: "Agrícola", volumeM3Year: 920000, distanceKm: 4.1, status: "vigente" },
+        { id: "c4", titular: "Empacadora regional", uso: "Industrial", volumeM3Year: 150000, distanceKm: 5.0, status: "en trámite" },
+        { id: "c5", titular: "Rancho ganadero (sur)", uso: "Pecuario", volumeM3Year: 90000, distanceKm: 6.3, status: "vigente" },
+      ],
     };
   }
 }

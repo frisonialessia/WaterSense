@@ -120,6 +120,30 @@ export interface SavingsSummary {
   vsLastMonthPct: number;
 }
 
+/** A water-rights concession near the farm (REPDA-style, simulated). */
+export interface WaterConcession {
+  id: string;
+  /** holder (anonymized for the demo) */
+  titular: string;
+  uso: "Agrícola" | "Público urbano" | "Industrial" | "Pecuario";
+  /** concessioned annual volume, m³/year */
+  volumeM3Year: number;
+  /** distance from the farm, km */
+  distanceKm: number;
+  status: "vigente" | "en trámite" | "vencida";
+}
+
+/** The aquifer the farm shares + who else draws from it (REPDA/CONAGUA). */
+export interface AquiferNeighborhood {
+  aquiferName: string;
+  status: "Sobreexplotado" | "En equilibrio" | "Subexplotado";
+  /** year of the CONAGUA availability decree (DOF) */
+  decreeYear: number;
+  /** approximate number of registered users on the aquifer */
+  totalUsersAprox: number;
+  concessions: WaterConcession[];
+}
+
 /** Short historical series (recent weeks) backing the KPI sparklines. */
 export interface KpiTrends {
   /** monthly spend, $ */

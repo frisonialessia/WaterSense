@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends } from "@/types/domain";
+import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends, AquiferNeighborhood } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
 import { T, makeTr, type Lang, type ThemeMode } from "@/lib/theme";
 import { Sidebar, type ViewId } from "./Sidebar";
@@ -32,6 +32,7 @@ export interface DashboardData {
   actions: ScheduledAction[];
   savings: SavingsSummary;
   trends: KpiTrends;
+  aquifer: AquiferNeighborhood;
 }
 
 export function Dashboard({ data }: { data: DashboardData }) {
@@ -78,7 +79,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
           ) : view === "pozos" ? (
-            <PozosView th={th} tr={tr} wells={data.wells} pumps={data.pumps} />
+            <PozosView th={th} tr={tr} wells={data.wells} pumps={data.pumps} aquifer={data.aquifer} />
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : (
