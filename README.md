@@ -126,6 +126,64 @@ Todas las variables de entorno son **opcionales** y están documentadas en
 
 ---
 
+## Roadmap (qué sigue)
+
+- **Fase 1 · Prototipo — hoy ✅**
+  Panel completo, clima real (Open-Meteo) y precio de luz (CENACE) en vivo,
+  edición y persistencia local (sin nube), multi-rancho, PWA offline. Listo para demo.
+- **Fase 2 · Multi-usuario y nube**
+  Auth (Supabase Auth u OTP por WhatsApp), `ranch_id` por usuario con RLS, y
+  escritura real vía `SupabaseRepository` — el contrato (`FarmRepository`) y el
+  `supabase/schema.sql` ya están completos. Sincronización entre dispositivos.
+- **Fase 3 · Datos reales y telemetría**
+  Ingesta a la tabla `readings` (sensores de nivel/caudal/presión/kWh por
+  LoRaWAN o celular, o la captura manual que ya existe), cruce geoespacial
+  (PostGIS) para "vecinos a X km", y calibración del modelo del acuífero con
+  piezometría real de CONAGUA.
+- **Fase 4 · Inteligencia y automatización**
+  Agente con Claude sobre datos reales, alertas por WhatsApp (Twilio, endpoint
+  `/api/notify` listo), programación automática del riego en la ventana barata,
+  recomendación de cultivo según agua disponible, y reportes de huella
+  (m³/ton, kgCO₂e/ton) para financiamiento y compradores.
+
+## Alcances (hasta dónde puede crecer)
+
+- **De un rancho a muchos** (multi-rancho ya está en la UI) y de ahí a una
+  **región o distrito de riego**, agregando acuíferos y módulos.
+- **Cumplimiento hídrico:** índice de uso de concesión (extraído vs.
+  concesionado en REPDA) y trazabilidad para CONAGUA.
+- **Optimización de energía:** bombeo y demanda contratada (CFE/CENACE).
+- **Decisión de mercado:** ventana óptima de venta por cultivo.
+- **Replicable** a cualquier región agrícola de México: solo se cambian región,
+  acuífero, cultivos y tarifas en los catálogos.
+- **Métricas que habilita** (algunas ya en la app): `$/m³`, `kg/m³` (productividad
+  del agua), `kWh/m³` (eficiencia de bombeo), abatimiento m/año, margen por ha y
+  por cultivo, y costos por rubro (luz, agua, nómina, fertilizante, agroquímicos,
+  maquinaria, cosecha, fletes, renta, crédito…).
+
+## APIs y fuentes que se pueden conectar
+
+| Fuente | Qué aporta | Estado |
+|---|---|---|
+| **Open-Meteo** | Pronóstico, temperatura, lluvia | ✅ conectado (cliente) |
+| **CENACE** (PML) | Precio de luz por hora ($/kWh) | ✅ en vivo con respaldo (`/api/tariff`) |
+| **Anthropic (Claude)** | Asistente y estudio de riego con IA | ✅ opcional (`/api/agent`, `/api/study`) |
+| **MapLibre + teselas** (MapTiler/Mapbox) | Mapa y capas del campo | ✅ MapLibre (teselas configurables) |
+| **Supabase / Postgres / PocketBase** | Persistencia multi-usuario + auth | 🔌 `schema.sql` + contrato listos |
+| **CONAGUA · REPDA** | Concesiones y vecinos del acuífero | 🔌 estructura lista (`water_concessions`) |
+| **CONAGUA · Disponibilidad (DOF)** | Estado del acuífero, recarga vs. extracción | 🔌 por conectar (alimenta `aquiferModel`) |
+| **CONAGUA · red piezométrica** | Niveles freáticos / abatimiento | 🔌 por conectar (tabla `readings`) |
+| **CFE** (servicio/RPU, carga kW) | Desglose energético del recibo | 🔌 campos ya en Ajustes |
+| **SIAP / precios de mercado** | $/kg por cultivo, "¿cuándo vender?" | 🔌 por conectar (alimenta `marketModel`) |
+| **Twilio** (WhatsApp/SMS) | Envío real de alertas | 🔌 endpoint `/api/notify` listo |
+| **Sensores IoT** (LoRaWAN/MQTT → `/api/ingest`) | Nivel, caudal, presión, kWh, humedad | 🔌 POST de ingesta listo |
+
+> ✅ = conectado o listo para usar · 🔌 = contrato/estructura ya en el código, solo
+> falta la credencial o la fuente. Todas las variables viven en `.env.example` y
+> son **opcionales**: sin ninguna, la demo funciona completa con datos simulados.
+
+---
+
 ## Resumen honesto
 
 - **Cuentas necesarias para la demo:** ninguna. Para extender: GitHub y Vercel
