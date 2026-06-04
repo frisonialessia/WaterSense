@@ -91,6 +91,12 @@ button {
     display: none !important;
   }
 }
+/* Items moved into the mobile drawer (Simple/Técnico, DEMO badge). */
+@media (max-width: 860px) {
+  .tb-hide-md {
+    display: none !important;
+  }
+}
 
 /* KPI strip becomes a swipeable carousel on phones (saves vertical space). */
 @media (max-width: 760px) {

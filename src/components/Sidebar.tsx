@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { CostItem, RanchConfig } from "@/types/domain";
-import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode } from "@/lib/theme";
+import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode, type Lang } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 
@@ -34,6 +34,8 @@ export function Sidebar({
   ranch,
   mobile = false,
   open = false,
+  lang,
+  setLang,
 }: {
   th: Theme;
   mode: ThemeMode;
@@ -44,6 +46,8 @@ export function Sidebar({
   ranch: RanchConfig;
   mobile?: boolean;
   open?: boolean;
+  lang?: Lang;
+  setLang?: (l: Lang) => void;
 }) {
   const total = costs.reduce((s, c) => s + c.month, 0);
 
@@ -121,6 +125,17 @@ export function Sidebar({
           DEMO
         </span>
       </Link>
+
+      {mobile && lang && setLang && (
+        <div style={{ marginBottom: space.lg }}>
+          <div style={{ ...labelStyle(th), padding: `0 ${space.sm}px`, marginBottom: space.sm }}>{tr("Modo de lectura", "Modo")}</div>
+          <div style={{ display: "flex", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: 2 }}>
+            {([["simple", tr("Simple", "Simple")], ["tech", tr("Técnico", "Técnico")]] as [Lang, string][]).map(([v, l]) => (
+              <button key={v} onClick={() => setLang(v)} style={{ flex: 1, padding: "8px 0", borderRadius: radius.sm, border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: fz.xs, fontWeight: lang === v ? 600 : 500, background: lang === v ? th.panel : "transparent", color: lang === v ? th.ink : th.mute }}>{l}</button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div style={{ ...labelStyle(th), padding: `0 ${space.sm}px`, marginBottom: space.sm }}>{tr("Navegación", "Vistas")}</div>
       {TOP_ITEMS.map(renderItem)}

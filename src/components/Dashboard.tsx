@@ -187,7 +187,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
       {isMobile && navOpen && (
         <div onClick={() => setNavOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 40 }} />
       )}
-      <Sidebar th={th} mode={mode} view={view} setView={go} tr={tr} costs={data.costs} ranch={ranch} mobile={isMobile} open={navOpen} />
+      <Sidebar th={th} mode={mode} view={view} setView={go} tr={tr} costs={data.costs} ranch={ranch} mobile={isMobile} open={navOpen} lang={lang} setLang={setLang} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} ranch={ranch} regions={data.regions} ranches={ranches} activeRanchId={activeRanchId} onSwitchRanch={setActiveRanchId} onAddRanch={addRanch} onMenu={isMobile ? () => setNavOpen((o) => !o) : undefined} />
         <KpiStrip th={th} tr={tr} costs={data.costs} parcels={allParcels} wells={wells} pumps={pumps} trends={data.trends} />
