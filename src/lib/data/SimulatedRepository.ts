@@ -57,11 +57,11 @@ function fieldBoundary(lng: number, lat: number, hectares: number, seed: number)
 }
 
 const PARCELS_BASE: Omit<Parcel, "boundary">[] = [
-  { id: "nogal", name: "Parcela del nogal", crop: "Nogal pecanero", hectares: 9.2, stress: 0.22, lat: 28.196, lng: -105.476 },
-  { id: "alfalfa", name: "Parcela de alfalfa", crop: "Alfalfa", hectares: 7.5, stress: 0.31, lat: 28.188, lng: -105.477 },
-  { id: "chile", name: "Parcela del chile", crop: "Chile jalapeño", hectares: 5.1, stress: 0.82, lat: 28.1875, lng: -105.464 },
-  { id: "manzana", name: "Huerta de manzana", crop: "Manzano", hectares: 8.0, stress: 0.45, lat: 28.1925, lng: -105.469 },
-  { id: "maiz", name: "Parcela de maíz", crop: "Maíz forrajero", hectares: 8.2, stress: 0.58, lat: 28.184, lng: -105.471 },
+  { id: "nogal", name: "Parcela del nogal", crop: "Nogal pecanero", hectares: 9.2, stress: 0.22, lat: 28.196, lng: -105.476, irrigationSystem: "Goteo", soilType: "Franco", wellId: "grande", plantingDate: "2018-03-15" },
+  { id: "alfalfa", name: "Parcela de alfalfa", crop: "Alfalfa", hectares: 7.5, stress: 0.31, lat: 28.188, lng: -105.477, irrigationSystem: "Aspersión", soilType: "Franco", wellId: "grande", plantingDate: "2024-09-01" },
+  { id: "chile", name: "Parcela del chile", crop: "Chile jalapeño", hectares: 5.1, stress: 0.82, lat: 28.1875, lng: -105.464, irrigationSystem: "Goteo", soilType: "Arenoso", wellId: "chico", plantingDate: "2026-03-20" },
+  { id: "manzana", name: "Huerta de manzana", crop: "Manzano", hectares: 8.0, stress: 0.45, lat: 28.1925, lng: -105.469, irrigationSystem: "Aspersión", soilType: "Arcilloso", wellId: "norte", plantingDate: "2015-02-10" },
+  { id: "maiz", name: "Parcela de maíz", crop: "Maíz forrajero", hectares: 8.2, stress: 0.58, lat: 28.184, lng: -105.471, irrigationSystem: "Gravedad", soilType: "Franco", wellId: "norte", plantingDate: "2026-04-10" },
 ];
 
 const PARCELS: Parcel[] = PARCELS_BASE.map((p, i) => ({

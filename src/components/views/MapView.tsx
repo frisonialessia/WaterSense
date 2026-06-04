@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import type { Parcel, Well, Region, CropProfile, CropType } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, IrrigationSystem, SoilType } from "@/types/domain";
 import { C, fmt, space, fz, radius, shadow, labelStyle, stressColor, type Theme, type ThemeMode } from "@/lib/theme";
+import { irrigationEfficiency, soilFrequencyFactor, growthFromDate } from "@/lib/brain/irrigationFactors";
 
 const STYLE: Record<ThemeMode, string> = {
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
@@ -67,6 +68,10 @@ export function MapView({
   const [formName, setFormName] = useState("");
   const [formCrop, setFormCrop] = useState<CropType>(crops[0]?.crop ?? "Nogal pecanero");
   const [formStress, setFormStress] = useState(0.4);
+  const [formSystem, setFormSystem] = useState<IrrigationSystem>("Aspersión");
+  const [formSoil, setFormSoil] = useState<SoilType>("Franco");
+  const [formPlanting, setFormPlanting] = useState("");
+  const [formWell, setFormWell] = useState<string>("");
   const drawingRef = useRef(false);
   const drawPtsRef = useRef<[number, number][]>([]);
 
@@ -288,6 +293,10 @@ export function MapView({
       lat,
       lng,
       boundary: ring,
+      irrigationSystem: formSystem,
+      soilType: formSoil,
+      plantingDate: formPlanting || undefined,
+      wellId: formWell || undefined,
     };
     onAddParcel(parcel);
     setSelId(parcel.id);
@@ -296,8 +305,15 @@ export function MapView({
 
   const sel = parcels.find((p) => p.id === selId) ?? parcels[0];
   const crop = sel ? cropMap[sel.crop] : undefined;
-  const totalCost = crop ? Math.round(crop.costHa * sel.hectares) : 0;
-  const totalWater = crop ? Math.round(crop.waterM3ha * sel.hectares) : 0;
+  // Real adjustments from the farmer's choices:
+  const eff = irrigationEfficiency(sel?.irrigationSystem); // drip < sprinkler < gravity
+  const soilF = soilFrequencyFactor(sel?.soilType);
+  const growth = growthFromDate(sel?.plantingDate);
+  const wellName = sel?.wellId ? wells.find((w) => w.id === sel.wellId)?.name : undefined;
+  const totalWater = crop ? Math.round(crop.waterM3ha * sel.hectares * eff) : 0;
+  const totalCost = crop ? Math.round(crop.costHa * sel.hectares * (0.6 + 0.4 * eff)) : 0;
+  const freqEff = crop ? Math.max(1, Math.round(crop.freqDays * soilF)) : 0;
+  const waterSaved = crop ? Math.round(crop.waterM3ha * sel.hectares * (1 - eff)) : 0;
   const costPerKg = crop && crop.yieldKgHa ? (crop.costHa / crop.yieldKgHa).toFixed(2) : "—";
 
   const panel = (extra: React.CSSProperties): React.CSSProperties => ({
@@ -387,6 +403,18 @@ export function MapView({
                     <option key={c.crop} value={c.crop}>{c.crop}</option>
                   ))}
                 </select>
+                <select value={formSystem} onChange={(e) => setFormSystem(e.target.value as IrrigationSystem)} style={{ ...selectStyle, width: "100%", marginBottom: 6 }} aria-label={tr("Sistema de riego", "Riego")}>
+                  {(["Goteo", "Aspersión", "Gravedad"] as const).map((s) => (<option key={s} value={s}>{tr("Riego: ", "")}{s}</option>))}
+                </select>
+                <select value={formSoil} onChange={(e) => setFormSoil(e.target.value as SoilType)} style={{ ...selectStyle, width: "100%", marginBottom: 6 }} aria-label={tr("Tipo de suelo", "Suelo")}>
+                  {(["Arenoso", "Franco", "Arcilloso"] as const).map((s) => (<option key={s} value={s}>{tr("Suelo: ", "")}{s}</option>))}
+                </select>
+                <select value={formWell} onChange={(e) => setFormWell(e.target.value)} style={{ ...selectStyle, width: "100%", marginBottom: 6 }} aria-label={tr("Pozo", "Pozo")}>
+                  <option value="">{tr("Pozo: sin asignar", "Pozo: —")}</option>
+                  {wells.map((w) => (<option key={w.id} value={w.id}>{tr("Pozo: ", "")}{w.name}</option>))}
+                </select>
+                <div style={{ fontSize: fz.micro, color: th.soft, marginBottom: 2 }}>{tr("Fecha de siembra", "Siembra")}</div>
+                <input type="date" value={formPlanting} onChange={(e) => setFormPlanting(e.target.value)} style={{ ...selectStyle, width: "100%", marginBottom: 6 }} />
                 <div style={{ fontSize: fz.micro, color: th.mute, marginBottom: 2 }}>
                   {tr("Sed actual", "Estrés")}: <span className="mono" style={{ color: stressColor(formStress) }}>{Math.round(formStress * 100)}%</span>
                 </div>
@@ -438,12 +466,30 @@ export function MapView({
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.sm }}>{sel.crop} · {sel.hectares} ha</div>
-            <Stat l={tr("Riega cada", "Frecuencia")} v={`${crop?.freqDays ?? "—"} ${tr("días", "d")}`} />
+            <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.sm }}>
+              {sel.crop} · {sel.hectares} ha{sel.irrigationSystem ? ` · ${sel.irrigationSystem}` : ""}{sel.soilType ? ` · ${tr("suelo", "suelo")} ${sel.soilType.toLowerCase()}` : ""}
+            </div>
+            {growth && (
+              <div style={{ fontSize: fz.micro, color: th.soft, marginBottom: space.sm }}>
+                {tr("Etapa", "Etapa")}: <b style={{ color: th.ink }}>{growth.stage}</b> · {tr("demanda", "Kc")} {Math.round(growth.kc * 100)}%
+              </div>
+            )}
+            <Stat l={tr("Riega cada", "Frecuencia")} v={`${freqEff || crop?.freqDays || "—"} ${tr("días", "d")}`} />
             <Stat l={tr("Agua al año", "Agua/año")} v={`${fmt(totalWater)} m³`} />
             <Stat l={tr("Costo por hectárea", "$/ha año")} v={`$${fmt(crop?.costHa ?? 0)}`} c={C.glacier} />
             <Stat l={tr("Costo por kilo", "$/kg")} v={`$${costPerKg}`} c={C.emerald} />
-            <Stat l={tr("Costo total al año", "Total/año")} v={`$${fmt(totalCost)}`} last />
+            <Stat l={tr("Costo total al año", "Total/año")} v={`$${fmt(totalCost)}`} c={C.glacier} />
+            <Stat l={tr("Pozo asignado", "Pozo")} v={wellName ?? tr("sin asignar", "—")} last />
+            {eff < 1 && waterSaved > 0 && (
+              <div style={{ marginTop: space.sm, fontSize: fz.micro, color: C.emerald, fontWeight: 600 }}>
+                {tr(`Con ${sel.irrigationSystem?.toLowerCase()} ahorras ~${fmt(waterSaved)} m³/año`, `${sel.irrigationSystem}: −${fmt(waterSaved)} m³/año`)}
+              </div>
+            )}
+            {eff > 1 && (
+              <div style={{ marginTop: space.sm, fontSize: fz.micro, color: C.alert, fontWeight: 600 }}>
+                {tr(`Riego por gravedad: gastas ~${fmt(Math.abs(waterSaved))} m³/año de más`, `Gravedad: +${fmt(Math.abs(waterSaved))} m³/año`)}
+              </div>
+            )}
           </div>
         )}
 

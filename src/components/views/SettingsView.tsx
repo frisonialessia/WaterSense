@@ -67,6 +67,11 @@ export function SettingsView({
           <Field label={tr("Longitud", "Longitud")}><input type="number" step="0.0001" style={inputStyle} value={form.lng} onChange={(e) => set("lng", +e.target.value)} /></Field>
           <Field label={tr("Altitud (m)", "Altitud (m)")}><input type="number" style={inputStyle} value={form.altitudeM} onChange={(e) => set("altitudeM", +e.target.value)} /></Field>
           <Field label={tr("Superficie (ha)", "Superficie (ha)")}><input type="number" step="0.1" style={inputStyle} value={form.hectares} onChange={(e) => set("hectares", +e.target.value)} /></Field>
+          <Field label={tr("Tarifa de luz (CFE)", "Tarifa contratada")}>
+            <select style={inputStyle} value={form.tariffType} onChange={(e) => set("tariffType", e.target.value as RanchConfig["tariffType"])}>
+              {(["Nocturna (CFE)", "Horaria", "Fija"] as const).map((t) => (<option key={t} value={t}>{t}</option>))}
+            </select>
+          </Field>
         </div>
         <div style={{ marginTop: space.md }}>
           <Field label={tr("Notas", "Notas")}><textarea style={{ ...inputStyle, minHeight: 64, resize: "vertical" }} value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder={tr("Ej. dos turnos de riego, pozo nuevo en 2024…", "Notas operativas")} /></Field>

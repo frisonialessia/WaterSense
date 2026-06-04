@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, CropType } from "@/types/domain";
+import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, CropType, TariffType } from "@/types/domain";
 import { projectYield } from "@/lib/brain/yieldModel";
 import { assessStressRisk } from "@/lib/brain/stressRisk";
+import { tariffSavingsFactor } from "@/lib/brain/irrigationFactors";
 import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, stressColor, type Theme } from "@/lib/theme";
 import { Icon } from "../Icon";
 import type { ViewId } from "../Sidebar";
@@ -33,6 +34,7 @@ export function FincaView({
   parcels,
   crops,
   tariffCurve,
+  tariffType,
   forecast,
   actions,
   savings,
@@ -43,6 +45,7 @@ export function FincaView({
   parcels: Parcel[];
   crops: CropProfile[];
   tariffCurve: number[];
+  tariffType: TariffType;
   forecast: WeatherDay[];
   actions: ScheduledAction[];
   savings: SavingsSummary;
@@ -91,7 +94,7 @@ export function FincaView({
   useEffect(() => setWaterHour(cheapest), [cheapest]);
   const monthlyKwh = 9000; // representative monthly pumping energy
   const priceAt = tariffCurve[waterHour] ?? 1.8;
-  const whatIfSaved = Math.max(0, Math.round((peakPrice - priceAt) * monthlyKwh));
+  const whatIfSaved = Math.max(0, Math.round((peakPrice - priceAt) * monthlyKwh * tariffSavingsFactor(tariffType)));
 
   const cards = [
     { l: tr("Hoy debes regar", "Acción prioritaria"), v: risk?.parcel.name ?? tr("Parcela del chile", "Parcela chile"), s: tr("a las 2am · ahorras $90", "tarifa baja · 02:00"), c: C.alert, action: done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar"), onAct: () => setDone(true), solid: !done },

@@ -16,7 +16,7 @@ import { SettingsView } from "./views/SettingsView";
 import { StudyView } from "./views/StudyView";
 import { Agent } from "./Agent";
 
-const DEFAULT_RANCH: RanchConfig = { name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", notes: "" };
+const DEFAULT_RANCH: RanchConfig = { name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "" };
 
 const loader = (label: string) => () => <div style={{ padding: 30, fontSize: 13, color: "#84A0A8" }}>{label}</div>;
 
@@ -109,7 +109,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "ajustes" ? (
             <SettingsView th={th} tr={tr} ranch={ranch} setRanch={setRanch} regions={data.regions} crops={data.crops} />
           ) : (
-            <FincaView th={th} tr={tr} setView={setView} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} forecast={data.forecast} actions={data.actions} savings={data.savings} />
+            <FincaView th={th} tr={tr} setView={setView} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
         </div>
       </main>

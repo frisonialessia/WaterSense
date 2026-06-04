@@ -40,6 +40,10 @@ export interface CropProfile {
   pricePerKg: number;
 }
 
+export type IrrigationSystem = "Goteo" | "Aspersión" | "Gravedad";
+export type SoilType = "Arenoso" | "Franco" | "Arcilloso";
+export type TariffType = "Nocturna (CFE)" | "Horaria" | "Fija";
+
 export interface Parcel {
   id: string;
   name: string;
@@ -55,6 +59,14 @@ export interface Parcel {
    * is the polygon the farmer drew on the map.
    */
   boundary?: [number, number][];
+  /** irrigation method — changes water efficiency */
+  irrigationSystem?: IrrigationSystem;
+  /** soil texture — changes watering frequency */
+  soilType?: SoilType;
+  /** planting date (ISO) — derives the crop growth stage */
+  plantingDate?: string;
+  /** well that irrigates this parcel (links consumption ↔ pump) */
+  wellId?: string;
 }
 
 export interface Well {
@@ -166,6 +178,8 @@ export interface RanchConfig {
   altitudeM: number;
   hectares: number;
   mainCrop: CropType;
+  /** contracted CFE tariff — refines the energy savings */
+  tariffType: TariffType;
   notes: string;
 }
 
