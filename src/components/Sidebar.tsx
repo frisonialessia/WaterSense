@@ -1,11 +1,12 @@
 "use client";
 
-import type { CostItem } from "@/types/domain";
+import Link from "next/link";
+import type { CostItem, RanchConfig } from "@/types/domain";
 import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 
-export type ViewId = "finca" | "mapa" | "costos" | "futuro" | "pozos" | "docs";
+export type ViewId = "finca" | "mapa" | "costos" | "futuro" | "pozos" | "docs" | "ajustes";
 
 const ITEMS: { id: ViewId; icon: string; s: string; t: string }[] = [
   { id: "finca", icon: "home", s: "Mi rancho", t: "Auditoría" },
@@ -14,6 +15,7 @@ const ITEMS: { id: ViewId; icon: string; s: string; t: string }[] = [
   { id: "futuro", icon: "chart", s: "Futuro del agua", t: "Proyección acuífero" },
   { id: "pozos", icon: "wrench", s: "Mis pozos", t: "Salud de pozos" },
   { id: "docs", icon: "book", s: "Ayuda", t: "Documentación" },
+  { id: "ajustes", icon: "sliders", s: "Ajustes", t: "Configuración" },
 ];
 
 export function Sidebar({
@@ -23,6 +25,7 @@ export function Sidebar({
   setView,
   tr,
   costs,
+  ranch,
 }: {
   th: Theme;
   mode: ThemeMode;
@@ -30,6 +33,7 @@ export function Sidebar({
   setView: (v: ViewId) => void;
   tr: (s: string, t: string) => string;
   costs: CostItem[];
+  ranch: RanchConfig;
 }) {
   const total = costs.reduce((s, c) => s + c.month, 0);
   return (
@@ -44,7 +48,7 @@ export function Sidebar({
         flexShrink: 0,
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: space.sm, padding: `0 ${space.sm}px`, marginBottom: space.x2 }}>
+      <Link href="/" title={tr("Ir al inicio", "Inicio")} style={{ display: "flex", alignItems: "center", gap: space.sm, padding: `0 ${space.sm}px`, marginBottom: space.x2, textDecoration: "none", color: "inherit" }}>
         <Logo size={26} light={mode === "dark"} />
         <b style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.md, letterSpacing: "-0.02em", flex: 1 }}>WaterSense</b>
         <span
@@ -60,7 +64,7 @@ export function Sidebar({
         >
           DEMO
         </span>
-      </div>
+      </Link>
 
       <div style={{ ...labelStyle(th), padding: `0 ${space.sm}px`, marginBottom: space.sm }}>{tr("Navegación", "Vistas")}</div>
       {ITEMS.map((it) => {
@@ -137,11 +141,11 @@ export function Sidebar({
             flexShrink: 0,
           }}
         >
-          R
+          {(ranch.name || "R").charAt(0).toUpperCase()}
         </div>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: fz.sm, fontWeight: 600 }}>Rancho El Álamo</div>
-          <div style={{ fontSize: fz.micro, color: th.mute }}>38 ha · Chihuahua</div>
+          <div style={{ fontSize: fz.sm, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ranch.name}</div>
+          <div style={{ fontSize: fz.micro, color: th.mute }}>{ranch.hectares} ha · Chihuahua</div>
         </div>
       </div>
     </aside>

@@ -144,6 +144,19 @@ export interface AquiferNeighborhood {
   concessions: WaterConcession[];
 }
 
+/** User-editable ranch settings (persisted client-side in the PoC). */
+export interface RanchConfig {
+  name: string;
+  owner: string;
+  regionId: string;
+  lat: number;
+  lng: number;
+  altitudeM: number;
+  hectares: number;
+  mainCrop: CropType;
+  notes: string;
+}
+
 /** Short historical series (recent weeks) backing the KPI sparklines. */
 export interface KpiTrends {
   /** monthly spend, $ */

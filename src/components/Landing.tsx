@@ -230,19 +230,21 @@ export function Landing() {
       </section>
 
       {/* Closing CTA */}
-      <section style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, textAlign: "center" }}>
-        <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, letterSpacing: "-0.01em", marginBottom: space.sm }}>
-          Mira el futuro de tu rancho en 2 minutos
-        </h2>
-        <p style={{ fontSize: fz.md, color: th.soft, marginBottom: space.lg, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
-          Sin registro, sin instalar nada. Entra a la demo y recorre tu rancho, tus pozos, tus costos y tu acuífero.
-        </p>
-        <Link
-          href="/dashboard"
-          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "13px 26px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}
-        >
-          Entrar a la demo <Icon name="arrow" size={16} color="#fff" />
-        </Link>
+      <section style={{ position: "relative", backgroundImage: `linear-gradient(${C.brandNavy}d9, ${C.brandNavy}d9), url('/landing/agave.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, textAlign: "center" }}>
+          <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, letterSpacing: "-0.01em", marginBottom: space.sm, color: "#fff" }}>
+            Mira el futuro de tu rancho en 2 minutos
+          </h2>
+          <p style={{ fontSize: fz.md, color: "rgba(255,255,255,.9)", marginBottom: space.lg, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+            Sin registro, sin instalar nada. Entra a la demo y recorre tu rancho, tus pozos, tus costos y tu acuífero.
+          </p>
+          <Link
+            href="/dashboard"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: C.brandNavy, fontSize: fz.md, fontWeight: 700, padding: "13px 26px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}
+          >
+            Entrar a la demo <Icon name="arrow" size={16} color={C.brandNavy} />
+          </Link>
+        </div>
       </section>
 
       {/* Footer */}

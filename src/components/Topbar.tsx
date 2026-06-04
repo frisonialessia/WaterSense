@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { RanchConfig, Region } from "@/types/domain";
 import { C, FONT, radius, space, fz, type Lang, type Theme, type ThemeMode } from "@/lib/theme";
 import { Icon } from "./Icon";
 import type { ViewId } from "./Sidebar";
@@ -52,6 +53,8 @@ export function Topbar({
   setLang,
   tr,
   view,
+  ranch,
+  regions,
 }: {
   th: Theme;
   mode: ThemeMode;
@@ -60,6 +63,8 @@ export function Topbar({
   setLang: (l: Lang) => void;
   tr: (s: string, t: string) => string;
   view: ViewId;
+  ranch: RanchConfig;
+  regions: Region[];
 }) {
   const titles: Record<ViewId, string> = {
     mapa: tr("Mapa del campo", "Command map · campo"),
@@ -68,7 +73,9 @@ export function Topbar({
     futuro: tr("Futuro del agua", "Proyección del acuífero"),
     pozos: tr("Mis pozos", "Salud de pozos"),
     docs: tr("Ayuda", "Documentación"),
+    ajustes: tr("Ajustes", "Configuración"),
   };
+  const regionName = regions.find((r) => r.id === ranch.regionId)?.name ?? "Chihuahua";
   const iconBtn: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
@@ -87,7 +94,7 @@ export function Topbar({
       <div>
         <h1 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.lg, letterSpacing: "-0.01em" }}>{titles[view]}</h1>
         <div className="mono" style={{ fontSize: fz.micro, color: th.mute, marginTop: 2 }}>
-          {tr("Rancho El Álamo · Delicias, Chihuahua", "28.190° N · 105.470° O · Delicias, Chihuahua")}
+          {tr(`${ranch.name} · ${regionName}`, `${ranch.lat.toFixed(3)}° N · ${Math.abs(ranch.lng).toFixed(3)}° O · ${regionName}`)}
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: space.sm }}>
