@@ -162,6 +162,13 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
           <div style={{ height: 230 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={{ top: 6, right: 10, bottom: 0, left: -16 }}>
+                <defs>
+                  <linearGradient id="futuroLine" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={C.emerald} />
+                    <stop offset="55%" stopColor={C.alert} />
+                    <stop offset="100%" stopColor={C.critical} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid stroke={th.line} strokeDasharray="3 3" vertical={false} />
                 <ReferenceArea y1={CRITICAL_LEVEL} y2={CRITICAL_LEVEL + 12} fill={C.critical} fillOpacity={0.08} />
                 <ReferenceLine y={CRITICAL_LEVEL} stroke={C.critical} strokeDasharray="5 4" label={{ value: tr("pozo inviable", "límite crítico"), position: "insideTopLeft", fontSize: 10, fill: C.critical }} />
@@ -173,12 +180,12 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
                   formatter={(v: number, n) => [`${v} m`, n === "plan" ? tr("tu plan", "escenario") : tr("no hacer nada", "línea base")]}
                 />
                 <Line type="monotone" dataKey="base" stroke={th.mute} strokeWidth={1.5} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
-                <Line type="monotone" dataKey="plan" stroke={planColor} strokeWidth={2.5} dot={false} isAnimationActive={false} />
+                <Line type="monotone" dataKey="plan" stroke="url(#futuroLine)" strokeWidth={3} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div style={{ display: "flex", gap: space.lg, marginTop: space.sm, fontSize: fz.micro, color: th.soft }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 2.5, background: planColor }} />{tr("tu plan", "escenario")}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 2.5, background: `linear-gradient(90deg,${C.emerald},${C.alert},${C.critical})` }} />{tr("tu plan", "escenario")}</span>
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, borderTop: `2px dashed ${th.mute}` }} />{tr("si no haces nada", "línea base")}</span>
           </div>
         </div>

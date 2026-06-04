@@ -106,6 +106,9 @@ const SCHEDULED_ACTIONS: ScheduledAction[] = [
   { text: "Riego nocturno · Parcela del nogal", time: "02:00", tone: "emerald" },
   { text: "Bajar caudal · Pozo chico", time: "06:30", tone: "alert" },
   { text: "Pausa por lluvia prevista · 2 parcelas", time: "jueves", tone: "glacier" },
+  { text: "Reparto de bombeo · Pozo grande + norte", time: "03:15", tone: "emerald" },
+  { text: "Riego de la parcela del chile", time: "01:00", tone: "emerald" },
+  { text: "Aviso de mantenimiento · Pozo chico", time: "viernes", tone: "alert" },
 ];
 
 export class SimulatedRepository implements FarmRepository {

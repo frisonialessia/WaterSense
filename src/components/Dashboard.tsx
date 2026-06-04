@@ -131,7 +131,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "ajustes" ? (
             <SettingsView th={th} tr={tr} ranch={ranch} setRanch={setRanch} regions={data.regions} crops={data.crops} />
           ) : (
-            <FincaView th={th} tr={tr} setView={go} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} forecast={data.forecast} actions={data.actions} savings={data.savings} />
+            <FincaView th={th} tr={tr} setView={go} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} lat={ranch.lat} lng={ranch.lng} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
         </div>
       </main>

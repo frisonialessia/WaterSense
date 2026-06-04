@@ -35,6 +35,8 @@ export function FincaView({
   crops,
   tariffCurve,
   tariffType,
+  lat,
+  lng,
   forecast,
   actions,
   savings,
@@ -46,14 +48,43 @@ export function FincaView({
   crops: CropProfile[];
   tariffCurve: number[];
   tariffType: TariffType;
+  lat: number;
+  lng: number;
   forecast: WeatherDay[];
   actions: ScheduledAction[];
   savings: SavingsSummary;
 }) {
   const saved = useCount(savings.amountThisMonth);
   const [done, setDone] = useState(false);
-  const rainDay = forecast.find((f) => f.rainMm >= 10);
   const healthy = parcels.filter((p) => p.stress < 0.5).length;
+
+  // Real Chihuahua weather via Open-Meteo (free, no key). Falls back to the
+  // simulated forecast if the call fails (offline / blocked).
+  const [liveForecast, setLiveForecast] = useState<WeatherDay[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,precipitation_sum&forecast_days=5&timezone=auto`)
+      .then((r) => r.json())
+      .then((d) => {
+        const t: string[] = d?.daily?.time;
+        const tmax: number[] = d?.daily?.temperature_2m_max;
+        const pr: number[] = d?.daily?.precipitation_sum;
+        if (!t || !tmax || !pr) return;
+        const days: WeatherDay[] = t.slice(0, 5).map((iso, i) => {
+          const rainMm = Math.round(pr[i] ?? 0);
+          const icon = rainMm >= 3 ? "rain" : rainMm >= 0.5 ? "cloud" : "sun";
+          const wd = i === 0 ? "Hoy" : new Date(`${iso}T12:00`).toLocaleDateString("es-MX", { weekday: "short" });
+          return { day: wd.charAt(0).toUpperCase() + wd.slice(1, 3), icon, tempMax: Math.round(tmax[i]), rainMm };
+        });
+        if (!cancelled) setLiveForecast(days);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [lat, lng]);
+  const fc = liveForecast ?? forecast;
+  const rainDay = fc.find((f) => f.rainMm >= 10);
 
   const cropMap = useMemo(() => {
     const m = {} as Record<CropType, CropProfile>;
@@ -195,10 +226,18 @@ export function FincaView({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md }}>
         {/* weather + rain impact */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
-          <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("El clima y tu riego", "Pronóstico · impacto en riego")}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+            <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("El clima y tu riego", "Pronóstico · impacto en riego")}</div>
+            {liveForecast && (
+              <span style={{ fontSize: fz.micro, color: C.emerald, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emerald }} />
+                {tr("clima real", "Open-Meteo")}
+              </span>
+            )}
+          </div>
           <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.lg }}>{tr("Delicias · próximos 5 días", "Delicias, Chihuahua · 5 días")}</div>
           <div style={{ display: "flex", gap: space.sm, marginBottom: space.lg }}>
-            {forecast.map((f, i) => (
+            {fc.map((f, i) => (
               <div key={i} style={{ flex: 1, textAlign: "center", padding: "12px 4px", borderRadius: radius.md, background: f.rainMm >= 10 ? `${C.glacier}14` : th.panel2, border: `1px solid ${f.rainMm >= 10 ? C.glacier + "44" : th.line}` }}>
                 <div style={{ fontSize: fz.micro, color: th.mute, marginBottom: 7 }}>{f.day}</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 7 }}>

@@ -64,7 +64,7 @@ export function Landing() {
             { href: "#porque", label: "Por qué WaterSense" },
             { href: "#fuentes", label: "Datos" },
           ].map((l) => (
-            <a key={l.href} href={l.href} style={{ fontSize: fz.sm, color: th.soft, textDecoration: "none", fontWeight: 500 }}>
+            <a key={l.href} href={l.href} className="lnav" style={{ fontSize: fz.sm, color: th.soft, textDecoration: "none", fontWeight: 500 }}>
               {l.label}
             </a>
           ))}
@@ -118,7 +118,7 @@ export function Landing() {
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: space.md }}>
           {PILLARS.map((p, i) => (
-            <div key={p.title} style={{ background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, padding: space.xl }}>
+            <div key={p.title} className="lcard" style={{ background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, padding: space.xl }}>
               <div style={{ display: "flex", alignItems: "center", gap: space.sm, marginBottom: space.md }}>
                 <span style={{ width: 34, height: 34, borderRadius: radius.md, background: th.panel2, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <Icon name={p.icon} size={18} color={C.glacier} />
@@ -149,7 +149,7 @@ export function Landing() {
               { icon: "bolt", t: "Energía + agua + cultivo, juntos", b: "El gran costo del bombeo es la luz. Cruzamos la tarifa eléctrica (CENACE) con la sed del cultivo para elegir la hora exacta de riego." },
               { icon: "home", t: "En tu idioma, sin hardware para empezar", b: "Español claro, modo simple o técnico, y arranque con bajo costo: conectas sensores y datos reales cuando estés listo, sin rehacer nada." },
             ].map((d) => (
-              <div key={d.t} style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.lg, padding: space.xl }}>
+              <div key={d.t} className="lcard" style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.lg, padding: space.xl }}>
                 <span style={{ width: 34, height: 34, borderRadius: radius.md, background: th.panel, border: `1px solid ${th.line}`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: space.md }}>
                   <Icon name={d.icon} size={18} color={C.emerald} />
                 </span>
@@ -161,49 +161,53 @@ export function Landing() {
         </div>
       </section>
 
-      {/* Stat band */}
-      <section id="fuentes" style={{ background: `linear-gradient(110deg,${C.brandNavy}f2,${C.glacier}cc 60%,${C.emerald}cc), url('/landing/agua.jpg') center/cover`, color: "#fff" }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: space.xl }}>
-          {[
-            { v: "3", l: "motores de decisión", s: "riego, acuífero y salud de pozos" },
-            { v: "100%", l: "simulado, hoy", s: "estructurado para datos reales" },
-            { v: "CFE · CONAGUA · CENACE", l: "fuentes previstas", s: "energía, derechos y precio spot" },
-          ].map((s) => (
-            <div key={s.l}>
-              <div className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl }}>{s.v}</div>
-              <div style={{ fontSize: fz.sm, fontWeight: 600, marginTop: 4 }}>{s.l}</div>
-              <div style={{ fontSize: fz.xs, color: "rgba(255,255,255,.8)", marginTop: 2 }}>{s.s}</div>
-            </div>
-          ))}
+      {/* Stat band — contained card, with air around it */}
+      <section id="fuentes" style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px` }}>
+        <div style={{ borderRadius: radius.lg, overflow: "hidden", boxShadow: shadow.lg, color: "#fff", backgroundImage: `linear-gradient(110deg,${C.brandNavy}f2,${C.glacier}cc 60%,${C.emerald}cc), url('/landing/agua.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
+          <div style={{ padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: space.xl }}>
+            {[
+              { v: "3", l: "motores de decisión", s: "riego, acuífero y salud de pozos" },
+              { v: "100%", l: "simulado, hoy", s: "estructurado para datos reales" },
+              { v: "CFE · CONAGUA · CENACE", l: "fuentes previstas", s: "energía, derechos y precio spot" },
+            ].map((s) => (
+              <div key={s.l}>
+                <div className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl }}>{s.v}</div>
+                <div style={{ fontSize: fz.sm, fontWeight: 600, marginTop: 4 }}>{s.l}</div>
+                <div style={{ fontSize: fz.xs, color: "rgba(255,255,255,.8)", marginTop: 2 }}>{s.s}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Human band */}
-      <section style={{ position: "relative", minHeight: 360, display: "flex", alignItems: "flex-end", backgroundImage: `linear-gradient(0deg, ${th.bg} 3%, transparent 55%), linear-gradient(90deg, ${C.brandNavy}b3, ${C.brandNavy}33 55%, transparent 75%), url('/landing/agricultor.jpg')`, backgroundSize: "cover", backgroundPosition: "center 28%" }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, width: "100%" }}>
-          <div style={{ maxWidth: 560 }}>
-            <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, lineHeight: 1.2, color: "#fff" }}>
+      {/* Human — two columns: photo + text, plenty of air */}
+      <section style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px` }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: space.x3, alignItems: "center" }}>
+          <div style={{ borderRadius: radius.lg, overflow: "hidden", boxShadow: shadow.lg, minHeight: 340, backgroundImage: `url('/landing/agricultor.jpg')`, backgroundSize: "cover", backgroundPosition: "center 22%" }} />
+          <div>
+            <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".05em" }}>PARA EL CAMPO, NO PARA EL LABORATORIO</span>
+            <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 30, lineHeight: 1.15, letterSpacing: "-0.01em", color: th.ink, margin: `${space.sm}px 0 ${space.md}px` }}>
               Hecho para quien trabaja la tierra, no para el ingeniero.
             </h2>
-            <p style={{ fontSize: fz.md, color: "rgba(255,255,255,.92)", marginTop: space.sm, lineHeight: 1.6 }}>
+            <p style={{ fontSize: fz.lg, color: th.soft, lineHeight: 1.6, maxWidth: 520 }}>
               Español claro, lenguaje de rancho y decisiones con dinero de por medio. Te decimos qué hacer hoy con tu agua — sin jerga, sin complicarte.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Closing CTA */}
-      <section style={{ position: "relative", backgroundImage: `linear-gradient(${C.brandNavy}d9, ${C.brandNavy}d9), url('/landing/agave.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, textAlign: "center" }}>
-          <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, letterSpacing: "-0.01em", marginBottom: space.sm, color: "#fff" }}>
+      {/* Closing CTA — full-bleed agave, generous space */}
+      <section style={{ position: "relative", backgroundImage: `linear-gradient(${C.brandNavy}e6, ${C.brandNavy}cc), url('/landing/agave.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ maxWidth: 920, margin: "0 auto", padding: `${space.x4 + space.x2}px ${space.x3}px`, textAlign: "center" }}>
+          <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 38, letterSpacing: "-0.01em", marginBottom: space.md, color: "#fff", lineHeight: 1.1 }}>
             Mira el futuro de tu rancho en 2 minutos
           </h2>
-          <p style={{ fontSize: fz.md, color: "rgba(255,255,255,.9)", marginBottom: space.lg, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+          <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", marginBottom: space.xl, maxWidth: 560, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
             Sin registro, sin instalar nada. Entra a la demo y recorre tu rancho, tus pozos, tus costos y tu acuífero.
           </p>
           <Link
             href="/dashboard"
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: C.brandNavy, fontSize: fz.md, fontWeight: 700, padding: "13px 26px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: C.brandNavy, fontSize: fz.md, fontWeight: 700, padding: "14px 28px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}
           >
             Entrar a la demo <Icon name="arrow" size={16} color={C.brandNavy} />
           </Link>

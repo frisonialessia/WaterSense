@@ -70,11 +70,18 @@ export function HeroSimulator() {
           <span>sobreexplotas</span>
         </div>
 
-        {/* chart */}
+        {/* chart — line shaded green → orange → red as the water gets deeper */}
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%" }}>
+          <defs>
+            <linearGradient id="hsLine" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={C.emerald} />
+              <stop offset="55%" stopColor={C.alert} />
+              <stop offset="100%" stopColor={C.critical} />
+            </linearGradient>
+          </defs>
           <rect x="0" y={yv(CRIT)} width={W} height={H - yv(CRIT)} fill={C.critical} opacity="0.07" />
           <line x1="0" y1={yv(CRIT)} x2={W} y2={yv(CRIT)} stroke={C.critical} strokeWidth="1" strokeDasharray="5 4" />
-          <polyline points={pts} fill="none" stroke={planColor} strokeWidth="2.5" />
+          <polyline points={pts} fill="none" stroke="url(#hsLine)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: th.mute, marginTop: 2 }}>
           <span>{BASE_YEAR}</span>
