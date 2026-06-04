@@ -76,3 +76,16 @@ button {
   background: #1e4034;
   border-radius: 4px;
 }
+
+/* One-page partner report: hide controls and force white on print. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  @page {
+    margin: 14mm;
+  }
+}

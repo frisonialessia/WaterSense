@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { C, FONT, radius, space, fz, type Lang, type Theme, type ThemeMode } from "@/lib/theme";
 import { Icon } from "./Icon";
 import type { ViewId } from "./Sidebar";
@@ -115,6 +116,15 @@ export function Topbar({
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emerald }} />
           <span className="mono">{tr("En línea", "8 sensores · 3 pozos")}</span>
         </div>
+        <Link
+          href="/reporte"
+          target="_blank"
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: fz.xs, fontWeight: 600, color: th.soft, background: th.panel2, border: `1px solid ${th.line}`, padding: "6px 11px", borderRadius: radius.md, textDecoration: "none" }}
+          title={tr("Reporte para socios", "Reporte PDF")}
+        >
+          <Icon name="book" size={14} color={th.soft} />
+          {tr("Reporte", "Reporte")}
+        </Link>
         <button onClick={() => setMode(mode === "dark" ? "light" : "dark")} style={iconBtn} title={tr("Cambiar tema", "Tema")} aria-label={tr("Cambiar tema", "Cambiar tema")}>
           <Icon name={mode === "dark" ? "sun" : "moon"} size={15} color={th.soft} />
         </button>
