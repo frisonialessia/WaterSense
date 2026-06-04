@@ -50,6 +50,12 @@ button {
 .lnav:hover {
   color: #0b2030 !important;
 }
+/* On phones, hide the secondary nav links (keep logo + CTA). */
+@media (max-width: 760px) {
+  .lnav-group {
+    display: none !important;
+  }
+}
 
 @keyframes spin {
   to {

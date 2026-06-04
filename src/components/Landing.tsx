@@ -59,18 +59,20 @@ export function Landing() {
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: space.lg }}>
-          {[
-            { href: "#pilares", label: "Qué hace" },
-            { href: "#porque", label: "Por qué WaterSense" },
-            { href: "#fuentes", label: "Datos" },
-          ].map((l) => (
-            <a key={l.href} href={l.href} className="lnav" style={{ fontSize: fz.sm, color: th.soft, textDecoration: "none", fontWeight: 500 }}>
-              {l.label}
-            </a>
-          ))}
+          <div className="lnav-group" style={{ display: "flex", alignItems: "center", gap: space.lg }}>
+            {[
+              { href: "#pilares", label: "Qué hace" },
+              { href: "#porque", label: "Por qué WaterSense" },
+              { href: "#fuentes", label: "Datos" },
+            ].map((l) => (
+              <a key={l.href} href={l.href} className="lnav" style={{ fontSize: fz.sm, color: th.soft, textDecoration: "none", fontWeight: 500, whiteSpace: "nowrap" }}>
+                {l.label}
+              </a>
+            ))}
+          </div>
           <Link
             href="/dashboard"
-            style={{ display: "inline-flex", alignItems: "center", gap: 7, background: C.glacier, color: "#fff", fontSize: fz.sm, fontWeight: 600, padding: "8px 16px", borderRadius: radius.md, textDecoration: "none" }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, background: C.glacier, color: "#fff", fontSize: fz.sm, fontWeight: 600, padding: "8px 16px", borderRadius: radius.md, textDecoration: "none", whiteSpace: "nowrap" }}
           >
             Entrar a la demo <Icon name="arrow" size={15} color="#fff" />
           </Link>
@@ -85,7 +87,7 @@ export function Landing() {
             <span className="mono" style={{ fontSize: fz.sm, color: C.emeraldSoft, fontWeight: 600, letterSpacing: ".05em" }}>
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
             </span>
-            <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 56, lineHeight: 1.05, letterSpacing: "-0.02em", margin: `${space.lg}px 0`, color: "#fff" }}>
+            <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(34px, 7vw, 56px)", lineHeight: 1.06, letterSpacing: "-0.02em", margin: `${space.lg}px 0`, color: "#fff" }}>
               Optimiza la <span style={{ color: C.glacierSoft }}>energía de tus pozos</span>. Maximiza la <span style={{ color: C.emeraldSoft }}>ganancia de tu rancho</span>.
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
@@ -186,7 +188,7 @@ export function Landing() {
           <div style={{ borderRadius: radius.lg, overflow: "hidden", boxShadow: shadow.lg, minHeight: 340, backgroundImage: `url('/landing/agricultor.jpg')`, backgroundSize: "cover", backgroundPosition: "center 22%" }} />
           <div>
             <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".05em" }}>PARA EL CAMPO, NO PARA EL LABORATORIO</span>
-            <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 30, lineHeight: 1.15, letterSpacing: "-0.01em", color: th.ink, margin: `${space.sm}px 0 ${space.md}px` }}>
+            <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(24px, 4.5vw, 30px)", lineHeight: 1.15, letterSpacing: "-0.01em", color: th.ink, margin: `${space.sm}px 0 ${space.md}px` }}>
               Hecho para quien trabaja la tierra, no para el ingeniero.
             </h2>
             <p style={{ fontSize: fz.lg, color: th.soft, lineHeight: 1.6, maxWidth: 520 }}>
@@ -199,7 +201,7 @@ export function Landing() {
       {/* Closing CTA — full-bleed agave, generous space */}
       <section style={{ position: "relative", backgroundImage: `linear-gradient(${C.brandNavy}e6, ${C.brandNavy}cc), url('/landing/agave.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
         <div style={{ maxWidth: 920, margin: "0 auto", padding: `${space.x4 + space.x2}px ${space.x3}px`, textAlign: "center" }}>
-          <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 38, letterSpacing: "-0.01em", marginBottom: space.md, color: "#fff", lineHeight: 1.1 }}>
+          <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(26px, 5vw, 38px)", letterSpacing: "-0.01em", marginBottom: space.md, color: "#fff", lineHeight: 1.1 }}>
             Mira el futuro de tu rancho en 2 minutos
           </h2>
           <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", marginBottom: space.xl, maxWidth: 560, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
