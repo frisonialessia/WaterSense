@@ -14,8 +14,13 @@ interface Levers {
   extraction: number;
   rainReuse: number;
   drainReuse: number;
+  rechargeMAR: number;
+  wastewaterReuse: number;
+  runoffCapture: number;
   neighbors: number;
 }
+
+const ZERO: Levers = { extraction: 100, rainReuse: 0, drainReuse: 0, rechargeMAR: 0, wastewaterReuse: 0, runoffCapture: 0, neighbors: 3 };
 
 async function fetchProjection(l: Levers): Promise<AquiferProjection> {
   const res = await fetch("/api/aquifer", {
@@ -26,20 +31,23 @@ async function fetchProjection(l: Levers): Promise<AquiferProjection> {
       neighbors: l.neighbors,
       rainReuse: l.rainReuse / 100,
       drainReuse: l.drainReuse / 100,
+      rechargeMAR: l.rechargeMAR / 100,
+      wastewaterReuse: l.wastewaterReuse / 100,
+      runoffCapture: l.runoffCapture / 100,
     }),
   });
   return res.json();
 }
 
 export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) => string }) {
-  const [lev, setLev] = useState<Levers>({ extraction: 100, rainReuse: 0, drainReuse: 0, neighbors: 3 });
+  const [lev, setLev] = useState<Levers>({ ...ZERO });
   const [proj, setProj] = useState<AquiferProjection | null>(null);
   const [base, setBase] = useState<AquiferProjection | null>(null);
   const [loading, setLoading] = useState(false);
 
   // baseline (do-nothing) fetched once from the brain
   useEffect(() => {
-    fetchProjection({ extraction: 100, rainReuse: 0, drainReuse: 0, neighbors: 3 }).then(setBase);
+    fetchProjection({ ...ZERO }).then(setBase);
   }, []);
 
   // current scenario, debounced so dragging a slider doesn't spam the API
@@ -75,15 +83,16 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
     base: base ? Math.round(base.levels[i]) : undefined,
   }));
 
-  const capex = Math.round(lev.rainReuse * 900 + lev.drainReuse * 1400);
-  const payback = Math.max(1, Math.round(capex / Math.max(1, (lev.rainReuse + lev.drainReuse) * 180)));
+  const reuseSum = lev.rainReuse + lev.drainReuse + lev.rechargeMAR + lev.wastewaterReuse + lev.runoffCapture;
+  const capex = Math.round(lev.rainReuse * 900 + lev.drainReuse * 1400 + lev.rechargeMAR * 2000 + lev.wastewaterReuse * 1100 + lev.runoffCapture * 600);
+  const payback = Math.max(1, Math.round(capex / Math.max(1, reuseSum * 180)));
 
-  const presets = [
-    { n: tr("No hacer nada", "Línea base"), v: { extraction: 100, rainReuse: 0, drainReuse: 0, neighbors: 3 } },
-    { n: tr("Sobreexplotación", "Sobreexplotación"), v: { extraction: 125, rainReuse: 0, drainReuse: 0, neighbors: 6 } },
-    { n: tr("Plan conservador", "Conservador"), v: { extraction: 90, rainReuse: 30, drainReuse: 15, neighbors: 3 } },
-    { n: tr("Plan agresivo", "Agresivo"), v: { extraction: 70, rainReuse: 70, drainReuse: 50, neighbors: 3 } },
-    { n: tr("Plan regenerativo", "Regenerativo"), v: { extraction: 60, rainReuse: 100, drainReuse: 80, neighbors: 2 } },
+  const presets: { n: string; v: Levers }[] = [
+    { n: tr("No hacer nada", "Línea base"), v: { ...ZERO } },
+    { n: tr("Sobreexplotación", "Sobreexplotación"), v: { ...ZERO, extraction: 125, neighbors: 6 } },
+    { n: tr("Plan conservador", "Conservador"), v: { ...ZERO, extraction: 90, rainReuse: 30, drainReuse: 15, runoffCapture: 20 } },
+    { n: tr("Plan agresivo", "Agresivo"), v: { ...ZERO, extraction: 70, rainReuse: 70, drainReuse: 50, wastewaterReuse: 40 } },
+    { n: tr("Plan regenerativo", "Regenerativo"), v: { ...ZERO, extraction: 60, rainReuse: 100, drainReuse: 80, rechargeMAR: 60, wastewaterReuse: 60, runoffCapture: 50, neighbors: 2 } },
   ];
 
   const Lever = ({ label, sub, k, min, max, unit, color, cost }: { label: string; sub: string; k: keyof Levers; min: number; max: number; unit: string; color: string; cost?: string }) => (
@@ -144,8 +153,11 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
           <Lever label={tr("Cuánta agua extraes", "Extracción")} sub={tr("100% = lo que sacas hoy", "% de extracción actual")} k="extraction" min={50} max={130} unit="%" color={C.glacier} />
           <Lever label={tr("Reúsas agua de lluvia", "Reúso de lluvia")} sub={tr("Captar lluvia reduce lo que sacas", "% de lluvia captada")} k="rainReuse" min={0} max={100} unit="%" color={C.emerald} cost={`~$${fmt(Math.round(lev.rainReuse * 900))}`} />
           <Lever label={tr("Reúsas agua de drenaje", "Reúso de drenaje")} sub={tr("Tratar y reusar drenaje agrícola", "% de drenaje reusado")} k="drainReuse" min={0} max={100} unit="%" color={C.emerald} cost={`~$${fmt(Math.round(lev.drainReuse * 1400))}`} />
+          <Lever label={tr("Recargas tu acuífero", "Recarga gestionada (MAR)")} sub={tr("Metes agua de vuelta al subsuelo con balsas de infiltración o pozos de inyección.", "Infiltración / inyección al acuífero")} k="rechargeMAR" min={0} max={100} unit="%" color={C.glacier} cost={`~$${fmt(Math.round(lev.rechargeMAR * 2000))}`} />
+          <Lever label={tr("Reúsas agua tratada", "Aguas residuales tratadas")} sub={tr("Agua de la ciudad o de proceso, ya tratada, para regar en vez de sacar del pozo.", "Reúso de agua residual tratada")} k="wastewaterReuse" min={0} max={100} unit="%" color={C.emerald} cost={`~$${fmt(Math.round(lev.wastewaterReuse * 1100))}`} />
+          <Lever label={tr("Atrapas escurrimientos", "Captación de escurrimientos")} sub={tr("Bordos, ollas de agua y presas de gaviones que detienen la lluvia para que se infiltre.", "Bordos / ollas / check dams")} k="runoffCapture" min={0} max={100} unit="%" color={C.emerald} cost={`~$${fmt(Math.round(lev.runoffCapture * 600))}`} />
           <Lever label={tr("Vecinos en tu acuífero", "Usuarios del acuífero")} sub={tr("Otros que sacan del mismo acuífero. No lo controlas, pero afecta tu futuro.", "Extractores compartiendo el acuífero")} k="neighbors" min={0} max={8} unit="" color={C.alert} />
-          {(lev.rainReuse > 0 || lev.drainReuse > 0) && (
+          {reuseSum > 0 && (
             <div style={{ marginTop: 6, padding: `${space.md}px ${space.md}px`, borderRadius: radius.md, background: `${C.emerald}10`, border: `1px solid ${C.emerald}30`, fontSize: fz.xs, color: th.ink, lineHeight: 1.5 }}>
               {tr(`Inversión total ~$${fmt(capex)}. Se paga en ~${payback} años y te da +${yearsGained} años de pozo.`, `Capex ~$${fmt(capex)} · payback ~${payback} años · +${yearsGained} años de vida útil.`)}
             </div>

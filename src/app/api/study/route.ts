@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const cropMap = Object.fromEntries(crops.map((c) => [c.crop, c]));
 
     const pumps = wells.map((w) => assessPump(w, w.ok ? 0 : 18));
-    const aq = projectAquifer({ startLevelM: 78, criticalLevelM: 140, rechargeMPerYear: 2.2, baseExtractionM: 3.4, extractionFactor: 1, neighbors: 3, neighborDrawM: 0.9, rainReuse: 0, drainReuse: 0, horizonYears: 30, baseYear: new Date().getFullYear() });
+    const aq = projectAquifer({ startLevelM: 78, criticalLevelM: 140, rechargeMPerYear: 2.2, baseExtractionM: 3.4, extractionFactor: 1, neighbors: 3, neighborDrawM: 0.9, rainReuse: 0, drainReuse: 0, rechargeMAR: 0, wastewaterReuse: 0, runoffCapture: 0, horizonYears: 30, baseYear: new Date().getFullYear() });
 
     const parcelLines = parcels.map((p) => {
       const c = cropMap[p.crop];

@@ -32,7 +32,7 @@ export default async function ReportePage() {
   const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0);
   const totalIrrigCost = rows.reduce((s, r) => s + r.costYr, 0);
 
-  const aq = projectAquifer({ startLevelM: 78, criticalLevelM: 140, rechargeMPerYear: 2.2, baseExtractionM: 3.4, extractionFactor: 1, neighbors: 3, neighborDrawM: 0.9, rainReuse: 0, drainReuse: 0, horizonYears: 30, baseYear: new Date().getFullYear() });
+  const aq = projectAquifer({ startLevelM: 78, criticalLevelM: 140, rechargeMPerYear: 2.2, baseExtractionM: 3.4, extractionFactor: 1, neighbors: 3, neighborDrawM: 0.9, rainReuse: 0, drainReuse: 0, rechargeMAR: 0, wastewaterReuse: 0, runoffCapture: 0, horizonYears: 30, baseYear: new Date().getFullYear() });
 
   const month = new Date().toLocaleDateString("es-MX", { month: "long", year: "numeric" });
   const Cap = month.charAt(0).toUpperCase() + month.slice(1);

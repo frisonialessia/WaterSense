@@ -23,6 +23,9 @@ export function HeroSimulator() {
     neighborDrawM: 0.9,
     rainReuse: 0,
     drainReuse: 0,
+    rechargeMAR: 0,
+    wastewaterReuse: 0,
+    runoffCapture: 0,
     horizonYears: 30,
     baseYear: BASE_YEAR,
   });

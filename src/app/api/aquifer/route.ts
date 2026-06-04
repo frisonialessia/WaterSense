@@ -2,7 +2,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { projectAquifer, type AquiferInputs } from "@/lib/brain/aquiferModel";
 
-const DEFAULTS: Omit<AquiferInputs, "extractionFactor" | "neighbors" | "rainReuse" | "drainReuse"> = {
+const DEFAULTS: Omit<
+  AquiferInputs,
+  "extractionFactor" | "neighbors" | "rainReuse" | "drainReuse" | "rechargeMAR" | "wastewaterReuse" | "runoffCapture"
+> = {
   startLevelM: 78,
   criticalLevelM: 140,
   rechargeMPerYear: 2.2,
@@ -21,6 +24,9 @@ export async function POST(req: NextRequest) {
       neighbors: body.neighbors ?? 3,
       rainReuse: body.rainReuse ?? 0,
       drainReuse: body.drainReuse ?? 0,
+      rechargeMAR: body.rechargeMAR ?? 0,
+      wastewaterReuse: body.wastewaterReuse ?? 0,
+      runoffCapture: body.runoffCapture ?? 0,
     };
     return NextResponse.json(projectAquifer(inputs));
   } catch {

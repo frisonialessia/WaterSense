@@ -24,6 +24,12 @@ export interface AquiferInputs {
   rainReuse: number;
   /** 0..1 fraction of drainage water reused */
   drainReuse: number;
+  /** 0..1 managed aquifer recharge (infiltration basins / injection wells) */
+  rechargeMAR: number;
+  /** 0..1 treated wastewater reused for irrigation */
+  wastewaterReuse: number;
+  /** 0..1 runoff capture (check dams / bordos / ollas de agua) */
+  runoffCapture: number;
   /** projection horizon in years */
   horizonYears: number;
   /** calendar year of "now" */
@@ -44,7 +50,15 @@ export interface AquiferProjection {
 export function projectAquifer(i: AquiferInputs): AquiferProjection {
   const yourDraw = i.baseExtractionM * i.extractionFactor;
   const neighborDraw = i.neighborDrawM * i.neighbors;
-  const reuseOffset = i.rainReuse * 1.1 + i.drainReuse * 1.4;
+  // Each lever offsets the annual drop. Coefficients (m/yr at 100%) reflect
+  // how much each method puts back / saves: direct recharge (MAR) is strongest,
+  // then drainage/wastewater reuse, then rain & runoff capture.
+  const reuseOffset =
+    i.rainReuse * 1.1 +
+    i.drainReuse * 1.4 +
+    i.rechargeMAR * 1.6 +
+    i.wastewaterReuse * 1.2 +
+    i.runoffCapture * 0.9;
   const annualDropM = Math.max(-1, yourDraw + neighborDraw - i.rechargeMPerYear - reuseOffset);
 
   const levels: number[] = [];
