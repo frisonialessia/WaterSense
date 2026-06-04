@@ -183,6 +183,17 @@ export interface RanchConfig {
   /** contracted CFE tariff — refines the energy savings */
   tariffType: TariffType;
   notes: string;
+  // ── Optional but high-value once real data is connected ──
+  /** your own REPDA concession volume, m³/year (caps sustainable extraction) */
+  concessionM3Year?: number;
+  /** REPDA title number (título de concesión CONAGUA) */
+  concessionTitle?: string;
+  /** contracted electrical load, kW — sizes the energy bill */
+  contractedKw?: number;
+  /** CFE service number (RPU) for the energy account */
+  cfeService?: string;
+  /** phone / WhatsApp where alerts are sent */
+  phone?: string;
 }
 
 /** Short historical series (recent weeks) backing the KPI sparklines. */

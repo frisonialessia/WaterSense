@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Well, AquiferNeighborhood } from "@/types/domain";
+import type { Well, AquiferNeighborhood, WaterConcession } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
 import { PUMP_DIAGNOSES } from "@/lib/brain/pumpDiagnosis";
 import { C, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
@@ -19,6 +19,8 @@ export function PozosView({
   onUpdate,
   onAdd,
   onRemove,
+  onAddConcession,
+  onRemoveConcession,
 }: {
   th: Theme;
   tr: (s: string, t: string) => string;
@@ -28,11 +30,29 @@ export function PozosView({
   onUpdate: (id: string, patch: Partial<Well>) => void;
   onAdd: () => void;
   onRemove: (id: string) => void;
+  onAddConcession: (c: WaterConcession) => void;
+  onRemoveConcession: (id: string) => void;
 }) {
   const byId = new Map(pumps.map((p) => [p.wellId, p]));
   const [diagId, setDiagId] = useState(PUMP_DIAGNOSES[0].id);
   const [selId, setSelId] = useState<string>(wells[0]?.id ?? "");
   const [editId, setEditId] = useState<string | null>(null);
+  const [addingNb, setAddingNb] = useState(false);
+  const [nb, setNb] = useState<{ titular: string; uso: WaterConcession["uso"]; volumeM3Year: string; distanceKm: string; levelTrendMPerYear: string; status: WaterConcession["status"] }>({ titular: "", uso: "Agrícola", volumeM3Year: "", distanceKm: "", levelTrendMPerYear: "", status: "vigente" });
+  const saveNb = () => {
+    if (!nb.titular.trim()) return;
+    onAddConcession({
+      id: `nb-${Date.now()}`,
+      titular: nb.titular.trim(),
+      uso: nb.uso,
+      volumeM3Year: Math.round(parseFloat(nb.volumeM3Year) || 0),
+      distanceKm: parseFloat(nb.distanceKm) || 0,
+      status: nb.status,
+      levelTrendMPerYear: nb.levelTrendMPerYear === "" ? undefined : parseFloat(nb.levelTrendMPerYear),
+    });
+    setNb({ titular: "", uso: "Agrícola", volumeM3Year: "", distanceKm: "", levelTrendMPerYear: "", status: "vigente" });
+    setAddingNb(false);
+  };
   const diag = PUMP_DIAGNOSES.find((d) => d.id === diagId) ?? PUMP_DIAGNOSES[0];
   const aquiferOver = aquifer.status === "Sobreexplotado";
   const selWell = wells.find((w) => w.id === selId) ?? wells[0];
@@ -176,7 +196,26 @@ export function PozosView({
           </div>
         )}
 
-        <div style={{ ...labelStyle(th), margin: `${space.md}px 0 ${space.sm}px` }}>{tr("Concesiones cerca de ti", "Concesiones próximas")}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: `${space.md}px 0 ${space.sm}px` }}>
+          <span style={labelStyle(th)}>{tr("Con quién compartes (vecinos)", "Concesiones próximas")}</span>
+          <button onClick={() => setAddingNb((v) => !v)} style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, padding: "5px 10px", fontSize: fz.micro, fontWeight: 600, color: addingNb ? th.mute : C.glacier, cursor: "pointer" }}>
+            {addingNb ? tr("Cancelar", "Cancelar") : `+ ${tr("Agregar vecino", "Agregar")}`}
+          </button>
+        </div>
+
+        {addingNb && (
+          <div style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: space.md, marginBottom: space.sm, display: "flex", flexWrap: "wrap", gap: space.sm, alignItems: "center" }}>
+            <input value={nb.titular} onChange={(e) => setNb((s) => ({ ...s, titular: e.target.value }))} placeholder={tr("Nombre o predio del vecino", "Titular")} style={{ ...numInput, flex: 1, minWidth: 160 }} />
+            <select value={nb.uso} onChange={(e) => setNb((s) => ({ ...s, uso: e.target.value as WaterConcession["uso"] }))} style={{ ...numInput, width: "auto" }} aria-label={tr("Uso", "Uso")}>
+              {(["Agrícola", "Público urbano", "Industrial", "Pecuario"] as const).map((u) => (<option key={u} value={u}>{u}</option>))}
+            </select>
+            <input type="number" value={nb.volumeM3Year} onChange={(e) => setNb((s) => ({ ...s, volumeM3Year: e.target.value }))} placeholder={tr("m³/año", "m³/año")} style={{ ...numInput, width: 110 }} />
+            <input type="number" value={nb.distanceKm} onChange={(e) => setNb((s) => ({ ...s, distanceKm: e.target.value }))} placeholder={tr("dist. km", "km")} style={{ ...numInput, width: 90 }} />
+            <input type="number" step="0.1" value={nb.levelTrendMPerYear} onChange={(e) => setNb((s) => ({ ...s, levelTrendMPerYear: e.target.value }))} placeholder={tr("nivel m/año (ej. -2.4)", "m/año")} style={{ ...numInput, width: 130 }} title={tr("Descenso del nivel: negativo si baja", "Tendencia del nivel freático")} />
+            <button onClick={saveNb} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.sm, padding: "7px 14px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer" }}>{tr("Guardar", "Guardar")}</button>
+          </div>
+        )}
+
         {aquifer.concessions.map((c, i) => {
           const trend = c.levelTrendMPerYear ?? 0;
           const trendColor = trend <= -2 ? C.critical : trend <= -1.2 ? C.alert : C.emerald;
@@ -186,10 +225,13 @@ export function PozosView({
                 <div style={{ fontSize: fz.sm, color: th.ink }}>{c.titular}</div>
                 <div className="mono" style={{ fontSize: fz.micro, color: th.mute }}>{c.uso} · {c.distanceKm} km{c.status !== "vigente" ? ` · ${c.status}` : ""}</div>
               </div>
-              <span className="mono" style={{ fontSize: fz.micro, fontWeight: 600, color: trendColor }} title={tr("descenso del nivel freático", "tendencia nivel")}>
-                {trend > 0 ? "↑" : "↓"} {Math.abs(trend)} m/{tr("año", "a")}
-              </span>
+              {trend !== 0 && (
+                <span className="mono" style={{ fontSize: fz.micro, fontWeight: 600, color: trendColor }} title={tr("descenso del nivel freático", "tendencia nivel")}>
+                  {trend > 0 ? "↑" : "↓"} {Math.abs(trend)} m/{tr("año", "a")}
+                </span>
+              )}
               <span className="mono" style={{ fontSize: fz.xs, color: th.soft }}>{fmt(c.volumeM3Year)} m³/{tr("año", "a")}</span>
+              <button onClick={() => onRemoveConcession(c.id)} aria-label={tr("Quitar vecino", "Quitar")} title={tr("Quitar", "Quitar")} style={{ background: "none", border: "none", cursor: "pointer", color: th.mute, padding: 2, fontSize: 13, lineHeight: 1 }}>🗑</button>
             </div>
           );
         })}

@@ -72,6 +72,11 @@ export function SettingsView({
               {(["Nocturna (CFE)", "Horaria", "Fija"] as const).map((t) => (<option key={t} value={t}>{t}</option>))}
             </select>
           </Field>
+          <Field label={tr("Carga contratada (kW)", "Carga contratada (kW)")}><input type="number" style={inputStyle} value={form.contractedKw ?? ""} onChange={(e) => set("contractedKw", e.target.value === "" ? undefined : +e.target.value)} placeholder={tr("ej. 110", "kW")} /></Field>
+          <Field label={tr("Número de servicio CFE (RPU)", "Servicio CFE / RPU")}><input style={inputStyle} value={form.cfeService ?? ""} onChange={(e) => set("cfeService", e.target.value)} placeholder={tr("opcional", "RPU")} /></Field>
+          <Field label={tr("Agua concesionada (m³/año)", "Volumen concesionado (m³/año)")}><input type="number" style={inputStyle} value={form.concessionM3Year ?? ""} onChange={(e) => set("concessionM3Year", e.target.value === "" ? undefined : +e.target.value)} placeholder={tr("lo que te autoriza CONAGUA", "REPDA m³/año")} /></Field>
+          <Field label={tr("Título de concesión (REPDA)", "Título REPDA")}><input style={inputStyle} value={form.concessionTitle ?? ""} onChange={(e) => set("concessionTitle", e.target.value)} placeholder={tr("opcional", "núm. de título")} /></Field>
+          <Field label={tr("Teléfono / WhatsApp (alertas)", "Teléfono / WhatsApp")}><input style={inputStyle} value={form.phone ?? ""} onChange={(e) => set("phone", e.target.value)} placeholder={tr("para avisarte de fallas", "+52…")} /></Field>
         </div>
         <div style={{ marginTop: space.md }}>
           <Field label={tr("Notas", "Notas")}><textarea style={{ ...inputStyle, minHeight: 64, resize: "vertical" }} value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder={tr("Ej. dos turnos de riego, pozo nuevo en 2024…", "Notas operativas")} /></Field>

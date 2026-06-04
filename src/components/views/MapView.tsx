@@ -238,19 +238,29 @@ export function MapView({
     if (!q || searching) return;
     setSearching(true);
     setSearchMsg("");
+    // A 4-5 digit query is a postal code: look it up nationwide (any city/state),
+    // not just inside Chihuahua. City names also resolve anywhere in México.
+    const isPostal = /^\d{4,5}$/.test(q);
+    const base = "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=mx";
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q + ", Chihuahua, México")}`;
-      const r = await fetch(url, { headers: { Accept: "application/json" } });
-      const data = await r.json();
+      const url = isPostal ? `${base}&postalcode=${encodeURIComponent(q)}` : `${base}&q=${encodeURIComponent(q + ", México")}`;
+      let r = await fetch(url, { headers: { Accept: "application/json" } });
+      let data = await r.json();
+      // Some postal codes don't resolve via the structured field; retry free-text.
+      if (isPostal && (!data || !data[0])) {
+        r = await fetch(`${base}&q=${encodeURIComponent("C.P. " + q + ", México")}`, { headers: { Accept: "application/json" } });
+        data = await r.json();
+      }
       if (data && data[0]) {
-        mapRef.current?.flyTo({ center: [+data[0].lon, +data[0].lat], zoom: 13, duration: 1200 });
-        setSearchMsg(tr("Ubicación fijada", "Fijado"));
+        const place = String(data[0].display_name ?? "").split(",").slice(0, 2).join(", ").trim();
+        mapRef.current?.flyTo({ center: [+data[0].lon, +data[0].lat], zoom: isPostal ? 13.5 : 12, duration: 1200 });
+        setSearchMsg(place ? `📍 ${place}` : tr("Ubicación fijada", "Fijado"));
       } else setSearchMsg(tr("No encontrado", "Sin resultados"));
     } catch {
       setSearchMsg(tr("Error de conexión", "Error"));
     } finally {
       setSearching(false);
-      setTimeout(() => setSearchMsg(""), 3000);
+      setTimeout(() => setSearchMsg(""), 4000);
     }
   };
 

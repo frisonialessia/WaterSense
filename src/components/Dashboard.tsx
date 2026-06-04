@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends, AquiferNeighborhood, RanchConfig } from "@/types/domain";
+import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends, AquiferNeighborhood, WaterConcession, RanchConfig } from "@/types/domain";
 import { assessPump, type PumpHealth } from "@/lib/brain/pumpHealth";
 import { T, makeTr, type Lang, type ThemeMode } from "@/lib/theme";
 import { Sidebar, type ViewId } from "./Sidebar";
@@ -16,7 +16,7 @@ import { SettingsView } from "./views/SettingsView";
 import { StudyView } from "./views/StudyView";
 import { Agent } from "./Agent";
 
-const DEFAULT_RANCH: RanchConfig = { name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "" };
+const DEFAULT_RANCH: RanchConfig = { name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "", concessionM3Year: 320000, concessionTitle: "", contractedKw: 110, cfeService: "", phone: "" };
 
 const loader = (label: string) => () => <div style={{ padding: 30, fontSize: 13, color: "#84A0A8" }}>{label}</div>;
 
@@ -133,6 +133,28 @@ export function Dashboard({ data }: { data: DashboardData }) {
     ]);
   const removeWell = (id: string) => setWells((prev) => prev.filter((w) => w.id !== id));
 
+  // Neighbors sharing the aquifer are editable too (add who you share water
+  // with), persisted locally. Seeded from the simulated REPDA list.
+  const [concessions, setConcessions] = useState<WaterConcession[]>(data.aquifer.concessions);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("watersense.concessions");
+      if (raw) setConcessions(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("watersense.concessions", JSON.stringify(concessions));
+    } catch {
+      /* ignore */
+    }
+  }, [concessions]);
+  const aquifer = useMemo(() => ({ ...data.aquifer, concessions }), [data.aquifer, concessions]);
+  const addConcession = (c: WaterConcession) => setConcessions((prev) => [...prev, c]);
+  const removeConcession = (id: string) => setConcessions((prev) => prev.filter((c) => c.id !== id));
+
   return (
     <div style={{ minHeight: "100vh", height: "100vh", background: th.bg, color: th.ink, display: "flex", transition: "background .35s" }}>
       <style>{`.nav:hover{background:${th.panel2}!important;color:${th.ink}!important}`}</style>
@@ -153,7 +175,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "estudio" ? (
             <StudyView th={th} tr={tr} ranch={ranch} />
           ) : view === "pozos" ? (
-            <PozosView th={th} tr={tr} wells={wells} pumps={pumps} aquifer={data.aquifer} onUpdate={updateWell} onAdd={addWell} onRemove={removeWell} />
+            <PozosView th={th} tr={tr} wells={wells} pumps={pumps} aquifer={aquifer} onUpdate={updateWell} onAdd={addWell} onRemove={removeWell} onAddConcession={addConcession} onRemoveConcession={removeConcession} />
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : view === "ajustes" ? (
