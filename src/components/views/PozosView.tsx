@@ -209,7 +209,6 @@ export function PozosView({
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }} onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => setEditId(w.id)} aria-label={tr("Editar", "Editar")} title={tr("Editar", "Editar")} style={iconBtn}><Icon name="sliders" size={14} color={th.soft} /></button>
-                      <button onClick={() => { if (wells.length > 1) onRemove(w.id); }} aria-label={tr("Quitar", "Quitar")} title={tr("Quitar", "Quitar")} style={{ ...iconBtn, fontSize: 13, lineHeight: 1 }}>🗑</button>
                       <div style={{ textAlign: "right", marginLeft: 6 }}>
                         <div className="mono" style={{ fontSize: fz.xl, fontWeight: 700, color: col }}>{p.health}%</div>
                         <div style={{ fontSize: fz.micro, color: th.mute }}>{tr("salud", "salud")}</div>
@@ -373,7 +372,6 @@ export function PozosView({
                 </span>
               )}
               <span className="mono" style={{ fontSize: fz.xs, color: th.soft }}>{fmt(c.volumeM3Year)} m³/{tr("año", "a")}</span>
-              <button onClick={() => onRemoveConcession(c.id)} aria-label={tr("Quitar vecino", "Quitar")} title={tr("Quitar", "Quitar")} style={{ background: "none", border: "none", cursor: "pointer", color: th.mute, padding: 2, fontSize: 13, lineHeight: 1 }}>🗑</button>
             </div>
           );
         })}

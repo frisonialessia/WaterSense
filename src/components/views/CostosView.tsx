@@ -422,7 +422,6 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops }: { th:
                   </div>
                 </div>
                 <span className="mono" style={{ fontSize: fz.sm, fontWeight: 600 }}>${fmt(e.amount)}</span>
-                <button onClick={() => remove(e.id)} aria-label={tr("Borrar", "Borrar")} title={tr("Borrar", "Borrar")} style={{ background: "none", border: "none", cursor: "pointer", color: th.mute, fontSize: 13, padding: 2 }}>🗑</button>
               </div>
             );
           })}

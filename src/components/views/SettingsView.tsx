@@ -67,9 +67,6 @@ export function SettingsView({
           {ranches.map((r) => (<option key={r.id} value={r.id}>{r.name}</option>))}
         </select>
         <button onClick={onAddRanch} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer" }}>+ {tr("Agregar rancho", "Agregar rancho")}</button>
-        {ranches.length > 1 && (
-          <button onClick={() => { if (confirm(tr(`¿Eliminar "${ranch.name}"?`, `¿Eliminar "${ranch.name}"?`))) onRemoveRanch(activeRanchId); }} style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: "9px 14px", fontSize: fz.xs, fontWeight: 600, color: C.critical, cursor: "pointer" }}>{tr("Eliminar este rancho", "Eliminar")}</button>
-        )}
         <span style={{ fontSize: fz.micro, color: th.mute, marginLeft: "auto" }}>{ranches.length} {ranches.length === 1 ? tr("rancho", "rancho") : tr("ranchos", "ranchos")}</span>
       </div>
 
