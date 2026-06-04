@@ -24,6 +24,8 @@ const PATHS: Record<string, string> = {
   spark: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18",
   sliders: "M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6",
   file: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6",
+  menu: "M3 6h18M3 12h18M3 18h18",
+  close: "M6 6l12 12M18 6L6 18",
 };
 
 export type IconName = keyof typeof PATHS;

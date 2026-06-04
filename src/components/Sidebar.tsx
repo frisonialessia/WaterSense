@@ -32,6 +32,8 @@ export function Sidebar({
   tr,
   costs,
   ranch,
+  mobile = false,
+  open = false,
 }: {
   th: Theme;
   mode: ThemeMode;
@@ -40,8 +42,14 @@ export function Sidebar({
   tr: (s: string, t: string) => string;
   costs: CostItem[];
   ranch: RanchConfig;
+  mobile?: boolean;
+  open?: boolean;
 }) {
   const total = costs.reduce((s, c) => s + c.month, 0);
+
+  const mobileStyle: React.CSSProperties = mobile
+    ? { position: "fixed", top: 0, bottom: 0, left: 0, zIndex: 41, transform: open ? "translateX(0)" : "translateX(-110%)", transition: "transform .25s ease", boxShadow: open ? "0 12px 40px rgba(0,0,0,.35)" : "none", width: 248 }
+    : {};
 
   const renderItem = (it: Item) => {
     const active = view === it.id;
@@ -93,6 +101,7 @@ export function Sidebar({
         display: "flex",
         flexDirection: "column",
         flexShrink: 0,
+        ...mobileStyle,
       }}
     >
       <Link href="/" title={tr("Ir al inicio", "Inicio")} style={{ display: "flex", alignItems: "center", gap: space.sm, padding: `0 ${space.sm}px`, marginBottom: space.x2, textDecoration: "none", color: "inherit" }}>

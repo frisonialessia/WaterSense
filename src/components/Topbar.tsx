@@ -55,6 +55,7 @@ export function Topbar({
   view,
   ranch,
   regions,
+  onMenu,
 }: {
   th: Theme;
   mode: ThemeMode;
@@ -65,6 +66,7 @@ export function Topbar({
   view: ViewId;
   ranch: RanchConfig;
   regions: Region[];
+  onMenu?: () => void;
 }) {
   const titles: Record<ViewId, string> = {
     mapa: tr("Mapa del campo", "Command map · campo"),
@@ -92,10 +94,17 @@ export function Topbar({
   };
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: `${space.md}px ${space.x2}px`, borderBottom: `1px solid ${th.line}`, background: th.panel, gap: space.md }}>
-      <div>
-        <h1 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.lg, letterSpacing: "-0.01em" }}>{titles[view]}</h1>
-        <div className="mono" style={{ fontSize: fz.micro, color: th.mute, marginTop: 2 }}>
-          {tr(`${ranch.name} · ${regionName}`, `${ranch.lat.toFixed(3)}° N · ${Math.abs(ranch.lng).toFixed(3)}° O · ${regionName}`)}
+      <div style={{ display: "flex", alignItems: "center", gap: space.sm, minWidth: 0 }}>
+        {onMenu && (
+          <button onClick={onMenu} aria-label={tr("Menú", "Menú")} style={{ ...iconBtn, flexShrink: 0 }}>
+            <Icon name="menu" size={16} color={th.soft} />
+          </button>
+        )}
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.lg, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titles[view]}</h1>
+          <div className="mono" style={{ fontSize: fz.micro, color: th.mute, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {tr(`${ranch.name} · ${regionName}`, `${ranch.lat.toFixed(3)}° N · ${Math.abs(ranch.lng).toFixed(3)}° O · ${regionName}`)}
+          </div>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: space.sm }}>

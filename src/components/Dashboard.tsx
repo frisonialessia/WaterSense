@@ -46,6 +46,25 @@ export function Dashboard({ data }: { data: DashboardData }) {
   const th = T[mode];
   const tr = makeTr(lang);
 
+  // Mobile: the sidebar becomes a slide-in drawer with a hamburger.
+  const [isMobile, setIsMobile] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 860px)");
+    const apply = () => {
+      setIsMobile(mq.matches);
+      if (!mq.matches) setNavOpen(false);
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+  // navigate + close drawer on mobile
+  const go = (v: ViewId) => {
+    setView(v);
+    setNavOpen(false);
+  };
+
   // Parcels the farmer draws live in the browser (localStorage) in the PoC.
   // In Fase 3 these would persist via repository.addParcel/removeParcel.
   const [userParcels, setUserParcels] = useState<Parcel[]>([]);
@@ -89,9 +108,12 @@ export function Dashboard({ data }: { data: DashboardData }) {
   return (
     <div style={{ minHeight: "100vh", height: "100vh", background: th.bg, color: th.ink, display: "flex", transition: "background .35s" }}>
       <style>{`.nav:hover{background:${th.panel2}!important;color:${th.ink}!important}`}</style>
-      <Sidebar th={th} mode={mode} view={view} setView={setView} tr={tr} costs={data.costs} ranch={ranch} />
+      {isMobile && navOpen && (
+        <div onClick={() => setNavOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 40 }} />
+      )}
+      <Sidebar th={th} mode={mode} view={view} setView={go} tr={tr} costs={data.costs} ranch={ranch} mobile={isMobile} open={navOpen} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} ranch={ranch} regions={data.regions} />
+        <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} ranch={ranch} regions={data.regions} onMenu={isMobile ? () => setNavOpen((o) => !o) : undefined} />
         <KpiStrip th={th} tr={tr} costs={data.costs} parcels={allParcels} wells={data.wells} pumps={data.pumps} trends={data.trends} />
         <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           {view === "mapa" ? (
@@ -109,7 +131,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "ajustes" ? (
             <SettingsView th={th} tr={tr} ranch={ranch} setRanch={setRanch} regions={data.regions} crops={data.crops} />
           ) : (
-            <FincaView th={th} tr={tr} setView={setView} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} forecast={data.forecast} actions={data.actions} savings={data.savings} />
+            <FincaView th={th} tr={tr} setView={go} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
         </div>
       </main>

@@ -42,7 +42,7 @@ export function KpiStrip({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${items.length}, 1fr)`,
+        gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
         borderBottom: `1px solid ${th.line}`,
         background: th.panel,
       }}
