@@ -65,7 +65,7 @@ export function FincaView({
   const [liveForecast, setLiveForecast] = useState<WeatherDay[] | null>(null);
   useEffect(() => {
     let cancelled = false;
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,precipitation_sum&forecast_days=5&timezone=auto`)
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,precipitation_sum&forecast_days=5&timezone=auto`, { signal: AbortSignal.timeout(8000) })
       .then((r) => r.json())
       .then((d) => {
         const t: string[] = d?.daily?.time;

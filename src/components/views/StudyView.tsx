@@ -14,7 +14,7 @@ export function StudyView({ th, tr, ranch }: { th: Theme; tr: (s: string, t: str
     setLoading(true);
     setStudy("");
     try {
-      const res = await fetch("/api/study", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ranchName: ranch.name }) });
+      const res = await fetch("/api/study", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ranchName: ranch.name }), signal: AbortSignal.timeout(30000) });
       const data = await res.json();
       setStudy(data.text || data.error || "No se pudo generar el estudio.");
       setStudyMode(data.mode || "");

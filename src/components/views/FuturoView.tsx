@@ -26,6 +26,7 @@ async function fetchProjection(l: Levers): Promise<AquiferProjection> {
   const res = await fetch("/api/aquifer", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(8000),
     body: JSON.stringify({
       extractionFactor: l.extraction / 100,
       neighbors: l.neighbors,

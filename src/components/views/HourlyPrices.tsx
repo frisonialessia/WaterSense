@@ -30,7 +30,7 @@ export function HourlyPrices({ th, tr, prices, parcels }: { th: Theme; tr: (s: s
 
   // Try live CENACE prices (falls back to simulated automatically).
   useEffect(() => {
-    fetch("/api/tariff")
+    fetch("/api/tariff", { signal: AbortSignal.timeout(8000) })
       .then((r) => r.json())
       .then((d) => {
         if (Array.isArray(d?.curve) && d.curve.length === 24) {
@@ -56,7 +56,7 @@ export function HourlyPrices({ th, tr, prices, parcels }: { th: Theme; tr: (s: s
       pump: { flowRateLitersPerHour: 6000, powerKw: 15 },
       irrigationVolumeLiters: 24000,
     };
-    fetch("/api/decision", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) })
+    fetch("/api/decision", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input), signal: AbortSignal.timeout(8000) })
       .then((r) => r.json())
       .then(setDecision)
       .catch(() => setDecision(null));

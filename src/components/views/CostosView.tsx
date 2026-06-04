@@ -397,8 +397,14 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops }: { th:
         </div>
       </div>
 
-      {/* entries list */}
-      {entries.length > 0 && (
+      {/* entries list (or first-run hint) */}
+      {entries.length === 0 ? (
+        <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md, textAlign: "center" }}>
+          <div style={{ fontSize: fz.sm, color: th.soft, lineHeight: 1.6 }}>
+            {tr("Aún no registras gastos propios. Usa el formulario de arriba para agregar tu primer gasto (luz, agua, nómina, fertilizante…) y verás tu historial y proyección con tus números.", "Sin registros propios todavía. Agrega gastos arriba para alimentar historial y proyección.")}
+          </div>
+        </div>
+      ) : (
         <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>
           <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("Gastos registrados", "Registros")}</div>
           {entries.map((e) => {

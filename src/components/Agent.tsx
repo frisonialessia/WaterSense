@@ -36,6 +36,7 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+        signal: AbortSignal.timeout(30000),
       });
       const data = await res.json();
       const reply =

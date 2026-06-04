@@ -117,7 +117,7 @@ export function PozosView({
     setWaBusy(true);
     const msg = alertsToMessage(buildAlerts(wells, pumps, aquifer));
     try {
-      const r = await fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body: msg }) });
+      const r = await fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body: msg }), signal: AbortSignal.timeout(10000) });
       const d = await r.json();
       setWaPreview(d.sent ? tr("✓ Enviado por WhatsApp", "Enviado") : (d.preview ?? msg));
     } catch {

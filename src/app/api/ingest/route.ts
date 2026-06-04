@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
 
   // ── Clima (Open-Meteo, gratis) → lluvia de hoy ──
   try {
-    const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.19&longitude=-105.47&daily=precipitation_sum&forecast_days=1&timezone=auto");
+    const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.19&longitude=-105.47&daily=precipitation_sum&forecast_days=1&timezone=auto", { signal: AbortSignal.timeout(8000) });
     const d = await r.json();
     const rain = d?.daily?.precipitation_sum?.[0];
     if (typeof rain === "number") rows.push({ ranch_id: ranchId, source: "weather", metric: "rain_mm", value: rain, unit: "mm", recorded_at: now });

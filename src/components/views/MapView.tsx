@@ -244,11 +244,11 @@ export function MapView({
     const base = "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=mx";
     try {
       const url = isPostal ? `${base}&postalcode=${encodeURIComponent(q)}` : `${base}&q=${encodeURIComponent(q + ", México")}`;
-      let r = await fetch(url, { headers: { Accept: "application/json" } });
+      let r = await fetch(url, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) });
       let data = await r.json();
       // Some postal codes don't resolve via the structured field; retry free-text.
       if (isPostal && (!data || !data[0])) {
-        r = await fetch(`${base}&q=${encodeURIComponent("C.P. " + q + ", México")}`, { headers: { Accept: "application/json" } });
+        r = await fetch(`${base}&q=${encodeURIComponent("C.P. " + q + ", México")}`, { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) });
         data = await r.json();
       }
       if (data && data[0]) {

@@ -137,6 +137,9 @@ export function Topbar({
             <span className="mono" style={{ fontSize: fz.micro, color: th.mute, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {tr(`· ${regionName}`, `· ${ranch.lat.toFixed(3)}° N · ${Math.abs(ranch.lng).toFixed(3)}° O`)}
             </span>
+            <span title={tr("Prototipo: las cifras son simuladas con rangos reales de Chihuahua.", "Demo · datos simulados")} style={{ flexShrink: 0, fontSize: 9, fontWeight: 700, letterSpacing: ".03em", color: C.glacier, border: `1px solid ${C.glacier}44`, borderRadius: radius.sm, padding: "1px 6px", whiteSpace: "nowrap" }}>
+              {tr("DEMO · SIMULADO", "DEMO")}
+            </span>
           </div>
         </div>
       </div>
