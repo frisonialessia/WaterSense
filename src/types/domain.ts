@@ -91,3 +91,29 @@ export interface CostItem {
   /** short human note, e.g. "tarifa nocturna aprovechada" */
   note: string;
 }
+
+export interface WeatherDay {
+  /** short label, e.g. "Hoy", "Jue" */
+  day: string;
+  /** icon name: sun | rain | cloud */
+  icon: string;
+  tempMax: number;
+  /** forecast rainfall, mm */
+  rainMm: number;
+}
+
+export interface ScheduledAction {
+  /** human description of what WaterSense will do */
+  text: string;
+  /** when, e.g. "02:00" or "jueves" */
+  time: string;
+  /** tone for the dot: emerald | alert | glacier */
+  tone: "emerald" | "alert" | "glacier";
+}
+
+export interface SavingsSummary {
+  /** money saved this month vs. the old watering pattern, $ */
+  amountThisMonth: number;
+  /** change vs. last month, percentage points */
+  vsLastMonthPct: number;
+}

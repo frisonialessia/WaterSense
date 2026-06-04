@@ -6,7 +6,7 @@
 // and nothing else changes.
 // ============================================================
 
-import type { Parcel, Well, Region, CropProfile, CropType, CostItem } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary } from "@/types/domain";
 
 export interface FarmRepository {
   getParcels(): Promise<Parcel[]>;
@@ -17,4 +17,7 @@ export interface FarmRepository {
   getCosts(): Promise<CostItem[]>;
   /** 24 hourly electricity prices ($/kWh), index 0..23. */
   getTariffCurve(): Promise<number[]>;
+  getForecast(): Promise<WeatherDay[]>;
+  getScheduledActions(): Promise<ScheduledAction[]>;
+  getSavings(): Promise<SavingsSummary>;
 }

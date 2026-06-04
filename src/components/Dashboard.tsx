@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import type { CostItem, Parcel, Well, Region, CropProfile } from "@/types/domain";
+import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
 import { T, makeTr, type Lang, type ThemeMode } from "@/lib/theme";
 import { Sidebar, type ViewId } from "./Sidebar";
@@ -10,7 +10,9 @@ import { Topbar } from "./Topbar";
 import { KpiStrip } from "./KpiStrip";
 import { DocsView } from "./views/DocsView";
 import { CostosView } from "./views/CostosView";
-import { Placeholder } from "./views/Placeholder";
+import { FincaView } from "./views/FincaView";
+import { PozosView } from "./views/PozosView";
+import { Agent } from "./Agent";
 
 const loader = (label: string) => () => <div style={{ padding: 30, fontSize: 13, color: "#84A0A8" }}>{label}</div>;
 
@@ -26,6 +28,9 @@ export interface DashboardData {
   regions: Region[];
   crops: CropProfile[];
   tariffCurve: number[];
+  forecast: WeatherDay[];
+  actions: ScheduledAction[];
+  savings: SavingsSummary;
 }
 
 export function Dashboard({ data }: { data: DashboardData }) {
@@ -49,13 +54,16 @@ export function Dashboard({ data }: { data: DashboardData }) {
             <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={data.parcels} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
+          ) : view === "pozos" ? (
+            <PozosView th={th} tr={tr} wells={data.wells} pumps={data.pumps} />
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : (
-            <Placeholder th={th} tr={tr} view={view} />
+            <FincaView th={th} tr={tr} setView={setView} parcels={data.parcels} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
         </div>
       </main>
+      <Agent th={th} tr={tr} />
     </div>
   );
 }

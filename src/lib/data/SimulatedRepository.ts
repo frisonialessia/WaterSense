@@ -5,7 +5,7 @@
 // ============================================================
 
 import type { FarmRepository } from "./FarmRepository";
-import type { Parcel, Well, Region, CropProfile, CropType, CostItem } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary } from "@/types/domain";
 
 const CROPS: Record<CropType, CropProfile> = {
   "Nogal pecanero": { crop: "Nogal pecanero", laminaM: 1.9, waterM3ha: 19000, costHa: 14200, freqDays: 7, yieldKgHa: 3200 },
@@ -76,6 +76,20 @@ const COSTS: CostItem[] = [
   { id: "mant", label: "Mantenimiento bombas", icon: "wrench", month: 2400, trend: -22, note: "arranques suavizados" },
 ];
 
+const FORECAST: WeatherDay[] = [
+  { day: "Hoy", icon: "sun", tempMax: 32, rainMm: 0 },
+  { day: "Jue", icon: "rain", tempMax: 26, rainMm: 12 },
+  { day: "Vie", icon: "cloud", tempMax: 28, rainMm: 3 },
+  { day: "Sáb", icon: "sun", tempMax: 33, rainMm: 0 },
+  { day: "Dom", icon: "sun", tempMax: 34, rainMm: 0 },
+];
+
+const SCHEDULED_ACTIONS: ScheduledAction[] = [
+  { text: "Riego nocturno · Parcela del nogal", time: "02:00", tone: "emerald" },
+  { text: "Bajar caudal · Pozo chico", time: "06:30", tone: "alert" },
+  { text: "Pausa por lluvia prevista · 2 parcelas", time: "jueves", tone: "glacier" },
+];
+
 export class SimulatedRepository implements FarmRepository {
   async getParcels(): Promise<Parcel[]> {
     return PARCELS;
@@ -102,6 +116,15 @@ export class SimulatedRepository implements FarmRepository {
         1.8 + Math.sin(((h - 15) / 24) * 6.28) * 0.9 + (h >= 18 && h <= 22 ? 0.8 : 0) - (h >= 1 && h <= 5 ? 0.5 : 0);
       return Math.max(0.6, Math.round(base * 100) / 100);
     });
+  }
+  async getForecast(): Promise<WeatherDay[]> {
+    return FORECAST;
+  }
+  async getScheduledActions(): Promise<ScheduledAction[]> {
+    return SCHEDULED_ACTIONS;
+  }
+  async getSavings(): Promise<SavingsSummary> {
+    return { amountThisMonth: 2840, vsLastMonthPct: 18 };
   }
 }
 
