@@ -13,6 +13,7 @@ import { CostosView } from "./views/CostosView";
 import { FincaView } from "./views/FincaView";
 import { PozosView } from "./views/PozosView";
 import { SettingsView } from "./views/SettingsView";
+import { StudyView } from "./views/StudyView";
 import { Agent } from "./Agent";
 
 const DEFAULT_RANCH: RanchConfig = { name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", notes: "" };
@@ -99,6 +100,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
             <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={allParcels} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
+          ) : view === "estudio" ? (
+            <StudyView th={th} tr={tr} ranch={ranch} />
           ) : view === "pozos" ? (
             <PozosView th={th} tr={tr} wells={data.wells} pumps={data.pumps} aquifer={data.aquifer} />
           ) : view === "docs" ? (

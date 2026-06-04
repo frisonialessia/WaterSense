@@ -6,13 +6,19 @@ import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 
-export type ViewId = "finca" | "mapa" | "costos" | "futuro" | "pozos" | "docs" | "ajustes";
+export type ViewId = "finca" | "mapa" | "costos" | "futuro" | "estudio" | "pozos" | "docs" | "ajustes";
 
-const ITEMS: { id: ViewId; icon: string; s: string; t: string }[] = [
+type Item = { id: ViewId; icon: string; s: string; t: string };
+
+const TOP_ITEMS: Item[] = [
   { id: "finca", icon: "home", s: "Mi rancho", t: "Auditoría" },
   { id: "mapa", icon: "map", s: "Mapa del campo", t: "Command map" },
   { id: "costos", icon: "coin", s: "Costos", t: "Costos" },
   { id: "futuro", icon: "chart", s: "Futuro del agua", t: "Proyección acuífero" },
+  { id: "estudio", icon: "file", s: "Estudio de riego (IA)", t: "Estudio de riego (IA)" },
+];
+
+const BOTTOM_ITEMS: Item[] = [
   { id: "pozos", icon: "wrench", s: "Mis pozos", t: "Salud de pozos" },
   { id: "docs", icon: "book", s: "Ayuda", t: "Documentación" },
   { id: "ajustes", icon: "sliders", s: "Ajustes", t: "Configuración" },
@@ -36,6 +42,47 @@ export function Sidebar({
   ranch: RanchConfig;
 }) {
   const total = costs.reduce((s, c) => s + c.month, 0);
+
+  const renderItem = (it: Item) => {
+    const active = view === it.id;
+    return (
+      <div
+        key={it.id}
+        className="nav"
+        role="button"
+        tabIndex={0}
+        aria-current={active ? "page" : undefined}
+        onClick={() => setView(it.id)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setView(it.id);
+          }
+        }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: space.sm + 2,
+          padding: "7px 9px",
+          borderRadius: radius.md,
+          cursor: "pointer",
+          fontSize: fz.sm,
+          fontWeight: active ? 600 : 500,
+          marginBottom: 1,
+          transition: "background .15s,color .15s",
+          position: "relative",
+          background: active ? th.panel2 : "transparent",
+          color: active ? th.ink : th.soft,
+        }}
+      >
+        {active && <span style={{ position: "absolute", left: 0, top: 7, bottom: 7, width: 2, background: C.glacier, borderRadius: 2 }} />}
+        <span style={{ width: 18, display: "flex", justifyContent: "center" }}>
+          <Icon name={it.icon} size={16} color={active ? C.glacier : th.mute} />
+        </span>
+        {tr(it.s, it.t)}
+      </div>
+    );
+  };
   return (
     <aside
       style={{
@@ -67,46 +114,7 @@ export function Sidebar({
       </Link>
 
       <div style={{ ...labelStyle(th), padding: `0 ${space.sm}px`, marginBottom: space.sm }}>{tr("Navegación", "Vistas")}</div>
-      {ITEMS.map((it) => {
-        const active = view === it.id;
-        return (
-          <div
-            key={it.id}
-            className="nav"
-            role="button"
-            tabIndex={0}
-            aria-current={active ? "page" : undefined}
-            onClick={() => setView(it.id)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setView(it.id);
-              }
-            }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: space.sm + 2,
-              padding: "7px 9px",
-              borderRadius: radius.md,
-              cursor: "pointer",
-              fontSize: fz.sm,
-              fontWeight: active ? 600 : 500,
-              marginBottom: 1,
-              transition: "background .15s,color .15s",
-              position: "relative",
-              background: active ? th.panel2 : "transparent",
-              color: active ? th.ink : th.soft,
-            }}
-          >
-            {active && <span style={{ position: "absolute", left: 0, top: 7, bottom: 7, width: 2, background: C.glacier, borderRadius: 2 }} />}
-            <span style={{ width: 18, display: "flex", justifyContent: "center" }}>
-              <Icon name={it.icon} size={16} color={active ? C.glacier : th.mute} />
-            </span>
-            {tr(it.s, it.t)}
-          </div>
-        );
-      })}
+      {TOP_ITEMS.map(renderItem)}
 
       <div style={{ ...labelStyle(th), padding: `0 ${space.sm}px`, margin: `${space.lg}px 0 ${space.sm}px` }}>{tr("Gasto del mes", "Costos mensuales")}</div>
       <div style={{ padding: `0 ${space.xs}px` }}>
@@ -125,7 +133,11 @@ export function Sidebar({
         </div>
       </div>
 
-      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: space.sm, padding: `${space.md}px ${space.xs}px 0`, borderTop: `1px solid ${th.line}` }}>
+      <div style={{ marginTop: "auto", paddingTop: space.md }}>
+        {BOTTOM_ITEMS.map(renderItem)}
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: space.sm, padding: `${space.md}px ${space.xs}px 0`, marginTop: space.sm, borderTop: `1px solid ${th.line}` }}>
         <div
           style={{
             width: 32,

@@ -71,6 +71,7 @@ export function Topbar({
     finca: tr("Mi rancho", "Auditoría"),
     costos: tr("Costos", "Costos operativos"),
     futuro: tr("Futuro del agua", "Proyección del acuífero"),
+    estudio: tr("Estudio de riego (IA)", "Estudio de riego asistido por IA"),
     pozos: tr("Mis pozos", "Salud de pozos"),
     docs: tr("Ayuda", "Documentación"),
     ajustes: tr("Ajustes", "Configuración"),
