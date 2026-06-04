@@ -74,8 +74,8 @@ export function PozosView({
   const [readings, setReadings] = useState<Reading[]>([]);
   const rMeta = READING_METRICS.find((m) => m.key === rMetric) ?? READING_METRICS[0];
   const loadReadings = async () => {
-    const all = await localRepo.getReadings(rMetric);
-    setReadings(all.filter((x) => x.source === `manual:${selId}`).slice(-6).reverse());
+    const all = await localRepo.getReadings(rMetric); // ascending by date
+    setReadings(all.filter((x) => x.source === `manual:${selId}`).slice(-12));
   };
   useEffect(() => {
     loadReadings();
@@ -89,6 +89,26 @@ export function PozosView({
     setRVal("");
     await loadReadings();
     setRBusy(false);
+  };
+
+  // Tiny line chart of the captured history (chronological).
+  const ReadingSpark = ({ data }: { data: Reading[] }) => {
+    const vals = data.map((d) => d.value);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const range = max - min || 1;
+    const W = 320;
+    const H = 60;
+    const pad = 6;
+    const n = data.length;
+    const xAt = (i: number) => pad + (n === 1 ? 0 : (i / (n - 1)) * (W - pad * 2));
+    const yAt = (v: number) => H - pad - ((v - min) / range) * (H - pad * 2);
+    const pts = data.map((d, i) => `${xAt(i).toFixed(1)},${yAt(d.value).toFixed(1)}`).join(" ");
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none" style={{ display: "block" }}>
+        <polyline points={pts} fill="none" stroke={C.glacier} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+      </svg>
+    );
   };
 
   const [waPreview, setWaPreview] = useState<string | null>(null);
@@ -248,12 +268,26 @@ export function PozosView({
           {rMeta.field && <span style={{ fontSize: fz.micro, color: th.soft }}>↻ {tr("recalcula la salud", "actualiza el pozo")}</span>}
         </div>
         {readings.length > 0 && (
-          <div style={{ marginTop: space.md, display: "flex", gap: space.sm, flexWrap: "wrap" }}>
-            {readings.map((r) => (
-              <span key={r.id} className="mono" style={{ fontSize: fz.micro, color: th.soft, background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, padding: "3px 8px" }}>
-                {fmt(Math.round(r.value))}{r.unit ? ` ${r.unit}` : ""} · {r.recordedAt.slice(5, 10)}
-              </span>
-            ))}
+          <div style={{ marginTop: space.lg }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+              <span style={labelStyle(th)}>{tr("Historial", "Tendencia")} · {tr(rMeta.label, rMeta.tech)}</span>
+              {readings.length >= 2 && (() => {
+                const delta = readings[readings.length - 1].value - readings[0].value;
+                const col = delta === 0 ? th.mute : rMetric === "nivel_m" ? (delta > 0 ? C.critical : C.emerald) : th.soft;
+                return <span className="mono" style={{ fontSize: fz.micro, fontWeight: 600, color: col }}>{delta > 0 ? "↑" : delta < 0 ? "↓" : "→"} {fmt(Math.abs(Math.round(delta)))}{rMeta.unit ? ` ${rMeta.unit}` : ""} {tr("vs. inicio", "Δ")}</span>;
+              })()}
+            </div>
+            {readings.length >= 2 && <ReadingSpark data={readings} />}
+            <div style={{ marginTop: space.sm, display: "flex", gap: space.sm, flexWrap: "wrap" }}>
+              {[...readings].reverse().slice(0, 6).map((r) => (
+                <span key={r.id} className="mono" style={{ fontSize: fz.micro, color: th.soft, background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, padding: "3px 8px" }}>
+                  {fmt(Math.round(r.value))}{r.unit ? ` ${r.unit}` : ""} · {r.recordedAt.slice(5, 10)}
+                </span>
+              ))}
+            </div>
+            {rMetric === "nivel_m" && readings.length >= 2 && (
+              <div style={{ fontSize: fz.micro, color: th.mute, marginTop: 6 }}>{tr("Más metros = el agua está más abajo (acuífero cayendo).", "↑ profundidad = abatimiento.")}</div>
+            )}
           </div>
         )}
       </div>
