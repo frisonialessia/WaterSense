@@ -153,8 +153,8 @@ export function Landing() {
               <span key={t} style={{ fontSize: fz.sm, fontWeight: 600, background: "rgba(255,255,255,.13)", border: "1px solid rgba(255,255,255,.25)", borderRadius: radius.pill, padding: "8px 16px" }}>{t}</span>
             ))}
           </div>
-          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: C.brandNavy, fontSize: fz.md, fontWeight: 700, padding: "12px 24px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
-            Ver cuántos años le quedan a tu pozo <Icon name="arrow" size={16} color={C.brandNavy} />
+          <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 8, maxWidth: "100%", background: "#fff", color: C.brandNavy, fontSize: fz.md, fontWeight: 700, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md, lineHeight: 1.3 }}>
+            Ver el panel en vivo <Icon name="arrow" size={16} color={C.brandNavy} />
           </Link>
         </div>
       </section>
