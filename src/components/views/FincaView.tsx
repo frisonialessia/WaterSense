@@ -85,6 +85,10 @@ export function FincaView({
   }, [lat, lng]);
   const fc = liveForecast ?? forecast;
   const rainDay = fc.find((f) => f.rainMm >= 10);
+  const today = fc[0];
+  const restDays = fc.slice(1);
+  const maxTemp = fc.length ? Math.max(...fc.map((f) => f.tempMax)) : 0;
+  const condition = (f: WeatherDay) => (f.icon === "rain" ? "Lluvia" : f.icon === "cloud" ? "Nublado" : "Despejado");
 
   const cropMap = useMemo(() => {
     const m = {} as Record<CropType, CropProfile>;
@@ -225,7 +229,7 @@ export function FincaView({
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md }}>
         {/* weather + rain impact */}
-        <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
+        <div className="card" style={{ ...cardStyle(th), padding: space.xl, display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("El clima y tu riego", "Pronóstico · impacto en riego")}</div>
             {liveForecast && (
@@ -236,27 +240,58 @@ export function FincaView({
             )}
           </div>
           <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.lg }}>{tr("Delicias · próximos 5 días", "Delicias, Chihuahua · 5 días")}</div>
-          <div style={{ display: "flex", gap: space.sm, marginBottom: space.lg }}>
-            {fc.map((f, i) => (
-              <div key={i} style={{ flex: 1, textAlign: "center", padding: "12px 4px", borderRadius: radius.md, background: f.rainMm >= 10 ? `${C.glacier}14` : th.panel2, border: `1px solid ${f.rainMm >= 10 ? C.glacier + "44" : th.line}` }}>
+
+          {today && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: space.lg, padding: `${space.md}px ${space.lg}px`, borderRadius: radius.md, background: today.rainMm >= 3 ? `${C.glacier}12` : th.panel2, border: `1px solid ${today.rainMm >= 3 ? C.glacier + "44" : th.line}`, marginBottom: space.md }}>
+              <div style={{ display: "flex", alignItems: "center", gap: space.lg }}>
+                <Icon name={today.icon} size={46} color={today.rainMm >= 3 ? C.glacier : C.alert} />
+                <div>
+                  <div style={{ ...labelStyle(th) }}>{tr("Hoy", "Hoy")}</div>
+                  <div className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 40, lineHeight: 1.05 }}>{today.tempMax}°</div>
+                  <div style={{ fontSize: fz.xs, color: th.soft, marginTop: 2 }}>{condition(today)} · {tr("máxima", "máx")}</div>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                {today.rainMm > 0 ? (
+                  <div className="mono" style={{ fontSize: fz.md, fontWeight: 700, color: C.glacier }}>{today.rainMm} mm</div>
+                ) : (
+                  <div style={{ fontSize: fz.xs, color: th.mute }}>{tr("sin lluvia", "0 mm")}</div>
+                )}
+                <div style={{ fontSize: fz.micro, color: th.mute, marginTop: 4 }}>Delicias, Chih.</div>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.max(restDays.length, 1)}, 1fr)`, gap: space.sm, marginBottom: space.md }}>
+            {restDays.map((f, i) => (
+              <div key={i} style={{ textAlign: "center", padding: "12px 4px", borderRadius: radius.md, background: f.rainMm >= 3 ? `${C.glacier}14` : th.panel2, border: `1px solid ${f.rainMm >= 3 ? C.glacier + "44" : th.line}` }}>
                 <div style={{ fontSize: fz.micro, color: th.mute, marginBottom: 7 }}>{f.day}</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 7 }}>
-                  <Icon name={f.icon} size={20} color={f.rainMm >= 10 ? C.glacier : th.soft} />
+                  <Icon name={f.icon} size={20} color={f.rainMm >= 3 ? C.glacier : th.soft} />
                 </div>
-                <div className="mono" style={{ fontSize: fz.xs, fontWeight: 600 }}>{f.tempMax}°</div>
-                {f.rainMm > 0 && <div className="mono" style={{ fontSize: 10, color: C.glacier, marginTop: 2 }}>{f.rainMm}mm</div>}
+                <div className="mono" style={{ fontSize: fz.sm, fontWeight: 600 }}>{f.tempMax}°</div>
+                {f.rainMm > 0 ? (
+                  <div className="mono" style={{ fontSize: 10, color: C.glacier, marginTop: 2 }}>{f.rainMm}mm</div>
+                ) : (
+                  <div style={{ fontSize: 10, color: th.mute, marginTop: 2 }}>—</div>
+                )}
               </div>
             ))}
           </div>
-          {rainDay && (
-            <div style={{ padding: `${space.md}px ${space.md}px`, borderRadius: radius.md, background: `${C.emerald}12`, border: `1px solid ${C.emerald}33`, fontSize: fz.sm, color: th.ink, display: "flex", alignItems: "center", gap: 9 }}>
-              <Icon name="leaf" size={15} color={C.emerald} />
-              {tr(
-                `Lloverá el ${rainDay.day.toLowerCase()} (${rainDay.rainMm}mm). Cubre el riego de 2 parcelas — pausamos y ahorras ~$210.`,
-                `Precipitación ${rainDay.rainMm}mm el ${rainDay.day}. Riego pausado en 2 zonas · ahorro estimado $210.`
-              )}
-            </div>
-          )}
+
+          {/* insight — always present, fills the card */}
+          <div style={{ marginTop: "auto", padding: `${space.md}px ${space.md}px`, borderRadius: radius.md, background: rainDay ? `${C.emerald}12` : `${C.alert}10`, border: `1px solid ${rainDay ? C.emerald + "33" : C.alert + "30"}`, fontSize: fz.sm, color: th.ink, display: "flex", alignItems: "center", gap: 9, lineHeight: 1.5 }}>
+            <Icon name={rainDay ? "leaf" : "sun"} size={15} color={rainDay ? C.emerald : C.alert} />
+            {rainDay
+              ? tr(
+                  `Lloverá el ${rainDay.day.toLowerCase()} (${rainDay.rainMm}mm). Cubre el riego de 2 parcelas — pausamos y ahorras ~$210.`,
+                  `Precipitación ${rainDay.rainMm}mm el ${rainDay.day}. Riego pausado en 2 zonas · ahorro estimado $210.`
+                )
+              : tr(
+                  `Semana seca y calurosa (hasta ${maxTemp}°). Conviene regar de madrugada para perder menos agua por evaporación.`,
+                  `Sin precipitación · máx ${maxTemp}°. Prioriza riego nocturno para reducir pérdidas por evapotranspiración.`
+                )}
+          </div>
         </div>
 
         {/* next actions */}

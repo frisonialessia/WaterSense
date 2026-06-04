@@ -11,5 +11,11 @@
 
 import type { FarmRepository } from "./FarmRepository";
 import { SimulatedRepository } from "./SimulatedRepository";
+// import { SupabaseRepository } from "./SupabaseRepository";
 
 export const repository: FarmRepository = new SimulatedRepository();
+
+// ── Para usar datos reales con Supabase, comenta la línea de arriba,
+//    descomenta el import y usa esta (corre antes supabase/schema.sql
+//    y rellena .env.local — ver README → "Conectar Supabase"):
+// export const repository: FarmRepository = new SupabaseRepository();
