@@ -165,7 +165,8 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
           )}
         </div>
 
-        {/* projection chart */}
+        {/* right column: projection chart + consequence simulator (fills height) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: space.lg, minWidth: 0 }}>
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("Nivel del agua bajo tierra", "Profundidad del nivel freático")}</div>
@@ -206,10 +207,9 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, borderTop: `2px dashed ${th.mute}` }} />{tr("si no haces nada", "línea base")}</span>
           </div>
         </div>
-      </div>
 
-      {/* Consequence simulator: your zone & Chihuahua */}
-      <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>
+        {/* Consequence simulator: your zone & Chihuahua */}
+        <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("¿Y si no se cumple el plan?", "Simulador de consecuencias")}</div>
         <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.lg }}>{tr("Cómo se vería el agua de tu zona y de Chihuahua con el escenario actual", "Disponibilidad proyectada: tu zona vs. estado")}</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 280px),1fr))", gap: space.md }}>
@@ -243,6 +243,8 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
           {survives
             ? tr("Con este plan tu zona se mantiene. Si todos en Chihuahua hicieran lo mismo, el acuífero aguanta.", "Escenario sostenible a nivel zona; replicable a escala estatal.")
             : tr(`Si no se cumple, tu pozo llega a su límite hacia ${limitYear}. A escala Chihuahua, miles de hectáreas quedarían sin riego.`, `Inviabilidad local ~${limitYear}; impacto agregado severo a escala estatal.`)}
+        </div>
+        </div>
         </div>
       </div>
 
