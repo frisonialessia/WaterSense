@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"/><title>WaterSense · bombas</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui,-apple-system,sans-serif}
+  body{background:#04150f;display:flex;align-items:center;justify-content:center;min-height:100vh}
+  .card{width:1200px;height:675px;position:relative;overflow:hidden;color:#fff;padding:54px 60px;
+    background:radial-gradient(120% 130% at 82% -10%,#1a5236 0%,#0c3322 42%,#06241a 72%,#04160f 100%);display:flex;flex-direction:column}
+  .num{font-variant-numeric:tabular-nums}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+  .logo{width:34px;height:34px;border-radius:9px;background:rgba(88,208,139,.16);border:1px solid rgba(88,208,139,.4);display:flex;align-items:center;justify-content:center}
+  .brand{font-size:24px;font-weight:700;letter-spacing:-.3px}
+  h1{font-size:54px;line-height:1.04;font-weight:800;letter-spacing:-1.5px}
+  .accent{color:#FF8A6B}
+  .sub{font-size:20px;color:rgba(255,255,255,.62);margin-top:16px;line-height:1.5;max-width:780px}
+  .panel{margin-top:auto;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:28px 32px;display:flex;gap:34px}
+  .wells{flex:1;display:flex;flex-direction:column;gap:18px}
+  .well{}
+  .wrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .wname{font-size:18px;font-weight:700}
+  .wnote{font-size:14px;color:rgba(255,255,255,.55)}
+  .wpct{font-size:20px;font-weight:800}
+  .bar{height:12px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden}
+  .fill{height:100%;border-radius:999px}
+  .alert{width:330px;background:rgba(216,96,122,.12);border:1px solid rgba(216,96,122,.45);border-radius:16px;padding:18px 20px;align-self:center}
+  .alabel{font-size:13px;letter-spacing:1.2px;color:#FF8A6B;font-weight:700;margin-bottom:8px}
+  .atext{font-size:16px;line-height:1.5;color:rgba(255,255,255,.9)}
+</style></head>
+<body><div class="card">
+  <div class="top">
+    <span class="logo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 5 9.5 5 14.5a7 7 0 0 0 14 0C19 9.5 12 2 12 2Z" fill="#74E0AC"/></svg></span>
+    <span class="brand">WaterSense</span>
+  </div>
+  <h1>Tu bomba <span class="accent">va a fallar.</span><br/>Te avisamos antes.</h1>
+  <p class="sub">Mantenimiento predictivo por arranques y presión — para que la falla no te agarre en plena temporada de riego.</p>
+
+  <div class="panel">
+    <div class="wells">
+      <div class="well">
+        <div class="wrow"><span class="wname">Pozo grande <span class="wnote">· desgaste moderado</span></span><span class="wpct num" style="color:#5BE08A">63%</span></div>
+        <div class="bar"><div class="fill" style="width:63%;background:#5BE08A"></div></div>
+      </div>
+      <div class="well">
+        <div class="wrow"><span class="wname">Pozo chico <span class="wnote" style="color:#FF8A6B">· riesgo alto de falla</span></span><span class="wpct num" style="color:#FF8A6B">14%</span></div>
+        <div class="bar"><div class="fill" style="width:14%;background:#FF8A6B"></div></div>
+      </div>
+      <div class="well">
+        <div class="wrow"><span class="wname">Pozo norte <span class="wnote">· desgaste moderado</span></span><span class="wpct num" style="color:#5BE08A">68%</span></div>
+        <div class="bar"><div class="fill" style="width:68%;background:#5BE08A"></div></div>
+      </div>
+    </div>
+    <div class="alert">
+      <div class="alabel">⚠️ ALERTA · WHATSAPP</div>
+      <div class="atext">Pozo chico: 95% de vida usada y caudal por encima del sostenible. Agenda mantenimiento esta semana.</div>
+    </div>
+  </div>
+</div></body></html>
