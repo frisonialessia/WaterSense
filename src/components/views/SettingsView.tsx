@@ -50,7 +50,7 @@ export function SettingsView({
         <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("Tu rancho", "Configuración del rancho")}</div>
         <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.lg }}>{tr("Configura los datos de tu rancho. Se usan en todo el panel.", "Parámetros del rancho usados por el panel y el cerebro.")}</div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: space.md }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 220px),1fr))", gap: space.md }}>
           <Field label={tr("Nombre del rancho", "Nombre")}><input style={inputStyle} value={form.name} onChange={(e) => set("name", e.target.value)} /></Field>
           <Field label={tr("Responsable", "Titular")}><input style={inputStyle} value={form.owner} onChange={(e) => set("owner", e.target.value)} placeholder={tr("opcional", "opcional")} /></Field>
           <Field label={tr("Región", "Región / municipio")}>

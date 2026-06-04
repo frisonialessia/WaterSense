@@ -82,7 +82,7 @@ export function Landing() {
       {/* Hero */}
       <section style={{ position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(100deg, ${C.brandNavy}f5 0%, ${C.brandNavy}db 40%, ${C.brandNavy}80 66%, ${C.brandNavy}1f 100%), url('/landing/hero.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }} />
-        <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: `${space.x4 + space.x3}px ${space.x3}px`, minHeight: "80vh", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(360px,1fr))", gap: space.x4, alignItems: "center" }}>
+        <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: `${space.x4 + space.x3}px ${space.x3}px`, minHeight: "80vh", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 360px),1fr))", gap: space.x4, alignItems: "center" }}>
           <div>
             <span className="mono" style={{ fontSize: fz.sm, color: C.emeraldSoft, fontWeight: 600, letterSpacing: ".05em" }}>
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
@@ -118,7 +118,7 @@ export function Landing() {
         <h2 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.xl, letterSpacing: "-0.01em", marginBottom: space.xl }}>
           Cuatro cosas que tu rancho necesita saber
         </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: space.md }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 250px),1fr))", gap: space.md }}>
           {PILLARS.map((p, i) => (
             <div key={p.title} className="lcard" style={{ background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, padding: space.xl }}>
               <div style={{ display: "flex", alignItems: "center", gap: space.sm, marginBottom: space.md }}>
@@ -144,7 +144,7 @@ export function Landing() {
             La mayoría de apps de riego solo muestran datos. En el norte de México, donde el agua se acaba, eso no basta:
             hay que decidir, con dinero de por medio.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: space.md }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 250px),1fr))", gap: space.md }}>
             {[
               { icon: "chart", t: "Defiende tu próxima década", b: "No optimizamos solo el riego de hoy: predecimos cuándo dejaría de dar tu pozo y cómo retrasarlo. El acuífero Meoqui-Delicias ya está sobreexplotado." },
               { icon: "coin", t: "Decisión con precio, no solo datos", b: "Le ponemos $ a cada decisión: pérdida por sed, ahorro por regar de madrugada, ingreso proyectado de la cosecha. El riego se vuelve inversión." },
@@ -166,7 +166,7 @@ export function Landing() {
       {/* Stat band — contained card, with air around it */}
       <section id="fuentes" style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px` }}>
         <div style={{ borderRadius: radius.lg, overflow: "hidden", boxShadow: shadow.lg, color: "#fff", backgroundImage: `linear-gradient(110deg,${C.brandNavy}f2,${C.glacier}cc 60%,${C.emerald}cc), url('/landing/agua.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
-          <div style={{ padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: space.xl }}>
+          <div style={{ padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 220px),1fr))", gap: space.xl }}>
             {[
               { v: "3", l: "motores de decisión", s: "riego, acuífero y salud de pozos" },
               { v: "100%", l: "simulado, hoy", s: "estructurado para datos reales" },
@@ -184,7 +184,7 @@ export function Landing() {
 
       {/* Human — two columns: photo + text, plenty of air */}
       <section style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px` }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: space.x3, alignItems: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 300px),1fr))", gap: space.x3, alignItems: "center" }}>
           <div style={{ borderRadius: radius.lg, overflow: "hidden", boxShadow: shadow.lg, minHeight: 340, backgroundImage: `url('/landing/agricultor.jpg')`, backgroundSize: "cover", backgroundPosition: "center 22%" }} />
           <div>
             <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".05em" }}>PARA EL CAMPO, NO PARA EL LABORATORIO</span>

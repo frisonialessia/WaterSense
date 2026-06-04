@@ -57,6 +57,34 @@ button {
   }
 }
 
+/* On phones, the map view reflows: the map sits on top and the floating
+   panels stack below it (instead of overlapping the map). */
+@media (max-width: 760px) {
+  .ws-map-root {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  .ws-map-wrap {
+    flex: none !important;
+    min-height: 0 !important;
+    display: block !important;
+  }
+  .ws-map-canvas {
+    position: relative !important;
+    inset: auto !important;
+    height: 46vh !important;
+    min-height: 240px !important;
+  }
+  .ws-map-panel {
+    position: static !important;
+    width: auto !important;
+    max-height: none !important;
+    margin: 8px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

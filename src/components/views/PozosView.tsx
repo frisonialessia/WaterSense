@@ -56,7 +56,7 @@ export function PozosView({
         </button>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(440px,1fr))", gap: space.md, marginBottom: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 440px),1fr))", gap: space.md, marginBottom: space.md }}>
         {wells.map((w, i) => {
           const p = byId.get(w.id);
           if (!p) return null;

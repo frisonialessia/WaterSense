@@ -198,7 +198,7 @@ export function FincaView({
       )}
 
       {/* action cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: space.md, marginBottom: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 240px),1fr))", gap: space.md, marginBottom: space.md }}>
         {cards.map((x, i) => (
           <div key={i} className="card" style={{ ...cardStyle(th), animationDelay: `${i * 0.06}s`, padding: space.xl, display: "flex", flexDirection: "column" }}>
             <p style={{ fontSize: fz.xs, color: th.mute, marginBottom: 6 }}>{x.l}</p>
@@ -210,7 +210,7 @@ export function FincaView({
       </div>
 
       {/* yield projection + what-if */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md, marginBottom: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 340px),1fr))", gap: space.md, marginBottom: space.md }}>
         {/* yield = irrigation as investment */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -281,7 +281,7 @@ export function FincaView({
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 340px),1fr))", gap: space.md }}>
         {/* weather + rain impact */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl, display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>

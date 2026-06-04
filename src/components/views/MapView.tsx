@@ -350,7 +350,7 @@ export function MapView({
   });
 
   return (
-    <div style={{ position: "relative", height: "100%", minHeight: 560, display: "flex", flexDirection: "column" }}>
+    <div className="ws-map-root" style={{ position: "relative", height: "100%", minHeight: 560, display: "flex", flexDirection: "column" }}>
       {/* context bar */}
       <div style={{ display: "flex", alignItems: "center", gap: space.md, padding: `${space.sm}px ${space.xl}px`, borderBottom: `1px solid ${th.line}`, background: th.panel, flexWrap: "wrap" }}>
         <select value={regionId} onChange={(e) => onRegion(e.target.value)} style={selectStyle} aria-label={tr("Región", "Región")}>
@@ -370,11 +370,11 @@ export function MapView({
       </div>
 
       {/* map + overlays */}
-      <div style={{ position: "relative", flex: 1, minHeight: 480 }}>
-        <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
+      <div className="ws-map-wrap" style={{ position: "relative", flex: 1, minHeight: 480 }}>
+        <div ref={containerRef} className="ws-map-canvas" style={{ position: "absolute", inset: 0 }} />
 
         {/* layers + draw + my parcels */}
-        <div style={panel({ top: space.md, left: space.md, width: 224, maxHeight: "calc(100% - 32px)", overflowY: "auto" })}>
+        <div className="ws-map-panel" style={panel({ top: space.md, left: space.md, width: 224, maxHeight: "calc(100% - 32px)", overflowY: "auto" })}>
           <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("¿Qué quieres ver?", "Capas")}</div>
           {([
             { id: "stress", sw: `linear-gradient(90deg,${C.emerald},${C.alert},${C.critical})`, s: "Sed del cultivo", t: "Estrés hídrico" },
@@ -459,7 +459,7 @@ export function MapView({
 
         {/* crop cost calculator */}
         {sel && (
-          <div style={panel({ top: space.md, right: space.md, width: 234 })}>
+          <div className="ws-map-panel" style={panel({ top: space.md, right: space.md, width: 234 })}>
             <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("Costo de riego", "Costo por cultivo")}</div>
             <select value={sel.id} onChange={(e) => setSelId(e.target.value)} style={{ ...selectStyle, width: "100%", marginBottom: space.sm }} aria-label={tr("Parcela", "Parcela")}>
               {parcels.map((p) => (
@@ -494,7 +494,7 @@ export function MapView({
         )}
 
         {/* irrigation calendar */}
-        <div style={panel({ bottom: space.md, left: space.md, right: space.md, padding: `${space.md}px ${space.lg}px` })}>
+        <div className="ws-map-panel" style={panel({ bottom: space.md, left: space.md, right: space.md, padding: `${space.md}px ${space.lg}px` })}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: space.sm }}>
             <div style={labelStyle(th)}>{tr("Días de riego · próxima semana", "Calendario de riego · 7 días")}</div>
             <span style={{ fontSize: fz.micro, color: th.mute }}>{tr("verde = toca regar", "programado por el motor")}</span>

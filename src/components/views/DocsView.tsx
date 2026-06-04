@@ -84,7 +84,7 @@ export function DocsView({ th, tr }: { th: Theme; tr: (s: string, t: string) => 
   ];
   return (
     <div style={{ padding: space.x3 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 340px),1fr))", gap: space.md }}>
         {docs.map((d, i) => (
           <div key={i} className="card" style={{ ...cardStyle(th), animationDelay: `${i * 0.05}s`, padding: `${space.lg}px ${space.xl}px` }}>
             <div style={{ display: "flex", gap: space.md, alignItems: "flex-start" }}>

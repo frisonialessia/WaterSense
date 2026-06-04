@@ -308,7 +308,7 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
       </div>
 
       {/* history + projection */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(320px,1fr))", gap: space.md, marginTop: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 320px),1fr))", gap: space.md, marginTop: space.md }}>
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("Historial por mes", "Gasto registrado · por mes")}</div>
           <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>{tr("Lo que has registrado en los últimos 6 meses", "Últimos 6 meses · registrado")}</div>

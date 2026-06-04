@@ -145,7 +145,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(360px,1fr))", gap: space.lg }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 360px),1fr))", gap: space.lg }}>
         {/* levers */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("Mueve las palancas", "Variables del escenario")}</div>
@@ -207,7 +207,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
       <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>
         <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("¿Y si no se cumple el plan?", "Simulador de consecuencias")}</div>
         <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.lg }}>{tr("Cómo se vería el agua de tu zona y de Chihuahua con el escenario actual", "Disponibilidad proyectada: tu zona vs. estado")}</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: space.md }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 280px),1fr))", gap: space.md }}>
           {[
             { name: tr("Tu zona · Meoqui-Delicias", "Acuífero Meoqui-Delicias"), pct: zonaPct },
             { name: tr("Chihuahua (acuíferos)", "Chihuahua · agregado"), pct: chihPct },
