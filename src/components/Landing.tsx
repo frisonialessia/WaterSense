@@ -90,63 +90,59 @@ export function Landing() {
       </nav>
 
       {/* Hero */}
-      <section style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: space.x4, alignItems: "center" }}>
-        <div>
-          <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".04em" }}>
-            CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
-          </span>
-          <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 44, lineHeight: 1.1, letterSpacing: "-0.02em", margin: `${space.md}px 0` }}>
-            Optimiza la <span style={{ color: C.glacier }}>energía de tus pozos</span>. Maximiza la <span style={{ color: C.emerald }}>ganancia de tu rancho</span>.
-          </h1>
-          <p style={{ fontSize: fz.lg, color: th.soft, lineHeight: 1.6, maxWidth: 540 }}>
-            Cruzamos el <b style={{ color: th.ink }}>costo de tu luz</b>, el <b style={{ color: th.ink }}>desperdicio de agua</b> y la <b style={{ color: th.ink }}>salud de tu cultivo</b> para decirte
-            qué regar, cuándo y a qué hora — y cuántos años le quedan a tu pozo. Hecho simple, para el campo de Chihuahua.
-          </p>
-          <div style={{ display: "flex", gap: space.md, marginTop: space.xl, flexWrap: "wrap" }}>
-            <Link
-              href="/dashboard"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}
-            >
-              Ver el panel en vivo <Icon name="arrow" size={16} color="#fff" />
-            </Link>
-            <a
-              href="#pilares"
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, background: th.panel, color: th.ink, fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: `1px solid ${th.line}` }}
-            >
-              Cómo funciona
-            </a>
-          </div>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: space.xl, fontSize: fz.xs, color: th.mute, background: th.panel2, border: `1px solid ${th.line}`, padding: "6px 12px", borderRadius: radius.pill }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emerald }} />
-            Prototipo · todos los datos son simulados, con rangos reales de Chihuahua
-          </div>
-        </div>
-
-        {/* Control-room mockup */}
-        <div style={{ background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, boxShadow: shadow.lg, overflow: "hidden" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 7, padding: `${space.sm}px ${space.md}px`, borderBottom: `1px solid ${th.line}` }}>
-            <Logo size={16} />
-            <span style={{ fontSize: fz.xs, fontWeight: 600 }}>Rancho El Álamo</span>
-            <span className="mono" style={{ fontSize: 10, color: th.mute, marginLeft: "auto" }}>28.190° N · 105.470° O</span>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)" }}>
-            <MockTile label="Gasto del mes" value={`$${fmt(39950)}`} sub="5 rubros" />
-            <MockTile label="Parcelas sanas" value="2/5" sub="sed < 50%" />
-            <MockTile label="Salud de bombas" value="64%" sub="promedio" />
-            <MockTile label="Pozos en alerta" value="1" sub="sobre el límite" danger />
-          </div>
-          {/* mini aquifer line */}
-          <div style={{ padding: space.lg, borderTop: `1px solid ${th.line}` }}>
-            <div style={{ fontSize: fz.micro, textTransform: "uppercase", letterSpacing: ".08em", color: th.mute, fontWeight: 600, marginBottom: space.sm }}>
-              Futuro del pozo principal
+      <section style={{ position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(100deg, ${C.brandNavy}f5 0%, ${C.brandNavy}db 40%, ${C.brandNavy}80 66%, ${C.brandNavy}1f 100%), url('/landing/hero.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div style={{ position: "relative", maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: space.x4, alignItems: "center" }}>
+          <div>
+            <span className="mono" style={{ fontSize: fz.xs, color: C.emeraldSoft, fontWeight: 600, letterSpacing: ".04em" }}>
+              CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
+            </span>
+            <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 44, lineHeight: 1.1, letterSpacing: "-0.02em", margin: `${space.md}px 0`, color: "#fff" }}>
+              Optimiza la <span style={{ color: C.glacierSoft }}>energía de tus pozos</span>. Maximiza la <span style={{ color: C.emeraldSoft }}>ganancia de tu rancho</span>.
+            </h1>
+            <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
+              Cruzamos el <b style={{ color: "#fff" }}>costo de tu luz</b>, el <b style={{ color: "#fff" }}>desperdicio de agua</b> y la <b style={{ color: "#fff" }}>salud de tu cultivo</b> para decirte
+              qué regar, cuándo y a qué hora — y cuántos años le quedan a tu pozo. Hecho simple, para el campo de Chihuahua.
+            </p>
+            <div style={{ display: "flex", gap: space.md, marginTop: space.xl, flexWrap: "wrap" }}>
+              <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
+                Ver el panel en vivo <Icon name="arrow" size={16} color="#fff" />
+              </Link>
+              <a href="#pilares" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
+                Cómo funciona
+              </a>
             </div>
-            <svg viewBox="0 0 320 90" style={{ width: "100%" }}>
-              <line x1="0" y1="74" x2="320" y2="74" stroke={C.critical} strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
-              <polyline points="0,18 60,28 120,40 180,52 240,62 320,70" fill="none" stroke={C.emerald} strokeWidth="2.5" />
-              <polyline points="0,18 60,34 120,52 180,68 240,80 280,86" fill="none" stroke={th.mute} strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6" />
-            </svg>
-            <div className="mono" style={{ fontSize: 10, color: th.soft, marginTop: 6 }}>
-              tu plan <span style={{ color: C.emerald }}>━</span> · no hacer nada <span style={{ color: th.mute }}>╌</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: space.xl, fontSize: fz.xs, color: "rgba(255,255,255,.85)", background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", padding: "6px 12px", borderRadius: radius.pill }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emeraldSoft }} />
+              Prototipo · todos los datos son simulados, con rangos reales de Chihuahua
+            </div>
+          </div>
+
+          {/* Control-room mockup */}
+          <div style={{ background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, boxShadow: shadow.lg, overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, padding: `${space.sm}px ${space.md}px`, borderBottom: `1px solid ${th.line}` }}>
+              <Logo size={16} />
+              <span style={{ fontSize: fz.xs, fontWeight: 600 }}>Rancho El Álamo</span>
+              <span className="mono" style={{ fontSize: 10, color: th.mute, marginLeft: "auto" }}>28.190° N · 105.470° O</span>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)" }}>
+              <MockTile label="Gasto del mes" value={`$${fmt(39950)}`} sub="5 rubros" />
+              <MockTile label="Parcelas sanas" value="2/5" sub="sed < 50%" />
+              <MockTile label="Salud de bombas" value="64%" sub="promedio" />
+              <MockTile label="Pozos en alerta" value="1" sub="sobre el límite" danger />
+            </div>
+            <div style={{ padding: space.lg, borderTop: `1px solid ${th.line}` }}>
+              <div style={{ fontSize: fz.micro, textTransform: "uppercase", letterSpacing: ".08em", color: th.mute, fontWeight: 600, marginBottom: space.sm }}>
+                Futuro del pozo principal
+              </div>
+              <svg viewBox="0 0 320 90" style={{ width: "100%" }}>
+                <line x1="0" y1="74" x2="320" y2="74" stroke={C.critical} strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
+                <polyline points="0,18 60,28 120,40 180,52 240,62 320,70" fill="none" stroke={C.emerald} strokeWidth="2.5" />
+                <polyline points="0,18 60,34 120,52 180,68 240,80 280,86" fill="none" stroke={th.mute} strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6" />
+              </svg>
+              <div className="mono" style={{ fontSize: 10, color: th.soft, marginTop: 6 }}>
+                tu plan <span style={{ color: C.emerald }}>━</span> · no hacer nada <span style={{ color: th.mute }}>╌</span>
+              </div>
             </div>
           </div>
         </div>
@@ -203,7 +199,7 @@ export function Landing() {
       </section>
 
       {/* Stat band */}
-      <section id="fuentes" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, color: "#fff" }}>
+      <section id="fuentes" style={{ background: `linear-gradient(110deg,${C.brandNavy}f2,${C.glacier}cc 60%,${C.emerald}cc), url('/landing/agua.jpg') center/cover`, color: "#fff" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: space.xl }}>
           {[
             { v: "3", l: "motores de decisión", s: "riego, acuífero y salud de pozos" },
@@ -216,6 +212,20 @@ export function Landing() {
               <div style={{ fontSize: fz.xs, color: "rgba(255,255,255,.8)", marginTop: 2 }}>{s.s}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Human band */}
+      <section style={{ position: "relative", minHeight: 360, display: "flex", alignItems: "flex-end", backgroundImage: `linear-gradient(0deg, ${th.bg} 3%, transparent 55%), linear-gradient(90deg, ${C.brandNavy}b3, ${C.brandNavy}33 55%, transparent 75%), url('/landing/agricultor.jpg')`, backgroundSize: "cover", backgroundPosition: "center 28%" }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, width: "100%" }}>
+          <div style={{ maxWidth: 560 }}>
+            <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, lineHeight: 1.2, color: "#fff" }}>
+              Hecho para quien trabaja la tierra, no para el ingeniero.
+            </h2>
+            <p style={{ fontSize: fz.md, color: "rgba(255,255,255,.92)", marginTop: space.sm, lineHeight: 1.6 }}>
+              Español claro, lenguaje de rancho y decisiones con dinero de por medio. Te decimos qué hacer hoy con tu agua — sin jerga, sin complicarte.
+            </p>
+          </div>
         </div>
       </section>
 
