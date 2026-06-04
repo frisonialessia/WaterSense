@@ -104,7 +104,7 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder={tr("Pregunta sobre tu finca…", "Pregunta…")}
+          placeholder={tr("Pregunta sobre tu rancho…", "Pregunta…")}
           style={{ flex: 1, background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: "10px 12px", color: th.ink, fontSize: fz.sm, outline: "none" }}
         />
         <button onClick={() => send()} disabled={loading} aria-label="Enviar" style={{ background: C.emerald, border: "none", borderRadius: radius.md, width: 42, cursor: "pointer", color: "#fff", fontSize: 16, fontWeight: 700 }}>↑</button>

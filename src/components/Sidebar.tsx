@@ -8,7 +8,7 @@ import { Logo } from "./Logo";
 export type ViewId = "finca" | "mapa" | "costos" | "futuro" | "pozos" | "docs";
 
 const ITEMS: { id: ViewId; icon: string; s: string; t: string }[] = [
-  { id: "finca", icon: "home", s: "Mi finca", t: "Auditoría" },
+  { id: "finca", icon: "home", s: "Mi rancho", t: "Auditoría" },
   { id: "mapa", icon: "map", s: "Mapa del campo", t: "Command map" },
   { id: "costos", icon: "coin", s: "Costos", t: "Costos" },
   { id: "futuro", icon: "chart", s: "Futuro del agua", t: "Proyección acuífero" },

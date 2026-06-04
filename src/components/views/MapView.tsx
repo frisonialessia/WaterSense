@@ -340,7 +340,7 @@ export function MapView({
       {/* context bar */}
       <div style={{ display: "flex", alignItems: "center", gap: space.md, padding: `${space.sm}px ${space.xl}px`, borderBottom: `1px solid ${th.line}`, background: th.panel, flexWrap: "wrap" }}>
         <select value={regionId} onChange={(e) => onRegion(e.target.value)} style={selectStyle} aria-label={tr("Región", "Región")}>
-          <option value="">{tr("Mi finca (Delicias)", "Centrar en finca")}</option>
+          <option value="">{tr("Mi rancho (Delicias)", "Centrar en rancho")}</option>
           {regions.map((r) => (
             <option key={r.id} value={r.id}>{r.name}</option>
           ))}

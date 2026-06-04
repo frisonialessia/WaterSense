@@ -70,23 +70,23 @@ export function Landing() {
             DEMO
           </span>
         </div>
-        <Link
-          href="/dashboard"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 7,
-            background: C.glacier,
-            color: "#fff",
-            fontSize: fz.sm,
-            fontWeight: 600,
-            padding: "8px 16px",
-            borderRadius: radius.md,
-            textDecoration: "none",
-          }}
-        >
-          Entrar a la demo <Icon name="arrow" size={15} color="#fff" />
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: space.lg }}>
+          {[
+            { href: "#pilares", label: "Qué hace" },
+            { href: "#porque", label: "Por qué WaterSense" },
+            { href: "#fuentes", label: "Datos" },
+          ].map((l) => (
+            <a key={l.href} href={l.href} style={{ fontSize: fz.sm, color: th.soft, textDecoration: "none", fontWeight: 500 }}>
+              {l.label}
+            </a>
+          ))}
+          <Link
+            href="/dashboard"
+            style={{ display: "inline-flex", alignItems: "center", gap: 7, background: C.glacier, color: "#fff", fontSize: fz.sm, fontWeight: 600, padding: "8px 16px", borderRadius: radius.md, textDecoration: "none" }}
+          >
+            Entrar a la demo <Icon name="arrow" size={15} color="#fff" />
+          </Link>
+        </div>
       </nav>
 
       {/* Hero */}
@@ -95,19 +95,19 @@ export function Landing() {
           <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".04em" }}>
             CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
           </span>
-          <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 46, lineHeight: 1.08, letterSpacing: "-0.02em", margin: `${space.md}px 0` }}>
-            Riega menos, <span style={{ color: C.emerald }}>cosecha igual</span>, paga <span style={{ color: C.glacier }}>menos luz</span>.
+          <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 44, lineHeight: 1.1, letterSpacing: "-0.02em", margin: `${space.md}px 0` }}>
+            Optimiza la <span style={{ color: C.glacier }}>energía de tus pozos</span>. Maximiza la <span style={{ color: C.emerald }}>ganancia de tu rancho</span>.
           </h1>
-          <p style={{ fontSize: fz.lg, color: th.soft, lineHeight: 1.6, maxWidth: 520 }}>
-            WaterSense audita tu riego cruzando <b style={{ color: th.ink }}>coste de energía</b>, <b style={{ color: th.ink }}>desperdicio de agua</b> y <b style={{ color: th.ink }}>salud del cultivo</b>.
-            Te dice qué regar, cuándo y a qué hora — en tu idioma, no en jerga.
+          <p style={{ fontSize: fz.lg, color: th.soft, lineHeight: 1.6, maxWidth: 540 }}>
+            Cruzamos el <b style={{ color: th.ink }}>costo de tu luz</b>, el <b style={{ color: th.ink }}>desperdicio de agua</b> y la <b style={{ color: th.ink }}>salud de tu cultivo</b> para decirte
+            qué regar, cuándo y a qué hora — y cuántos años le quedan a tu pozo. Hecho simple, para el campo de Chihuahua.
           </p>
           <div style={{ display: "flex", gap: space.md, marginTop: space.xl, flexWrap: "wrap" }}>
             <Link
               href="/dashboard"
               style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}
             >
-              Ver mi finca <Icon name="arrow" size={16} color="#fff" />
+              Ver el panel en vivo <Icon name="arrow" size={16} color="#fff" />
             </Link>
             <a
               href="#pilares"
@@ -155,7 +155,7 @@ export function Landing() {
       {/* Pillars */}
       <section id="pilares" style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px ${space.x4}px` }}>
         <h2 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.xl, letterSpacing: "-0.01em", marginBottom: space.xl }}>
-          Cuatro cosas que tu finca necesita saber
+          Cuatro cosas que tu rancho necesita saber
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: space.md }}>
           {PILLARS.map((p, i) => (
@@ -173,8 +173,37 @@ export function Landing() {
         </div>
       </section>
 
+      {/* Why WaterSense — differentiators */}
+      <section id="porque" style={{ background: th.panel, borderTop: `1px solid ${th.line}`, borderBottom: `1px solid ${th.line}` }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px` }}>
+          <h2 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.xl, letterSpacing: "-0.01em", marginBottom: space.sm }}>
+            Por qué WaterSense (y no otro tablero)
+          </h2>
+          <p style={{ fontSize: fz.sm, color: th.soft, marginBottom: space.xl, maxWidth: 640 }}>
+            La mayoría de apps de riego solo muestran datos. En el norte de México, donde el agua se acaba, eso no basta:
+            hay que decidir, con dinero de por medio.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: space.md }}>
+            {[
+              { icon: "chart", t: "Defiende tu próxima década", b: "No optimizamos solo el riego de hoy: predecimos cuándo dejaría de dar tu pozo y cómo retrasarlo. El acuífero Meoqui-Delicias ya está sobreexplotado." },
+              { icon: "coin", t: "Decisión con precio, no solo datos", b: "Le ponemos $ a cada decisión: pérdida por sed, ahorro por regar de madrugada, ingreso proyectado de la cosecha. El riego se vuelve inversión." },
+              { icon: "bolt", t: "Energía + agua + cultivo, juntos", b: "El gran costo del bombeo es la luz. Cruzamos la tarifa eléctrica (CENACE) con la sed del cultivo para elegir la hora exacta de riego." },
+              { icon: "home", t: "En tu idioma, sin hardware para empezar", b: "Español claro, modo simple o técnico, y arranque con bajo costo: conectas sensores y datos reales cuando estés listo, sin rehacer nada." },
+            ].map((d) => (
+              <div key={d.t} style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.lg, padding: space.xl }}>
+                <span style={{ width: 34, height: 34, borderRadius: radius.md, background: th.panel, border: `1px solid ${th.line}`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: space.md }}>
+                  <Icon name={d.icon} size={18} color={C.emerald} />
+                </span>
+                <div style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.md, marginBottom: 6 }}>{d.t}</div>
+                <div style={{ fontSize: fz.sm, color: th.soft, lineHeight: 1.6 }}>{d.b}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Stat band */}
-      <section style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, color: "#fff" }}>
+      <section id="fuentes" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, color: "#fff" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: space.xl }}>
           {[
             { v: "3", l: "motores de decisión", s: "riego, acuífero y salud de pozos" },
@@ -190,8 +219,24 @@ export function Landing() {
         </div>
       </section>
 
+      {/* Closing CTA */}
+      <section style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, textAlign: "center" }}>
+        <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, letterSpacing: "-0.01em", marginBottom: space.sm }}>
+          Mira el futuro de tu rancho en 2 minutos
+        </h2>
+        <p style={{ fontSize: fz.md, color: th.soft, marginBottom: space.lg, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+          Sin registro, sin instalar nada. Entra a la demo y recorre tu rancho, tus pozos, tus costos y tu acuífero.
+        </p>
+        <Link
+          href="/dashboard"
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "13px 26px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}
+        >
+          Entrar a la demo <Icon name="arrow" size={16} color="#fff" />
+        </Link>
+      </section>
+
       {/* Footer */}
-      <footer style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: space.md, flexWrap: "wrap" }}>
+      <footer style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px`, borderTop: `1px solid ${th.line}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: space.md, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: space.sm, color: th.soft, fontSize: fz.xs }}>
           <Logo size={18} /> WaterSense · Chihuahua, México
         </div>
