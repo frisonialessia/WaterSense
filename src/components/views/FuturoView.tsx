@@ -172,6 +172,9 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
           </div>
           <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>{tr("Cuanto más baja la línea, más profundo está el agua", "metros al nivel freático · proyección")}</div>
           <div style={{ height: 230 }}>
+            {data.length === 0 ? (
+              <div className="ws-sk" style={{ width: "100%", height: "100%", borderRadius: radius.md }} />
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data} margin={{ top: 6, right: 10, bottom: 0, left: -16 }}>
                 <defs>
@@ -195,6 +198,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
                 <Line type="monotone" dataKey="plan" stroke="url(#futuroLine)" strokeWidth={3} dot={false} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
+            )}
           </div>
           <div style={{ display: "flex", gap: space.lg, marginTop: space.sm, fontSize: fz.micro, color: th.soft }}>
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 2.5, background: `linear-gradient(90deg,${C.emerald},${C.alert},${C.critical})` }} />{tr("tu plan", "escenario")}</span>

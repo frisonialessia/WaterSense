@@ -387,6 +387,12 @@ export function MapView({
       {/* map + overlays */}
       <div className="ws-map-wrap" style={{ position: "relative", flex: 1, minHeight: 480 }}>
         <div ref={containerRef} className="ws-map-canvas" style={{ position: "absolute", inset: 0 }} />
+        {!ready && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 5, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: space.sm, background: th.panel }}>
+            <div className="ws-sk" style={{ width: 220, height: 12 }} />
+            <span style={{ fontSize: fz.xs, color: th.mute }}>{tr("Cargando mapa…", "Cargando mapa…")}</span>
+          </div>
+        )}
 
         {/* layers + draw + my parcels */}
         <div className="ws-map-panel" style={panel({ top: space.md, left: space.md, width: 224, maxHeight: "calc(100% - 32px)", overflowY: "auto" })}>

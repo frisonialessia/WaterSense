@@ -48,6 +48,15 @@ export function StudyView({ th, tr, ranch }: { th: Theme; tr: (s: string, t: str
           </button>
         </div>
 
+        {loading && !study && (
+          <div style={{ marginTop: space.lg }}>
+            <div className="ws-sk" style={{ width: 140, height: 12, marginBottom: space.md }} />
+            {[92, 80, 96, 70, 88, 64, 90].map((w, i) => (
+              <div key={i} className="ws-sk" style={{ height: 12, width: `${w}%`, marginBottom: 10 }} />
+            ))}
+          </div>
+        )}
+
         {study && (
           <div style={{ marginTop: space.lg }}>
             <div style={{ display: "flex", alignItems: "center", gap: space.md, marginBottom: space.sm }}>
