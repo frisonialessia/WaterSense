@@ -181,21 +181,49 @@ export function Dashboard({ data }: { data: DashboardData }) {
   const addConcession = (c: WaterConcession) => setConcessions((prev) => [...prev, c]);
   const removeConcession = (id: string) => setConcessions((prev) => prev.filter((c) => c.id !== id));
 
+  // Cost rubros are editable & expandable in the PoC (edit amount/note, add new),
+  // persisted locally and seeded from the repository. Feeds KPI + sidebar live.
+  const [costItems, setCostItems] = useState<CostItem[]>(data.costs);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("watersense.costItems");
+      if (raw) {
+        const list = JSON.parse(raw) as CostItem[];
+        if (Array.isArray(list) && list.length) setCostItems(list);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("watersense.costItems", JSON.stringify(costItems));
+    } catch {
+      /* ignore */
+    }
+  }, [costItems]);
+  const updateCost = (id: string, patch: Partial<CostItem>) => setCostItems((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+  const addCost = (label: string): string => {
+    const id = `cost-${Date.now()}`;
+    setCostItems((prev) => [...prev, { id, label, icon: "coin", month: 0, trend: 0, note: "" }]);
+    return id;
+  };
+
   return (
     <div style={{ minHeight: "100vh", height: "100vh", background: th.bg, color: th.ink, display: "flex", transition: "background .35s" }}>
       <style>{`.nav:hover{background:${th.panel2}!important;color:${th.ink}!important}`}</style>
       {isMobile && navOpen && (
         <div onClick={() => setNavOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.45)", zIndex: 40 }} />
       )}
-      <Sidebar th={th} mode={mode} view={view} setView={go} tr={tr} costs={data.costs} ranch={ranch} mobile={isMobile} open={navOpen} lang={lang} setLang={setLang} />
+      <Sidebar th={th} mode={mode} view={view} setView={go} tr={tr} costs={costItems} ranch={ranch} mobile={isMobile} open={navOpen} lang={lang} setLang={setLang} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} ranch={ranch} regions={data.regions} ranches={ranches} activeRanchId={activeRanchId} onSwitchRanch={setActiveRanchId} onAddRanch={addRanch} onMenu={isMobile ? () => setNavOpen((o) => !o) : undefined} />
-        <KpiStrip th={th} tr={tr} costs={data.costs} parcels={allParcels} wells={wells} pumps={pumps} trends={data.trends} />
+        <KpiStrip th={th} tr={tr} costs={costItems} parcels={allParcels} wells={wells} pumps={pumps} trends={data.trends} />
         <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           {view === "mapa" ? (
             <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={wells} regions={data.regions} crops={data.crops} />
           ) : view === "costos" ? (
-            <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={allParcels} crops={data.crops} />
+            <CostosView th={th} tr={tr} costs={costItems} tariffCurve={data.tariffCurve} parcels={allParcels} crops={data.crops} onUpdateCost={updateCost} onAddCost={addCost} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
           ) : view === "estudio" ? (

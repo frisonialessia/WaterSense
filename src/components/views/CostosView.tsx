@@ -53,9 +53,19 @@ const PERIOD_MULT: Record<Period, number> = { semanal: 4.33, quincenal: 2, mensu
 const seasonFactor = (m: number) => ([3, 4, 5, 6, 7, 8].includes(m) ? 1.12 : 0.92);
 const monthLabel = (d: Date) => d.toLocaleDateString("es-MX", { month: "short" }).replace(".", "");
 
-export function CostosView({ th, tr, costs, tariffCurve, parcels, crops }: { th: Theme; tr: (s: string, t: string) => string; costs: CostItem[]; tariffCurve: number[]; parcels: Parcel[]; crops: CropProfile[] }) {
+export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdateCost, onAddCost }: { th: Theme; tr: (s: string, t: string) => string; costs: CostItem[]; tariffCurve: number[]; parcels: Parcel[]; crops: CropProfile[]; onUpdateCost: (id: string, patch: Partial<CostItem>) => void; onAddCost: (label: string) => string }) {
   const fixedBaseline = costs.reduce((s, c) => s + c.month, 0);
   const [open, setOpen] = useState<string | null>("luz");
+  const [addingFixed, setAddingFixed] = useState(false);
+  const [newFixed, setNewFixed] = useState("");
+  const createFixed = () => {
+    const label = newFixed.trim();
+    if (!label) return;
+    const id = onAddCost(label);
+    setNewFixed("");
+    setAddingFixed(false);
+    setOpen(id); // abre el nuevo para capturar el monto
+  };
 
   const [entries, setEntries] = useState<CostEntry[]>([]);
   const [customCats, setCustomCats] = useState<CustomCat[]>([]);
@@ -243,16 +253,16 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops }: { th:
         <div style={{ padding: `${space.lg}px ${space.xl}px`, borderBottom: `1px solid ${th.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontWeight: 600 }}>{tr("Tus costos de este mes", "Costos operativos · mes")}</div>
-            <div style={{ fontSize: fz.xs, color: th.mute, marginTop: 2 }}>{tr("Toca la luz para ver el detalle por hora", "Toca un rubro para desglose")}</div>
+            <div style={{ fontSize: fz.xs, color: th.mute, marginTop: 2 }}>{tr("Toca cualquier rubro para ver el detalle y editar el monto", "Toca un rubro para desglosar y editar")}</div>
           </div>
           <span className="mono" style={{ fontSize: fz.xl, fontWeight: 700, color: th.ink }}>${fmt(fixedBaseline)}</span>
         </div>
         {costs.map((c, i) => {
-          const expandable = c.id === "luz";
+          const isLuz = c.id === "luz";
           const isOpen = open === c.id;
           return (
             <div key={c.id} style={{ borderBottom: i < costs.length - 1 ? `1px solid ${th.line}` : "none" }}>
-              <div onClick={() => expandable && setOpen(isOpen ? null : c.id)} style={{ padding: `${space.md}px ${space.xl}px`, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: expandable ? "pointer" : "default", background: isOpen ? th.panel2 : "transparent", transition: "background .2s" }}>
+              <div onClick={() => setOpen(isOpen ? null : c.id)} style={{ padding: `${space.md}px ${space.xl}px`, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", background: isOpen ? th.panel2 : "transparent", transition: "background .2s" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: space.md }}>
                   <span style={{ width: 32, height: 32, borderRadius: radius.md, background: th.panel2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <Icon name={c.icon} size={16} color={c.id === "luz" ? C.alert : c.id === "agua" ? C.glacier : th.soft} />
@@ -260,9 +270,9 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops }: { th:
                   <div>
                     <div style={{ fontSize: fz.sm, fontWeight: 500, display: "flex", alignItems: "center", gap: 8 }}>
                       {c.label}
-                      {expandable && <span style={{ fontSize: fz.micro, color: C.emerald, border: `1px solid ${C.emerald}55`, borderRadius: radius.sm, padding: "1px 6px" }}>{isOpen ? tr("ocultar", "ocultar") : tr("ver por hora", "detalle")}</span>}
+                      <span style={{ fontSize: fz.micro, color: C.emerald, border: `1px solid ${C.emerald}55`, borderRadius: radius.sm, padding: "1px 6px" }}>{isOpen ? tr("ocultar", "ocultar") : isLuz ? tr("ver por hora", "detalle") : tr("editar", "editar")}</span>
                     </div>
-                    <div style={{ fontSize: fz.xs, color: th.mute }}>{c.note}</div>
+                    <div style={{ fontSize: fz.xs, color: th.mute }}>{c.note || tr("sin nota", "—")}</div>
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
@@ -272,14 +282,46 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops }: { th:
                   </div>
                 </div>
               </div>
-              {expandable && isOpen && (
-                <div style={{ background: th.panel2, borderTop: `1px solid ${th.line}` }}>
-                  <HourlyPrices th={th} tr={tr} prices={tariffCurve} parcels={parcels} />
+              {isOpen && (
+                <div style={{ background: th.panel2, borderTop: `1px solid ${th.line}`, padding: `${space.md}px ${space.xl}px` }}>
+                  <div style={{ display: "flex", gap: space.lg, flexWrap: "wrap", alignItems: "flex-end" }}>
+                    <label style={{ fontSize: fz.xs, color: th.soft }}>
+                      <div style={{ marginBottom: 4 }}>{tr("Monto mensual", "Monto / mes")}</div>
+                      <div style={{ display: "flex", alignItems: "center", background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.md, paddingLeft: 10 }}>
+                        <span style={{ color: th.mute, fontSize: fz.xs }}>$</span>
+                        <input type="number" value={c.month} onChange={(e) => onUpdateCost(c.id, { month: Math.round(parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, border: "none", background: "transparent", width: 120 }} />
+                      </div>
+                    </label>
+                    <label style={{ fontSize: fz.xs, color: th.soft, flex: 1, minWidth: 200 }}>
+                      <div style={{ marginBottom: 4 }}>{tr("Nota (opcional)", "Nota")}</div>
+                      <input value={c.note} onChange={(e) => onUpdateCost(c.id, { note: e.target.value })} placeholder={tr("ej. recibo de junio, 3 jornaleros…", "nota")} style={{ ...inputStyle, width: "100%" }} />
+                    </label>
+                    <label style={{ fontSize: fz.xs, color: th.soft }}>
+                      <div style={{ marginBottom: 4 }}>{tr("Cambio % vs. mes pasado", "Tendencia %")}</div>
+                      <input type="number" value={c.trend} onChange={(e) => onUpdateCost(c.id, { trend: Math.round(parseFloat(e.target.value) || 0) })} style={{ ...inputStyle, width: 90 }} />
+                    </label>
+                  </div>
+                  {isLuz && (
+                    <div style={{ marginTop: space.md, marginLeft: -space.xl, marginRight: -space.xl, marginBottom: -space.md, borderTop: `1px solid ${th.line}` }}>
+                      <HourlyPrices th={th} tr={tr} prices={tariffCurve} parcels={parcels} />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
+        <div style={{ padding: `${space.md}px ${space.xl}px`, borderTop: `1px solid ${th.line}` }}>
+          {addingFixed ? (
+            <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "center" }}>
+              <input value={newFixed} onChange={(e) => setNewFixed(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createFixed()} autoFocus placeholder={tr("Nombre del costo (ej. Fertilizante, Renta…)", "Nombre del rubro")} style={{ ...inputStyle, flex: 1, minWidth: 220 }} />
+              <button onClick={createFixed} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer" }}>{tr("Crear", "Crear")}</button>
+              <button onClick={() => { setAddingFixed(false); setNewFixed(""); }} style={{ background: "none", border: "none", color: th.mute, fontSize: fz.xs, cursor: "pointer" }}>{tr("Cancelar", "Cancelar")}</button>
+            </div>
+          ) : (
+            <button onClick={() => setAddingFixed(true)} style={{ background: "none", border: `1px dashed ${th.line}`, color: C.glacier, borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", width: "100%" }}>+ {tr("Agregar otro costo", "Agregar rubro")}</button>
+          )}
+        </div>
       </div>
 
       {/* register a cost (manual + nómina + recibo) */}
