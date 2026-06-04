@@ -56,6 +56,10 @@ export function Topbar({
   view,
   ranch,
   regions,
+  ranches,
+  activeRanchId,
+  onSwitchRanch,
+  onAddRanch,
   onMenu,
 }: {
   th: Theme;
@@ -67,6 +71,10 @@ export function Topbar({
   view: ViewId;
   ranch: RanchConfig;
   regions: Region[];
+  ranches: RanchConfig[];
+  activeRanchId: string;
+  onSwitchRanch: (id: string) => void;
+  onAddRanch: () => void;
   onMenu?: () => void;
 }) {
   const titles: Record<ViewId, string> = {
@@ -116,8 +124,19 @@ export function Topbar({
         )}
         <div style={{ minWidth: 0 }}>
           <h1 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.lg, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{titles[view]}</h1>
-          <div className="mono" style={{ fontSize: fz.micro, color: th.mute, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {tr(`${ranch.name} · ${regionName}`, `${ranch.lat.toFixed(3)}° N · ${Math.abs(ranch.lng).toFixed(3)}° O · ${regionName}`)}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 3, minWidth: 0 }}>
+            <select
+              value={activeRanchId}
+              onChange={(e) => (e.target.value === "__add__" ? onAddRanch() : onSwitchRanch(e.target.value))}
+              title={tr("Cambiar de rancho", "Cambiar de rancho")}
+              style={{ maxWidth: 190, fontFamily: FONT.body, fontSize: fz.xs, fontWeight: 600, color: th.ink, background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, padding: "2px 7px", cursor: "pointer", outline: "none" }}
+            >
+              {ranches.map((r) => (<option key={r.id} value={r.id}>{r.name}</option>))}
+              <option value="__add__">＋ {tr("Agregar rancho…", "Agregar rancho…")}</option>
+            </select>
+            <span className="mono" style={{ fontSize: fz.micro, color: th.mute, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {tr(`· ${regionName}`, `· ${ranch.lat.toFixed(3)}° N · ${Math.abs(ranch.lng).toFixed(3)}° O`)}
+            </span>
           </div>
         </div>
       </div>
