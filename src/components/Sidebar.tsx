@@ -69,7 +69,16 @@ export function Sidebar({
           <div
             key={it.id}
             className="nav"
+            role="button"
+            tabIndex={0}
+            aria-current={active ? "page" : undefined}
             onClick={() => setView(it.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setView(it.id);
+              }
+            }}
             style={{
               display: "flex",
               alignItems: "center",

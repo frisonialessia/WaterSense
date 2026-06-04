@@ -18,13 +18,17 @@ function Seg<V extends string>({
   return (
     <div style={{ display: "flex", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: 2, cursor: "pointer", fontSize: fz.xs }}>
       {opts.map((o) => (
-        <div
+        <button
           key={o.v}
           onClick={() => set(o.v)}
+          aria-pressed={val === o.v}
           style={{
             padding: "4px 11px",
             borderRadius: radius.sm,
             whiteSpace: "nowrap",
+            border: "none",
+            cursor: "pointer",
+            fontSize: fz.xs,
             fontWeight: val === o.v ? 600 : 500,
             background: val === o.v ? th.panel : "transparent",
             color: val === o.v ? th.ink : th.mute,
@@ -33,7 +37,7 @@ function Seg<V extends string>({
           }}
         >
           {o.l}
-        </div>
+        </button>
       ))}
     </div>
   );
@@ -75,6 +79,7 @@ export function Topbar({
     border: `1px solid ${th.line}`,
     borderRadius: radius.md,
     color: th.soft,
+    padding: 0,
   };
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: `${space.md}px ${space.x2}px`, borderBottom: `1px solid ${th.line}`, background: th.panel, gap: space.md }}>
@@ -110,9 +115,9 @@ export function Topbar({
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emerald }} />
           <span className="mono">{tr("En línea", "8 sensores · 3 pozos")}</span>
         </div>
-        <div onClick={() => setMode(mode === "dark" ? "light" : "dark")} style={iconBtn} title={tr("Cambiar tema", "Tema")}>
+        <button onClick={() => setMode(mode === "dark" ? "light" : "dark")} style={iconBtn} title={tr("Cambiar tema", "Tema")} aria-label={tr("Cambiar tema", "Cambiar tema")}>
           <Icon name={mode === "dark" ? "sun" : "moon"} size={15} color={th.soft} />
-        </div>
+        </button>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@
 // and nothing else changes.
 // ============================================================
 
-import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends } from "@/types/domain";
 
 export interface FarmRepository {
   getParcels(): Promise<Parcel[]>;
@@ -20,4 +20,5 @@ export interface FarmRepository {
   getForecast(): Promise<WeatherDay[]>;
   getScheduledActions(): Promise<ScheduledAction[]>;
   getSavings(): Promise<SavingsSummary>;
+  getKpiTrends(): Promise<KpiTrends>;
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary } from "@/types/domain";
+import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
 import { T, makeTr, type Lang, type ThemeMode } from "@/lib/theme";
 import { Sidebar, type ViewId } from "./Sidebar";
@@ -31,6 +31,7 @@ export interface DashboardData {
   forecast: WeatherDay[];
   actions: ScheduledAction[];
   savings: SavingsSummary;
+  trends: KpiTrends;
 }
 
 export function Dashboard({ data }: { data: DashboardData }) {
@@ -46,7 +47,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
       <Sidebar th={th} mode={mode} view={view} setView={setView} tr={tr} costs={data.costs} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} />
-        <KpiStrip th={th} tr={tr} costs={data.costs} parcels={data.parcels} wells={data.wells} pumps={data.pumps} />
+        <KpiStrip th={th} tr={tr} costs={data.costs} parcels={data.parcels} wells={data.wells} pumps={data.pumps} trends={data.trends} />
         <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           {view === "mapa" ? (
             <MapView th={th} mode={mode} tr={tr} parcels={data.parcels} wells={data.wells} regions={data.regions} crops={data.crops} />

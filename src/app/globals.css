@@ -14,6 +14,17 @@ button {
   font-family: inherit;
 }
 
+/* Accessible, consistent focus ring across interactive elements. */
+:focus-visible {
+  outline: 2px solid #2270b8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Don't show the ring on mouse click, only keyboard. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .mono {
   font-family: var(--font-jetbrains), "JetBrains Mono", monospace;
   font-variant-numeric: tabular-nums;

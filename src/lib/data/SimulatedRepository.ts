@@ -5,7 +5,7 @@
 // ============================================================
 
 import type { FarmRepository } from "./FarmRepository";
-import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends } from "@/types/domain";
 
 const CROPS: Record<CropType, CropProfile> = {
   "Nogal pecanero": { crop: "Nogal pecanero", laminaM: 1.9, waterM3ha: 19000, costHa: 14200, freqDays: 7, yieldKgHa: 3200 },
@@ -125,6 +125,15 @@ export class SimulatedRepository implements FarmRepository {
   }
   async getSavings(): Promise<SavingsSummary> {
     return { amountThisMonth: 2840, vsLastMonthPct: 18 };
+  }
+  async getKpiTrends(): Promise<KpiTrends> {
+    // Recent-weeks series (simulated) feeding the KPI sparklines.
+    return {
+      spend: [44200, 43100, 42600, 41800, 40900, 40200, 40100, 39950],
+      healthy: [3, 3, 2, 2, 3, 2, 2, 2],
+      pumps: [72, 70, 69, 67, 66, 65, 64, 64],
+      alerts: [0, 0, 1, 1, 0, 1, 1, 1],
+    };
   }
 }
 

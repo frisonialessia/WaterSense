@@ -117,3 +117,15 @@ export interface SavingsSummary {
   /** change vs. last month, percentage points */
   vsLastMonthPct: number;
 }
+
+/** Short historical series (recent weeks) backing the KPI sparklines. */
+export interface KpiTrends {
+  /** monthly spend, $ */
+  spend: number[];
+  /** count of healthy parcels */
+  healthy: number[];
+  /** average pump health, % */
+  pumps: number[];
+  /** wells over the sustainable limit */
+  alerts: number[];
+}
