@@ -133,7 +133,7 @@ export function PozosView({
   const neighborAlerts = aquifer.concessions.filter((c) => (c.levelTrendMPerYear ?? 0) <= -2.0);
 
   const numInput: React.CSSProperties = { width: "100%", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, padding: "6px 8px", color: th.ink, fontSize: fz.xs, outline: "none", fontFamily: "inherit" };
-  const iconBtn: React.CSSProperties = { width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, cursor: "pointer", color: th.soft, padding: 0 };
+  const iconBtn: React.CSSProperties = { width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, cursor: "pointer", color: th.soft, padding: 0 };
 
   return (
     <div style={{ padding: space.x3 }}>

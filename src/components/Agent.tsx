@@ -18,7 +18,16 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mobile, setMobile] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const apply = () => setMobile(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo(0, scrollRef.current.scrollHeight);
@@ -66,7 +75,9 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
 
   return (
     <div
-      style={{ position: "fixed", bottom: 24, right: 24, width: 380, maxWidth: "calc(100vw - 32px)", height: 540, maxHeight: "calc(100vh - 48px)", background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, zIndex: 31, display: "flex", flexDirection: "column", boxShadow: shadow.lg, overflow: "hidden" }}
+      style={mobile
+        ? { position: "fixed", left: 0, right: 0, bottom: 0, width: "100%", height: "88dvh", background: th.panel, borderTop: `1px solid ${th.line}`, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, zIndex: 41, display: "flex", flexDirection: "column", boxShadow: shadow.lg, overflow: "hidden" }
+        : { position: "fixed", bottom: 24, right: 24, width: 380, maxWidth: "calc(100vw - 32px)", height: 540, maxHeight: "calc(100dvh - 48px)", background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, zIndex: 31, display: "flex", flexDirection: "column", boxShadow: shadow.lg, overflow: "hidden" }}
     >
       <div style={{ padding: `${space.md}px ${space.lg}px`, borderBottom: `1px solid ${th.line}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: space.sm }}>

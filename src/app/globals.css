@@ -7,6 +7,7 @@
 body {
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* red de seguridad: nada desborda horizontal en móvil */
 }
 
 input,
