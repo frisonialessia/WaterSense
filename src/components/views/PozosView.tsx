@@ -1,10 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import type { Well, AquiferNeighborhood, WaterConcession } from "@/types/domain";
+import { useEffect, useState } from "react";
+import type { Well, AquiferNeighborhood, WaterConcession, Reading } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
 import { PUMP_DIAGNOSES } from "@/lib/brain/pumpDiagnosis";
 import { buildAlerts, alertsToMessage } from "@/lib/brain/alerts";
+import { LocalRepository } from "@/lib/data/LocalRepository";
+
+// Backend local sin nube: las lecturas que captura el productor viven en
+// localStorage a través del contrato FarmRepository (mismo seam que Supabase).
+const localRepo = new LocalRepository();
+
+// Métricas capturables. Las que mapean a un campo del pozo recalculan su salud.
+const READING_METRICS: { key: string; label: string; tech: string; unit: string; field?: keyof Well }[] = [
+  { key: "nivel_m", label: "Nivel del pozo", tech: "Nivel dinámico", unit: "m" },
+  { key: "arranques", label: "Arranques (acumulado)", tech: "Arranques", unit: "", field: "starts" },
+  { key: "caudal_lph", label: "Caudal medido", tech: "Q", unit: "L/h", field: "currentFlowLph" },
+  { key: "kwh", label: "Consumo eléctrico", tech: "Energía", unit: "kWh" },
+];
 import { C, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
 import { Icon } from "../Icon";
 
@@ -54,6 +67,30 @@ export function PozosView({
     setNb({ titular: "", uso: "Agrícola", volumeM3Year: "", distanceKm: "", levelTrendMPerYear: "", status: "vigente" });
     setAddingNb(false);
   };
+  // ── Manual reading capture (local backend, feeds pump health) ──
+  const [rMetric, setRMetric] = useState("nivel_m");
+  const [rVal, setRVal] = useState("");
+  const [rBusy, setRBusy] = useState(false);
+  const [readings, setReadings] = useState<Reading[]>([]);
+  const rMeta = READING_METRICS.find((m) => m.key === rMetric) ?? READING_METRICS[0];
+  const loadReadings = async () => {
+    const all = await localRepo.getReadings(rMetric);
+    setReadings(all.filter((x) => x.source === `manual:${selId}`).slice(-6).reverse());
+  };
+  useEffect(() => {
+    loadReadings();
+  }, [selId, rMetric]); // eslint-disable-line react-hooks/exhaustive-deps
+  const saveReading = async () => {
+    const v = parseFloat(rVal);
+    if (!isFinite(v) || !selId) return;
+    setRBusy(true);
+    await localRepo.ingestReading({ source: `manual:${selId}`, metric: rMetric, value: v, unit: rMeta.unit, recordedAt: new Date().toISOString() });
+    if (rMeta.field) onUpdate(selId, { [rMeta.field]: v } as Partial<Well>); // recompute health/ok
+    setRVal("");
+    await loadReadings();
+    setRBusy(false);
+  };
+
   const [waPreview, setWaPreview] = useState<string | null>(null);
   const [waBusy, setWaBusy] = useState(false);
   const testAlert = async () => {
@@ -183,6 +220,42 @@ export function PozosView({
             </div>
           );
         })}
+      </div>
+
+      {/* Manual reading capture — works offline, no cloud (LocalRepository) */}
+      <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: space.md, flexWrap: "wrap", marginBottom: space.md }}>
+          <div>
+            <div style={{ fontWeight: 600 }}>{tr("Registrar lectura del pozo", "Captura de lectura")}</div>
+            <div style={{ fontSize: fz.xs, color: th.mute, marginTop: 2 }}>
+              {tr("Teclea lo que mediste; se guarda en este dispositivo y actualiza la salud de la bomba. Sin internet, sin cuenta.", "Se guarda local (sin nube). Arranques/caudal recalculan la salud.")}
+            </div>
+          </div>
+          <span style={{ fontSize: fz.micro, fontWeight: 600, color: C.emerald, background: `${C.emerald}14`, border: `1px solid ${C.emerald}44`, padding: "3px 9px", borderRadius: radius.pill }}>{tr("Sin nube", "Local")}</span>
+        </div>
+        <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "center" }}>
+          <select value={selId} onChange={(e) => setSelId(e.target.value)} style={{ ...numInput, width: "auto" }} aria-label={tr("Pozo", "Pozo")}>
+            {wells.map((w) => (<option key={w.id} value={w.id}>{w.name}</option>))}
+          </select>
+          <select value={rMetric} onChange={(e) => setRMetric(e.target.value)} style={{ ...numInput, width: "auto" }} aria-label={tr("Qué mediste", "Métrica")}>
+            {READING_METRICS.map((m) => (<option key={m.key} value={m.key}>{tr(m.label, m.tech)}{m.unit ? ` (${m.unit})` : ""}</option>))}
+          </select>
+          <div style={{ display: "flex", alignItems: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, paddingRight: 8 }}>
+            <input type="number" value={rVal} onChange={(e) => setRVal(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveReading()} placeholder={tr("Valor", "Valor")} style={{ ...numInput, border: "none", background: "transparent", width: 110 }} />
+            {rMeta.unit && <span style={{ fontSize: fz.xs, color: th.mute }}>{rMeta.unit}</span>}
+          </div>
+          <button onClick={saveReading} disabled={rBusy || !rVal} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.sm, padding: "7px 16px", fontSize: fz.xs, fontWeight: 600, cursor: rVal ? "pointer" : "default", opacity: rVal ? 1 : 0.5 }}>{rBusy ? "…" : tr("Registrar", "Guardar")}</button>
+          {rMeta.field && <span style={{ fontSize: fz.micro, color: th.soft }}>↻ {tr("recalcula la salud", "actualiza el pozo")}</span>}
+        </div>
+        {readings.length > 0 && (
+          <div style={{ marginTop: space.md, display: "flex", gap: space.sm, flexWrap: "wrap" }}>
+            {readings.map((r) => (
+              <span key={r.id} className="mono" style={{ fontSize: fz.micro, color: th.soft, background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, padding: "3px 8px" }}>
+                {fmt(Math.round(r.value))}{r.unit ? ` ${r.unit}` : ""} · {r.recordedAt.slice(5, 10)}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Aquifer + nearby concessions (REPDA) — reflects the selected well */}
