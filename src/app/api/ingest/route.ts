@@ -11,6 +11,37 @@ import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
+// POST /api/ingest — recibe UNA lectura (sensor o captura manual del productor)
+// y la guarda en `readings`. Cuerpo: { source, metric, value, unit?, ranch_id? }.
+// Ej. nivel del pozo capturado a mano, arranques, kWh, caudal medido.
+export async function POST(req: NextRequest) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  let b: { source?: string; metric?: string; value?: number; unit?: string; ranch_id?: string };
+  try {
+    b = await req.json();
+  } catch {
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
+  if (!b.metric || typeof b.value !== "number") {
+    return NextResponse.json({ error: "Faltan 'metric' y/o 'value' numérico" }, { status: 400 });
+  }
+  if (!url || !key) {
+    return NextResponse.json({ stored: false, reason: "Supabase no configurado (.env). Lectura recibida pero no persistida." });
+  }
+  const sb = createClient(url, key);
+  const { error } = await sb.from("readings").insert({
+    ranch_id: b.ranch_id ?? process.env.DEMO_RANCH_ID ?? null,
+    source: b.source ?? "manual",
+    metric: b.metric,
+    value: b.value,
+    unit: b.unit ?? null,
+    recorded_at: new Date().toISOString(),
+  });
+  if (error) return NextResponse.json({ stored: false, error: error.message }, { status: 500 });
+  return NextResponse.json({ stored: true });
+}
+
 export async function GET(req: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

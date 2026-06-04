@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Well, AquiferNeighborhood, WaterConcession } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
 import { PUMP_DIAGNOSES } from "@/lib/brain/pumpDiagnosis";
+import { buildAlerts, alertsToMessage } from "@/lib/brain/alerts";
 import { C, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
 import { Icon } from "../Icon";
 
@@ -53,6 +54,21 @@ export function PozosView({
     setNb({ titular: "", uso: "Agrícola", volumeM3Year: "", distanceKm: "", levelTrendMPerYear: "", status: "vigente" });
     setAddingNb(false);
   };
+  const [waPreview, setWaPreview] = useState<string | null>(null);
+  const [waBusy, setWaBusy] = useState(false);
+  const testAlert = async () => {
+    setWaBusy(true);
+    const msg = alertsToMessage(buildAlerts(wells, pumps, aquifer));
+    try {
+      const r = await fetch("/api/notify", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ body: msg }) });
+      const d = await r.json();
+      setWaPreview(d.sent ? tr("✓ Enviado por WhatsApp", "Enviado") : (d.preview ?? msg));
+    } catch {
+      setWaPreview(msg);
+    } finally {
+      setWaBusy(false);
+    }
+  };
   const diag = PUMP_DIAGNOSES.find((d) => d.id === diagId) ?? PUMP_DIAGNOSES[0];
   const aquiferOver = aquifer.status === "Sobreexplotado";
   const selWell = wells.find((w) => w.id === selId) ?? wells[0];
@@ -71,10 +87,29 @@ export function PozosView({
             "Mantenimiento predictivo. Selecciona un pozo para el acuífero; edita o agrega pozos."
           )}
         </div>
-        <button onClick={onAdd} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
-          + {tr("Agregar pozo", "Agregar pozo")}
-        </button>
+        <div style={{ display: "flex", gap: space.sm, flexShrink: 0, flexWrap: "wrap" }}>
+          <button onClick={testAlert} disabled={waBusy} style={{ background: th.panel2, border: `1px solid ${th.line}`, color: th.ink, borderRadius: radius.md, padding: "9px 14px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }} title={tr("Vista previa de la alerta que se enviaría", "Probar alerta")}>
+            <Icon name="drop" size={13} color={C.glacier} /> {waBusy ? "…" : tr("Probar alerta WhatsApp", "Probar alerta")}
+          </button>
+          <button onClick={onAdd} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer" }}>
+            + {tr("Agregar pozo", "Agregar pozo")}
+          </button>
+        </div>
       </div>
+
+      {waPreview && (
+        <div style={{ background: th.panel2, border: `1px solid ${C.emerald}44`, borderRadius: radius.md, padding: space.md, marginBottom: space.md, display: "flex", gap: space.md, alignItems: "flex-start" }}>
+          <span style={{ width: 30, height: 30, borderRadius: radius.md, background: `${C.emerald}1f`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <Icon name="drop" size={15} color={C.emerald} />
+          </span>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ ...labelStyle(th), marginBottom: 4 }}>{tr("Así se vería tu alerta de WhatsApp", "Vista previa · WhatsApp")}</div>
+            <div style={{ fontSize: fz.xs, color: th.ink, whiteSpace: "pre-wrap", lineHeight: 1.55 }}>{waPreview}</div>
+            <div style={{ fontSize: fz.micro, color: th.mute, marginTop: 6 }}>{tr("Con Twilio configurado se manda a tu teléfono de Ajustes.", "Conecta Twilio + teléfono en Ajustes para envío real.")}</div>
+          </div>
+          <button onClick={() => setWaPreview(null)} aria-label={tr("Cerrar", "Cerrar")} style={{ background: "none", border: "none", cursor: "pointer", color: th.mute, fontSize: 15, padding: 2 }}>✕</button>
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 440px),1fr))", gap: space.md, marginBottom: space.md }}>
         {wells.map((w, i) => {

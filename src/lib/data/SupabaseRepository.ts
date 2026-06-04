@@ -24,11 +24,15 @@ import type {
   CropProfile,
   CropType,
   CostItem,
+  CostEntry,
   WeatherDay,
   ScheduledAction,
   SavingsSummary,
   KpiTrends,
   AquiferNeighborhood,
+  WaterConcession,
+  RanchConfig,
+  Reading,
   IrrigationSystem,
   SoilType,
 } from "@/types/domain";
@@ -104,6 +108,60 @@ const toCost = (r: Row): CostItem => ({
   note: r.note ?? "",
 });
 
+const toConcession = (r: Row): WaterConcession => ({
+  id: r.id,
+  titular: r.titular,
+  uso: r.uso,
+  volumeM3Year: Number(r.volume_m3_year),
+  distanceKm: Number(r.distance_km ?? 0),
+  status: r.status,
+  levelTrendMPerYear: r.level_trend_m_per_year != null ? Number(r.level_trend_m_per_year) : undefined,
+});
+
+const toCostEntry = (r: Row): CostEntry => ({
+  id: r.id,
+  category: r.category,
+  amount: Number(r.amount),
+  date: r.spent_on,
+  recurring: Boolean(r.recurring),
+  period: r.period ?? undefined,
+  workers: r.workers ?? undefined,
+  workersList: r.workers_list ?? undefined,
+  parcelId: r.parcel_id ?? undefined,
+  quantity: r.quantity != null ? Number(r.quantity) : undefined,
+  unit: r.unit ?? undefined,
+  note: r.note ?? undefined,
+  fileName: r.file_url ?? undefined,
+});
+
+const toRanch = (r: Row): RanchConfig => ({
+  id: r.id,
+  name: r.name,
+  owner: r.owner ?? "",
+  regionId: r.region_id,
+  lat: Number(r.lat),
+  lng: Number(r.lng),
+  altitudeM: Number(r.altitude_m),
+  hectares: Number(r.hectares),
+  mainCrop: r.main_crop,
+  tariffType: r.tariff_type,
+  notes: r.notes ?? "",
+  concessionM3Year: r.concession_m3_year != null ? Number(r.concession_m3_year) : undefined,
+  concessionTitle: r.concession_title ?? undefined,
+  contractedKw: r.contracted_kw != null ? Number(r.contracted_kw) : undefined,
+  cfeService: r.cfe_service ?? undefined,
+  phone: r.phone ?? undefined,
+});
+
+const toReading = (r: Row): Reading => ({
+  id: r.id,
+  source: r.source,
+  metric: r.metric,
+  value: Number(r.value),
+  unit: r.unit ?? undefined,
+  recordedAt: r.recorded_at,
+});
+
 export class SupabaseRepository implements FarmRepository {
   private sb: SupabaseClient;
   constructor(client?: SupabaseClient) {
@@ -171,14 +229,7 @@ export class SupabaseRepository implements FarmRepository {
 
   async getAquiferNeighborhood(): Promise<AquiferNeighborhood> {
     const { data } = await this.sb.from("water_concessions").select("*");
-    const concessions = (data ?? []).map((r: Row, i: number) => ({
-      id: r.id ?? `c${i}`,
-      titular: r.titular,
-      uso: r.uso,
-      volumeM3Year: Number(r.volume_m3_year),
-      distanceKm: Number(r.distance_km ?? 0),
-      status: r.status,
-    }));
+    const concessions = (data ?? []).map(toConcession);
     return {
       aquiferName: data?.[0]?.aquifer_name ?? "—",
       status: "Sobreexplotado", // TODO: derivar de CONAGUA (disponibilidad DOF)
@@ -186,6 +237,145 @@ export class SupabaseRepository implements FarmRepository {
       totalUsersAprox: concessions.length,
       concessions,
     };
+  }
+
+  // ── Wells ──────────────────────────────────────────────
+  async addWell(w: Well): Promise<void> {
+    const { error } = await this.sb.from("wells").insert({
+      id: w.id,
+      ranch_id: this.ranchId(),
+      name: w.name,
+      current_flow_lph: w.currentFlowLph,
+      sustainable_flow_lph: w.sustainableFlowLph,
+      depth_m: w.depthM,
+      rated_starts: w.ratedStarts,
+      starts: w.starts,
+      ok: w.ok,
+      lat: w.lat,
+      lng: w.lng,
+    });
+    if (error) throw error;
+  }
+  async updateWell(id: string, patch: Partial<Well>): Promise<void> {
+    const row: Row = {};
+    if (patch.name !== undefined) row.name = patch.name;
+    if (patch.currentFlowLph !== undefined) row.current_flow_lph = patch.currentFlowLph;
+    if (patch.sustainableFlowLph !== undefined) row.sustainable_flow_lph = patch.sustainableFlowLph;
+    if (patch.depthM !== undefined) row.depth_m = patch.depthM;
+    if (patch.ratedStarts !== undefined) row.rated_starts = patch.ratedStarts;
+    if (patch.starts !== undefined) row.starts = patch.starts;
+    if (patch.ok !== undefined) row.ok = patch.ok;
+    if (patch.lat !== undefined) row.lat = patch.lat;
+    if (patch.lng !== undefined) row.lng = patch.lng;
+    const { error } = await this.sb.from("wells").update(row).eq("id", id);
+    if (error) throw error;
+  }
+  async removeWell(id: string): Promise<void> {
+    const { error } = await this.sb.from("wells").delete().eq("id", id);
+    if (error) throw error;
+  }
+
+  // ── Neighbors / concessions ────────────────────────────
+  async addConcession(c: WaterConcession): Promise<void> {
+    const { error } = await this.sb.from("water_concessions").insert({
+      id: c.id,
+      ranch_id: this.ranchId(), // user-added neighbor belongs to this ranch
+      aquifer_name: "",
+      titular: c.titular,
+      uso: c.uso,
+      volume_m3_year: c.volumeM3Year,
+      distance_km: c.distanceKm,
+      status: c.status,
+      level_trend_m_per_year: c.levelTrendMPerYear,
+    });
+    if (error) throw error;
+  }
+  async removeConcession(id: string): Promise<void> {
+    const { error } = await this.sb.from("water_concessions").delete().eq("id", id);
+    if (error) throw error;
+  }
+
+  // ── Cost ledger ────────────────────────────────────────
+  async getCostEntries(): Promise<CostEntry[]> {
+    const { data, error } = await this.sb.from("cost_entries").select("*").order("spent_on", { ascending: false });
+    if (error) throw error;
+    return (data ?? []).map(toCostEntry);
+  }
+  async addCostEntry(e: CostEntry): Promise<void> {
+    const { error } = await this.sb.from("cost_entries").insert({
+      id: e.id,
+      ranch_id: this.ranchId(),
+      category: e.category,
+      amount: e.amount,
+      spent_on: e.date,
+      recurring: e.recurring,
+      period: e.period,
+      workers: e.workers,
+      workers_list: e.workersList,
+      parcel_id: e.parcelId,
+      quantity: e.quantity,
+      unit: e.unit,
+      note: e.note ?? "",
+      file_url: e.fileName,
+    });
+    if (error) throw error;
+  }
+  async removeCostEntry(id: string): Promise<void> {
+    const { error } = await this.sb.from("cost_entries").delete().eq("id", id);
+    if (error) throw error;
+  }
+
+  // ── Ranch settings ─────────────────────────────────────
+  async getRanch(): Promise<RanchConfig | null> {
+    const { data, error } = await this.sb.from("ranches").select("*").limit(1).maybeSingle();
+    if (error) throw error;
+    return data ? toRanch(data) : null;
+  }
+  async saveRanch(r: RanchConfig): Promise<void> {
+    const { error } = await this.sb.from("ranches").upsert({
+      id: r.id,
+      name: r.name,
+      owner: r.owner,
+      region_id: r.regionId,
+      lat: r.lat,
+      lng: r.lng,
+      altitude_m: r.altitudeM,
+      hectares: r.hectares,
+      main_crop: r.mainCrop,
+      tariff_type: r.tariffType,
+      notes: r.notes,
+      concession_m3_year: r.concessionM3Year,
+      concession_title: r.concessionTitle,
+      contracted_kw: r.contractedKw,
+      cfe_service: r.cfeService,
+      phone: r.phone,
+    });
+    if (error) throw error;
+  }
+
+  // ── Telemetry ──────────────────────────────────────────
+  async ingestReading(reading: Reading): Promise<void> {
+    const { error } = await this.sb.from("readings").insert({
+      ranch_id: this.ranchId(),
+      source: reading.source,
+      metric: reading.metric,
+      value: reading.value,
+      unit: reading.unit,
+      recorded_at: reading.recordedAt,
+    });
+    if (error) throw error;
+  }
+  async getReadings(metric: string, sinceISO?: string): Promise<Reading[]> {
+    let q = this.sb.from("readings").select("*").eq("metric", metric).order("recorded_at", { ascending: true });
+    if (sinceISO) q = q.gte("recorded_at", sinceISO);
+    const { data, error } = await q;
+    if (error) throw error;
+    return (data ?? []).map(toReading);
+  }
+
+  /** Active ranch id for inserts (set DEMO_RANCH_ID, or wire to auth later). */
+  private ranchId(): string | null {
+    return process.env.DEMO_RANCH_ID ?? null;
   }
 
   // ── Datos externos / derivados ──────────────────────────────

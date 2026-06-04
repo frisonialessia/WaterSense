@@ -5,7 +5,7 @@
 // ============================================================
 
 import type { FarmRepository } from "./FarmRepository";
-import type { Parcel, Well, Region, CropProfile, CropType, CostItem, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends, AquiferNeighborhood } from "@/types/domain";
+import type { Parcel, Well, Region, CropProfile, CropType, CostItem, CostEntry, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends, AquiferNeighborhood, WaterConcession, RanchConfig, Reading } from "@/types/domain";
 
 // Profiles simulados con rangos plausibles para Chihuahua (m, m³/ha, $/ha,
 // días, kg/ha, $/kg). Ganadería y "Otro" son aproximaciones de referencia.
@@ -78,6 +78,19 @@ const WELLS: Well[] = [
   { id: "chico", name: "Pozo chico", currentFlowLph: 4300, sustainableFlowLph: 4000, depthM: 120, ratedStarts: 20000, starts: 18900, ok: false, lat: 28.1935, lng: -105.4655 },
   { id: "norte", name: "Pozo norte", currentFlowLph: 5100, sustainableFlowLph: 6000, depthM: 95, ratedStarts: 18000, starts: 9800, ok: true, lat: 28.195, lng: -105.463 },
 ];
+// Mutable working sets so the write methods are real contracts (the live PoC
+// mirrors these client-side in localStorage for instant feedback).
+let wellStore: Well[] = [...WELLS];
+let costEntryStore: CostEntry[] = [];
+let ranchStore: RanchConfig | null = null;
+let readingStore: Reading[] = [];
+let concessionStore: WaterConcession[] = [
+  { id: "c1", titular: "Productor agrícola (vecino N)", uso: "Agrícola", volumeM3Year: 480000, distanceKm: 1.2, status: "vigente", levelTrendMPerYear: -2.4 },
+  { id: "c2", titular: "Junta de agua potable", uso: "Público urbano", volumeM3Year: 1200000, distanceKm: 3.4, status: "vigente", levelTrendMPerYear: -0.9 },
+  { id: "c3", titular: "Unión de productores (nuez)", uso: "Agrícola", volumeM3Year: 920000, distanceKm: 4.1, status: "vigente", levelTrendMPerYear: -1.3 },
+  { id: "c4", titular: "Empacadora regional", uso: "Industrial", volumeM3Year: 150000, distanceKm: 5.0, status: "en trámite", levelTrendMPerYear: -0.6 },
+  { id: "c5", titular: "Rancho ganadero (sur)", uso: "Pecuario", volumeM3Year: 90000, distanceKm: 6.3, status: "vigente", levelTrendMPerYear: -0.4 },
+];
 
 const REGIONS: Region[] = [
   { id: "chihuahua", name: "Chihuahua, Chihuahua", postalCode: "31000", lat: 28.635, lng: -106.089, altitudeM: 1440, et0: 6.5 },
@@ -122,7 +135,7 @@ export class SimulatedRepository implements FarmRepository {
     parcelStore = parcelStore.filter((p) => p.id !== id);
   }
   async getWells(): Promise<Well[]> {
-    return WELLS;
+    return wellStore;
   }
   async getRegions(): Promise<Region[]> {
     return REGIONS;
@@ -173,13 +186,53 @@ export class SimulatedRepository implements FarmRepository {
       status: "Sobreexplotado",
       decreeYear: 2020,
       totalUsersAprox: 2400,
-      concessions: [
-        { id: "c1", titular: "Productor agrícola (vecino N)", uso: "Agrícola", volumeM3Year: 480000, distanceKm: 1.2, status: "vigente", levelTrendMPerYear: -2.4 },
-        { id: "c2", titular: "Junta de agua potable", uso: "Público urbano", volumeM3Year: 1200000, distanceKm: 3.4, status: "vigente", levelTrendMPerYear: -0.9 },
-        { id: "c3", titular: "Unión de productores (nuez)", uso: "Agrícola", volumeM3Year: 920000, distanceKm: 4.1, status: "vigente", levelTrendMPerYear: -1.3 },
-        { id: "c4", titular: "Empacadora regional", uso: "Industrial", volumeM3Year: 150000, distanceKm: 5.0, status: "en trámite", levelTrendMPerYear: -0.6 },
-        { id: "c5", titular: "Rancho ganadero (sur)", uso: "Pecuario", volumeM3Year: 90000, distanceKm: 6.3, status: "vigente", levelTrendMPerYear: -0.4 },
-      ],
+      concessions: concessionStore,
     };
+  }
+
+  // ── Wells ──────────────────────────────────────────────
+  async addWell(well: Well): Promise<void> {
+    wellStore = [...wellStore, well];
+  }
+  async updateWell(id: string, patch: Partial<Well>): Promise<void> {
+    wellStore = wellStore.map((w) => (w.id === id ? { ...w, ...patch } : w));
+  }
+  async removeWell(id: string): Promise<void> {
+    wellStore = wellStore.filter((w) => w.id !== id);
+  }
+
+  // ── Neighbors / concessions ────────────────────────────
+  async addConcession(c: WaterConcession): Promise<void> {
+    concessionStore = [...concessionStore, c];
+  }
+  async removeConcession(id: string): Promise<void> {
+    concessionStore = concessionStore.filter((c) => c.id !== id);
+  }
+
+  // ── Cost ledger ────────────────────────────────────────
+  async getCostEntries(): Promise<CostEntry[]> {
+    return costEntryStore;
+  }
+  async addCostEntry(entry: CostEntry): Promise<void> {
+    costEntryStore = [entry, ...costEntryStore];
+  }
+  async removeCostEntry(id: string): Promise<void> {
+    costEntryStore = costEntryStore.filter((e) => e.id !== id);
+  }
+
+  // ── Ranch settings ─────────────────────────────────────
+  async getRanch(): Promise<RanchConfig | null> {
+    return ranchStore;
+  }
+  async saveRanch(ranch: RanchConfig): Promise<void> {
+    ranchStore = ranch;
+  }
+
+  // ── Telemetry ──────────────────────────────────────────
+  async ingestReading(reading: Reading): Promise<void> {
+    readingStore = [...readingStore, reading];
+  }
+  async getReadings(metric: string, sinceISO?: string): Promise<Reading[]> {
+    return readingStore.filter((r) => r.metric === metric && (!sinceISO || r.recordedAt >= sinceISO));
   }
 }
