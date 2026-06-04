@@ -136,6 +136,3 @@ export class SimulatedRepository implements FarmRepository {
     };
   }
 }
-
-// single shared instance used by API routes today
-export const repository: FarmRepository = new SimulatedRepository();

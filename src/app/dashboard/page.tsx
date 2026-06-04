@@ -1,7 +1,7 @@
 // Server Component: reads farm data from the repository (the swap seam),
 // runs the pump-health brain server-side, and hands the result to the
 // client dashboard shell.
-import { repository } from "@/lib/data/SimulatedRepository";
+import { repository } from "@/lib/data/repository";
 import { assessPump } from "@/lib/brain/pumpHealth";
 import { Dashboard } from "@/components/Dashboard";
 
