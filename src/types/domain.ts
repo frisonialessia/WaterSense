@@ -10,7 +10,19 @@ export type CropType =
   | "Alfalfa"
   | "Chile jalapeño"
   | "Manzano"
-  | "Maíz forrajero";
+  | "Maíz forrajero"
+  | "Algodón"
+  | "Sorgo forrajero"
+  | "Avena forrajera"
+  | "Frijol"
+  | "Cebolla"
+  | "Calabaza"
+  | "Sandía"
+  | "Papa"
+  | "Fresa"
+  | "Trigo"
+  | "Ganadería (pastizal)"
+  | "Otro";
 
 export interface CropProfile {
   crop: CropType;

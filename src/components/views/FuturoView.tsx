@@ -62,6 +62,13 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
   const yearsGained = proj?.yearsGained ?? 0;
   const planColor = survives ? C.emerald : C.critical;
 
+  // ── Consequence simulator: how your zone & Chihuahua would look ──
+  const yearsLeft = survives ? 30 : Math.max(0, (limitYear ?? BASE_YEAR) - BASE_YEAR);
+  const sev: "ok" | "watch" | "risk" = survives || yearsLeft >= 25 ? "ok" : yearsLeft >= 12 ? "watch" : "risk";
+  const sevColor = sev === "risk" ? C.critical : sev === "watch" ? C.alert : C.emerald;
+  const zonaPct = Math.max(5, Math.min(100, Math.round((yearsLeft / 30) * 100)));
+  const chihPct = Math.max(3, zonaPct - 15);
+
   const data = (proj?.levels ?? []).map((v, i) => ({
     year: BASE_YEAR + i,
     plan: Math.round(v),
@@ -73,8 +80,10 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
 
   const presets = [
     { n: tr("No hacer nada", "Línea base"), v: { extraction: 100, rainReuse: 0, drainReuse: 0, neighbors: 3 } },
+    { n: tr("Sobreexplotación", "Sobreexplotación"), v: { extraction: 125, rainReuse: 0, drainReuse: 0, neighbors: 6 } },
     { n: tr("Plan conservador", "Conservador"), v: { extraction: 90, rainReuse: 30, drainReuse: 15, neighbors: 3 } },
     { n: tr("Plan agresivo", "Agresivo"), v: { extraction: 70, rainReuse: 70, drainReuse: 50, neighbors: 3 } },
+    { n: tr("Plan regenerativo", "Regenerativo"), v: { extraction: 60, rainReuse: 100, drainReuse: 80, neighbors: 2 } },
   ];
 
   const Lever = ({ label, sub, k, min, max, unit, color, cost }: { label: string; sub: string; k: keyof Levers; min: number; max: number; unit: string; color: string; cost?: string }) => (
@@ -92,7 +101,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
   );
 
   return (
-    <div style={{ padding: space.x3, maxWidth: 1100 }}>
+    <div style={{ padding: space.x3 }}>
       {/* headline — the one brand-gradient moment */}
       <div className="card" style={{ borderRadius: radius.lg, padding: `${space.x2}px ${space.x2}px`, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff", background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})` }}>
         <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>
@@ -127,7 +136,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
         ))}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space.lg }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(360px,1fr))", gap: space.lg }}>
         {/* levers */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("Mueve las palancas", "Variables del escenario")}</div>
@@ -172,6 +181,44 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, height: 2.5, background: planColor }} />{tr("tu plan", "escenario")}</span>
             <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 16, borderTop: `2px dashed ${th.mute}` }} />{tr("si no haces nada", "línea base")}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Consequence simulator: your zone & Chihuahua */}
+      <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>
+        <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("¿Y si no se cumple el plan?", "Simulador de consecuencias")}</div>
+        <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.lg }}>{tr("Cómo se vería el agua de tu zona y de Chihuahua con el escenario actual", "Disponibilidad proyectada: tu zona vs. estado")}</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: space.md }}>
+          {[
+            { name: tr("Tu zona · Meoqui-Delicias", "Acuífero Meoqui-Delicias"), pct: zonaPct },
+            { name: tr("Chihuahua (acuíferos)", "Chihuahua · agregado"), pct: chihPct },
+          ].map((z) => {
+            const zc = z.pct >= 60 ? C.emerald : z.pct >= 30 ? C.alert : C.critical;
+            return (
+              <div key={z.name} style={{ border: `1px solid ${th.line}`, borderRadius: radius.md, overflow: "hidden" }}>
+                <div style={{ position: "relative", height: 96, background: `linear-gradient(180deg, ${th.panel2}, ${zc}22)` }}>
+                  <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: `${z.pct}%`, background: `${zc}33`, borderTop: `2px solid ${zc}`, transition: "height .4s" }} />
+                  <span className="mono" style={{ position: "absolute", top: 8, left: 10, fontSize: fz.lg, fontWeight: 700, color: zc }}>{z.pct}%</span>
+                  <span style={{ position: "absolute", top: 13, right: 10, fontSize: fz.micro, color: th.soft }}>{tr("agua disponible", "disponibilidad")}</span>
+                </div>
+                <div style={{ padding: `${space.sm}px ${space.md}px` }}>
+                  <div style={{ fontSize: fz.sm, fontWeight: 600 }}>{z.name}</div>
+                  <div style={{ fontSize: fz.xs, color: th.soft, marginTop: 2 }}>
+                    {z.pct >= 60
+                      ? tr("Sostenible si se mantiene el plan.", "Disponibilidad estable.")
+                      : z.pct >= 30
+                        ? tr("Bajo presión: el agua se reduce año con año.", "Bajo presión.")
+                        : tr("Crítico: riesgo de quedarse sin agua para riego.", "Crítico.")}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ marginTop: space.md, fontSize: fz.xs, color: th.ink, padding: `${space.sm}px ${space.md}px`, borderRadius: radius.md, background: `${sevColor}12`, border: `1px solid ${sevColor}33`, lineHeight: 1.5 }}>
+          {survives
+            ? tr("Con este plan tu zona se mantiene. Si todos en Chihuahua hicieran lo mismo, el acuífero aguanta.", "Escenario sostenible a nivel zona; replicable a escala estatal.")
+            : tr(`Si no se cumple, tu pozo llega a su límite hacia ${limitYear}. A escala Chihuahua, miles de hectáreas quedarían sin riego.`, `Inviabilidad local ~${limitYear}; impacto agregado severo a escala estatal.`)}
         </div>
       </div>
 

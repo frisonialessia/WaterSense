@@ -17,7 +17,7 @@ export function PozosView({ th, tr, wells, pumps, aquifer }: { th: Theme; tr: (s
   const aquiferOver = aquifer.status === "Sobreexplotado";
 
   return (
-    <div style={{ padding: space.x3, maxWidth: 920 }}>
+    <div style={{ padding: space.x3 }}>
       <div style={{ fontSize: fz.sm, color: th.mute, marginBottom: space.lg }}>
         {tr(
           "WaterSense vigila tus bombas y avisa antes de que fallen — para que no te quedes sin agua en plena temporada.",
@@ -25,13 +25,14 @@ export function PozosView({ th, tr, wells, pumps, aquifer }: { th: Theme; tr: (s
         )}
       </div>
 
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(440px,1fr))", gap: space.md, marginBottom: space.md }}>
       {wells.map((w, i) => {
         const p = byId.get(w.id);
         if (!p) return null;
         const col = STATUS_COLOR[p.status];
         const warn = p.status !== "ok";
         return (
-          <div key={w.id} className="card" style={{ ...cardStyle(th), animationDelay: `${i * 0.06}s`, padding: space.xl, marginBottom: space.md }}>
+          <div key={w.id} className="card" style={{ ...cardStyle(th), animationDelay: `${i * 0.06}s`, padding: space.xl }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: space.lg }}>
               <div style={{ display: "flex", alignItems: "center", gap: space.md }}>
                 <span style={{ width: 38, height: 38, borderRadius: radius.md, background: th.panel2, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -69,6 +70,7 @@ export function PozosView({ th, tr, wells, pumps, aquifer }: { th: Theme; tr: (s
           </div>
         );
       })}
+      </div>
 
       {/* Aquifer + nearby concessions (REPDA) */}
       <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>

@@ -67,7 +67,7 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels }: { th: Theme;
   const inputStyle: React.CSSProperties = { background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: "8px 10px", color: th.ink, fontSize: fz.xs, outline: "none", fontFamily: "inherit" };
 
   return (
-    <div style={{ padding: space.x3, maxWidth: 920 }}>
+    <div style={{ padding: space.x3 }}>
       <div className="card" style={{ ...cardStyle(th), overflow: "hidden" }}>
         <div style={{ padding: `${space.lg}px ${space.xl}px`, borderBottom: `1px solid ${th.line}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>

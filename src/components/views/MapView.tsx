@@ -4,14 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Parcel, Well, Region, CropProfile, CropType } from "@/types/domain";
-import { C, fmt, space, fz, radius, shadow, labelStyle, type Theme, type ThemeMode } from "@/lib/theme";
+import { C, fmt, space, fz, radius, shadow, labelStyle, stressColor, type Theme, type ThemeMode } from "@/lib/theme";
 
 const STYLE: Record<ThemeMode, string> = {
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
 };
-
-const stressColor = (s: number) => (s > 0.6 ? C.alert : s < 0.35 ? C.emerald : C.glacier);
 
 type Layer = "stress" | "wells";
 
@@ -363,7 +361,7 @@ export function MapView({
         <div style={panel({ top: space.md, left: space.md, width: 224, maxHeight: "calc(100% - 32px)", overflowY: "auto" })}>
           <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("¿Qué quieres ver?", "Capas")}</div>
           {([
-            { id: "stress", sw: `linear-gradient(90deg,${C.emerald},${C.glacier},${C.alert})`, s: "Sed del cultivo", t: "Estrés hídrico" },
+            { id: "stress", sw: `linear-gradient(90deg,${C.emerald},${C.alert},${C.critical})`, s: "Sed del cultivo", t: "Estrés hídrico" },
             { id: "wells", sw: C.glacier, s: "Mis pozos", t: "Pozos & acuífero" },
           ] as { id: Layer; sw: string; s: string; t: string }[]).map((o) => {
             const active = layer === o.id;

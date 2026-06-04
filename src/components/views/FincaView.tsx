@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, CropType } from "@/types/domain";
 import { projectYield } from "@/lib/brain/yieldModel";
 import { assessStressRisk } from "@/lib/brain/stressRisk";
-import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
+import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, stressColor, type Theme } from "@/lib/theme";
 import { Icon } from "../Icon";
 import type { ViewId } from "../Sidebar";
 
@@ -82,7 +82,7 @@ export function FincaView({
     const r = assessStressRisk({ stress: driest.stress, hectares: driest.hectares, yieldKgHa: c.yieldKgHa, pricePerKg: c.pricePerKg });
     return { ...r, parcel: driest };
   }, [parcels, cropMap]);
-  const riskColor = risk?.level === "urgent" ? C.critical : C.alert;
+  const riskColor = risk ? stressColor(risk.parcel.stress) : C.alert;
 
   // ── What-if: hora de riego → ahorro en vivo ────────────────
   const cheapest = useMemo(() => (tariffCurve.length ? tariffCurve.indexOf(Math.min(...tariffCurve)) : 2), [tariffCurve]);
@@ -100,7 +100,7 @@ export function FincaView({
   ];
 
   return (
-    <div style={{ padding: space.x3, maxWidth: 1120 }}>
+    <div style={{ padding: space.x3 }}>
       {/* cover — the dashboard's one brand-gradient moment */}
       <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: `${space.x2}px ${space.x2}px`, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff" }}>
         <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes", "Auditoría contrafactual")}</p>
@@ -146,7 +146,7 @@ export function FincaView({
       </div>
 
       {/* yield projection + what-if */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: space.md, marginBottom: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md, marginBottom: space.md }}>
         {/* yield = irrigation as investment */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -189,7 +189,7 @@ export function FincaView({
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: space.md }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md }}>
         {/* weather + rain impact */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("El clima y tu riego", "Pronóstico · impacto en riego")}</div>

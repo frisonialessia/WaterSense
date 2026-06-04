@@ -35,7 +35,7 @@ export function StudyView({ th, tr, ranch }: { th: Theme; tr: (s: string, t: str
   };
 
   return (
-    <div style={{ padding: space.x3, maxWidth: 920 }}>
+    <div style={{ padding: space.x3 }}>
       <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: space.md, flexWrap: "wrap" }}>
           <div>

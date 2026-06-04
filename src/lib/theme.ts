@@ -54,6 +54,19 @@ export const FONT = {
 /** Locale-aware number formatting (Mexican Spanish). */
 export const fmt = (n: number): string => n.toLocaleString("es-MX");
 
+// ── Canonical status scale (used EVERYWHERE for water stress) ──
+// One source of truth so a parcel looks the same on the map, the cover,
+// the alerts and the KPIs. Higher stress = drier = worse.
+export type StressLevel = "ok" | "watch" | "risk";
+
+export const stressLevel = (s: number): StressLevel => (s >= 0.7 ? "risk" : s >= 0.45 ? "watch" : "ok");
+
+/** risk → red, watch → amber, ok → emerald. */
+export const stressColor = (s: number): string => {
+  const l = stressLevel(s);
+  return l === "risk" ? C.critical : l === "watch" ? C.alert : C.emerald;
+};
+
 export type Lang = "simple" | "tech";
 
 /** Translator helper: pick simple (farmer) vs technical wording. */

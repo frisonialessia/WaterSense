@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { C, T, FONT, fmt, space, fz, radius, shadow } from "@/lib/theme";
+import { C, T, FONT, space, fz, radius, shadow } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
+import { HeroSimulator } from "./HeroSimulator";
 
 // Marketing landing — light mode, brand palette, one gradient hero moment.
 // Leads with the emotional anchor from CLAUDE.md: "¿tu finca sobrevive
@@ -31,19 +32,6 @@ const PILLARS = [
     body: "Riega barato y sin desperdicio: tarifa nocturna del CENACE y reparto de bombeo, sin que muevas un dedo.",
   },
 ];
-
-function MockTile({ label, value, sub, danger }: { label: string; value: string; sub: string; danger?: boolean }) {
-  return (
-    <div style={{ padding: `${space.md}px ${space.lg}px`, borderLeft: `1px solid ${th.line}` }}>
-      <div style={{ fontSize: fz.micro, textTransform: "uppercase", letterSpacing: ".08em", color: th.mute, fontWeight: 600 }}>{label}</div>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
-        <span className="mono" style={{ fontSize: fz.lg, fontWeight: 700, color: danger ? C.critical : th.ink }}>{value}</span>
-        {danger && <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.critical }} />}
-      </div>
-      <div className="mono" style={{ fontSize: 10, color: th.mute, marginTop: 2 }}>{sub}</div>
-    </div>
-  );
-}
 
 export function Landing() {
   return (
@@ -92,12 +80,12 @@ export function Landing() {
       {/* Hero */}
       <section style={{ position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(100deg, ${C.brandNavy}f5 0%, ${C.brandNavy}db 40%, ${C.brandNavy}80 66%, ${C.brandNavy}1f 100%), url('/landing/hero.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }} />
-        <div style={{ position: "relative", maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, display: "grid", gridTemplateColumns: "1.05fr 0.95fr", gap: space.x4, alignItems: "center" }}>
+        <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: `${space.x4 + space.x3}px ${space.x3}px`, minHeight: "80vh", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(360px,1fr))", gap: space.x4, alignItems: "center" }}>
           <div>
-            <span className="mono" style={{ fontSize: fz.xs, color: C.emeraldSoft, fontWeight: 600, letterSpacing: ".04em" }}>
+            <span className="mono" style={{ fontSize: fz.sm, color: C.emeraldSoft, fontWeight: 600, letterSpacing: ".05em" }}>
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
             </span>
-            <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 44, lineHeight: 1.1, letterSpacing: "-0.02em", margin: `${space.md}px 0`, color: "#fff" }}>
+            <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: 56, lineHeight: 1.05, letterSpacing: "-0.02em", margin: `${space.lg}px 0`, color: "#fff" }}>
               Optimiza la <span style={{ color: C.glacierSoft }}>energía de tus pozos</span>. Maximiza la <span style={{ color: C.emeraldSoft }}>ganancia de tu rancho</span>.
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
@@ -118,33 +106,8 @@ export function Landing() {
             </div>
           </div>
 
-          {/* Control-room mockup */}
-          <div style={{ background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, boxShadow: shadow.lg, overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, padding: `${space.sm}px ${space.md}px`, borderBottom: `1px solid ${th.line}` }}>
-              <Logo size={16} />
-              <span style={{ fontSize: fz.xs, fontWeight: 600 }}>Rancho El Álamo</span>
-              <span className="mono" style={{ fontSize: 10, color: th.mute, marginLeft: "auto" }}>28.190° N · 105.470° O</span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)" }}>
-              <MockTile label="Gasto del mes" value={`$${fmt(39950)}`} sub="5 rubros" />
-              <MockTile label="Parcelas sanas" value="2/5" sub="sed < 50%" />
-              <MockTile label="Salud de bombas" value="64%" sub="promedio" />
-              <MockTile label="Pozos en alerta" value="1" sub="sobre el límite" danger />
-            </div>
-            <div style={{ padding: space.lg, borderTop: `1px solid ${th.line}` }}>
-              <div style={{ fontSize: fz.micro, textTransform: "uppercase", letterSpacing: ".08em", color: th.mute, fontWeight: 600, marginBottom: space.sm }}>
-                Futuro del pozo principal
-              </div>
-              <svg viewBox="0 0 320 90" style={{ width: "100%" }}>
-                <line x1="0" y1="74" x2="320" y2="74" stroke={C.critical} strokeWidth="1" strokeDasharray="4 4" opacity="0.5" />
-                <polyline points="0,18 60,28 120,40 180,52 240,62 320,70" fill="none" stroke={C.emerald} strokeWidth="2.5" />
-                <polyline points="0,18 60,34 120,52 180,68 240,80 280,86" fill="none" stroke={th.mute} strokeWidth="1.5" strokeDasharray="4 4" opacity="0.6" />
-              </svg>
-              <div className="mono" style={{ fontSize: 10, color: th.soft, marginTop: 6 }}>
-                tu plan <span style={{ color: C.emerald }}>━</span> · no hacer nada <span style={{ color: th.mute }}>╌</span>
-              </div>
-            </div>
-          </div>
+          {/* Interactive water-future simulator */}
+          <HeroSimulator />
         </div>
       </section>
 
