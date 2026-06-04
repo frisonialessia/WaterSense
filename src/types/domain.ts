@@ -172,6 +172,8 @@ export interface AquiferNeighborhood {
 
 /** User-editable ranch settings (persisted client-side in the PoC). */
 export interface RanchConfig {
+  /** stable id so a user can keep several ranches and switch between them */
+  id: string;
   name: string;
   owner: string;
   regionId: string;
@@ -206,4 +208,40 @@ export interface KpiTrends {
   pumps: number[];
   /** wells over the sustainable limit */
   alerts: number[];
+}
+
+/** A single registered expense (the cost ledger). */
+export interface CostEntry {
+  id: string;
+  category: string;
+  amount: number;
+  /** yyyy-mm-dd */
+  date: string;
+  recurring: boolean;
+  period?: "semanal" | "quincenal" | "mensual";
+  workers?: number;
+  workersList?: { name: string; amount: number }[];
+  /** parcel the expense is charged to (optional) */
+  parcelId?: string;
+  /** linked consumption (m³ of water, kWh of power, L of diesel) */
+  quantity?: number;
+  unit?: string;
+  note?: string;
+  fileName?: string;
+}
+
+/**
+ * One telemetry point. Anything time-series lands here: sensor readings,
+ * CENACE prices, weather, CONAGUA piezometry, or manual entries from the farmer.
+ */
+export interface Reading {
+  id?: number;
+  /** 'sensor' | 'manual' | 'cenace' | 'weather' | 'conagua' … */
+  source: string;
+  /** 'water_table_m' | 'starts' | 'kwh' | 'flow_lph' | 'rain_mm' | 'price_kwh' … */
+  metric: string;
+  value: number;
+  unit?: string;
+  /** ISO timestamp */
+  recordedAt: string;
 }

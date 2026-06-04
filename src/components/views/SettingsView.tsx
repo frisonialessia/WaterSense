@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { RanchConfig, Region, CropProfile } from "@/types/domain";
 import { C, cardStyle, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
 
@@ -11,6 +11,11 @@ export function SettingsView({
   setRanch,
   regions,
   crops,
+  ranches,
+  activeRanchId,
+  onSwitchRanch,
+  onAddRanch,
+  onRemoveRanch,
 }: {
   th: Theme;
   tr: (s: string, t: string) => string;
@@ -18,8 +23,17 @@ export function SettingsView({
   setRanch: (r: RanchConfig) => void;
   regions: Region[];
   crops: CropProfile[];
+  ranches: RanchConfig[];
+  activeRanchId: string;
+  onSwitchRanch: (id: string) => void;
+  onAddRanch: () => void;
+  onRemoveRanch: (id: string) => void;
 }) {
   const [form, setForm] = useState<RanchConfig>(ranch);
+  // when the active ranch changes (switch / add), reload the form with its data
+  useEffect(() => {
+    setForm(ranch);
+  }, [ranch.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const [saved, setSaved] = useState(false);
   const set = <K extends keyof RanchConfig>(k: K, v: RanchConfig[K]) => {
     setForm((f) => ({ ...f, [k]: v }));
@@ -46,6 +60,19 @@ export function SettingsView({
 
   return (
     <div style={{ padding: space.x3 }}>
+      {/* ranch switcher — keep several ranches and jump between them */}
+      <div className="card" style={{ ...cardStyle(th), padding: space.lg, maxWidth: 1100, marginBottom: space.md, display: "flex", alignItems: "center", gap: space.md, flexWrap: "wrap" }}>
+        <span style={labelStyle(th)}>{tr("Rancho activo", "Rancho activo")}</span>
+        <select value={activeRanchId} onChange={(e) => onSwitchRanch(e.target.value)} style={{ ...inputStyle, width: "auto", minWidth: 200, flex: "0 1 auto" }}>
+          {ranches.map((r) => (<option key={r.id} value={r.id}>{r.name}</option>))}
+        </select>
+        <button onClick={onAddRanch} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "9px 16px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer" }}>+ {tr("Agregar rancho", "Agregar rancho")}</button>
+        {ranches.length > 1 && (
+          <button onClick={() => { if (confirm(tr(`¿Eliminar "${ranch.name}"?`, `¿Eliminar "${ranch.name}"?`))) onRemoveRanch(activeRanchId); }} style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: "9px 14px", fontSize: fz.xs, fontWeight: 600, color: C.critical, cursor: "pointer" }}>{tr("Eliminar este rancho", "Eliminar")}</button>
+        )}
+        <span style={{ fontSize: fz.micro, color: th.mute, marginLeft: "auto" }}>{ranches.length} {ranches.length === 1 ? tr("rancho", "rancho") : tr("ranchos", "ranchos")}</span>
+      </div>
+
       <div className="card" style={{ ...cardStyle(th), padding: space.xl, maxWidth: 1100 }}>
         <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("Tu rancho", "Configuración del rancho")}</div>
         <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.lg }}>{tr("Configura los datos de tu rancho. Se usan en todo el panel.", "Parámetros del rancho usados por el panel y el cerebro.")}</div>

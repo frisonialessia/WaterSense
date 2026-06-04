@@ -16,7 +16,7 @@ import { SettingsView } from "./views/SettingsView";
 import { StudyView } from "./views/StudyView";
 import { Agent } from "./Agent";
 
-const DEFAULT_RANCH: RanchConfig = { name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "", concessionM3Year: 320000, concessionTitle: "", contractedKw: 110, cfeService: "", phone: "" };
+const DEFAULT_RANCH: RanchConfig = { id: "ranch-1", name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "", concessionM3Year: 320000, concessionTitle: "", contractedKw: 110, cfeService: "", phone: "" };
 
 const loader = (label: string) => () => <div style={{ padding: 30, fontSize: 13, color: "#84A0A8" }}>{label}</div>;
 
@@ -87,23 +87,49 @@ export function Dashboard({ data }: { data: DashboardData }) {
   const addParcel = (p: Parcel) => setUserParcels((prev) => [...prev, p]);
   const removeParcel = (id: string) => setUserParcels((prev) => prev.filter((x) => x.id !== id));
 
-  // Ranch settings (persisted client-side in the PoC).
-  const [ranch, setRanch] = useState<RanchConfig>(DEFAULT_RANCH);
+  // Ranch settings — the user can keep several ranches and switch between them.
+  // Persisted client-side in the PoC (with Supabase each is a row in `ranches`).
+  const [ranches, setRanches] = useState<RanchConfig[]>([DEFAULT_RANCH]);
+  const [activeRanchId, setActiveRanchId] = useState<string>(DEFAULT_RANCH.id);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("watersense.ranch");
-      if (raw) setRanch({ ...DEFAULT_RANCH, ...JSON.parse(raw) });
+      const rawList = localStorage.getItem("watersense.ranches");
+      if (rawList) {
+        const list = JSON.parse(rawList) as RanchConfig[];
+        if (Array.isArray(list) && list.length) setRanches(list.map((r) => ({ ...DEFAULT_RANCH, ...r })));
+      } else {
+        // migrate the old single-ranch key, if present
+        const legacy = localStorage.getItem("watersense.ranch");
+        if (legacy) setRanches([{ ...DEFAULT_RANCH, ...JSON.parse(legacy) }]);
+      }
+      const active = localStorage.getItem("watersense.activeRanch");
+      if (active) setActiveRanchId(active);
     } catch {
       /* ignore */
     }
   }, []);
   useEffect(() => {
     try {
-      localStorage.setItem("watersense.ranch", JSON.stringify(ranch));
+      localStorage.setItem("watersense.ranches", JSON.stringify(ranches));
+      localStorage.setItem("watersense.activeRanch", activeRanchId);
     } catch {
       /* ignore */
     }
-  }, [ranch]);
+  }, [ranches, activeRanchId]);
+  const ranch = ranches.find((r) => r.id === activeRanchId) ?? ranches[0];
+  const setRanch = (r: RanchConfig) => setRanches((prev) => prev.map((x) => (x.id === r.id ? r : x)));
+  const addRanch = () => {
+    const id = `ranch-${Date.now()}`;
+    setRanches((prev) => [...prev, { ...DEFAULT_RANCH, id, name: `${tr("Rancho nuevo", "Rancho nuevo")} ${ranches.length + 1}`, owner: "", notes: "", concessionTitle: "", cfeService: "", phone: "" }]);
+    setActiveRanchId(id);
+  };
+  const removeRanch = (id: string) =>
+    setRanches((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((r) => r.id !== id);
+      if (id === activeRanchId) setActiveRanchId(next[0].id);
+      return next;
+    });
 
   // Wells are editable in the PoC (rename / add / remove), persisted locally.
   // Pump health is recomputed by the brain whenever the wells change.
@@ -179,7 +205,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : view === "ajustes" ? (
-            <SettingsView th={th} tr={tr} ranch={ranch} setRanch={setRanch} regions={data.regions} crops={data.crops} />
+            <SettingsView th={th} tr={tr} ranch={ranch} setRanch={setRanch} regions={data.regions} crops={data.crops} ranches={ranches} activeRanchId={activeRanchId} onSwitchRanch={setActiveRanchId} onAddRanch={addRanch} onRemoveRanch={removeRanch} />
           ) : (
             <FincaView th={th} tr={tr} setView={go} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} lat={ranch.lat} lng={ranch.lng} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
