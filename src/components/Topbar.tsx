@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { RanchConfig, Region } from "@/types/domain";
 import { C, FONT, radius, space, fz, type Lang, type Theme, type ThemeMode } from "@/lib/theme";
@@ -79,6 +80,19 @@ export function Topbar({
     ajustes: tr("Ajustes", "Configuración"),
   };
   const regionName = regions.find((r) => r.id === ranch.regionId)?.name ?? "Chihuahua";
+
+  const [online, setOnline] = useState(true);
+  useEffect(() => {
+    const up = () => setOnline(navigator.onLine);
+    up();
+    window.addEventListener("online", up);
+    window.addEventListener("offline", up);
+    return () => {
+      window.removeEventListener("online", up);
+      window.removeEventListener("offline", up);
+    };
+  }, []);
+
   const iconBtn: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
@@ -125,13 +139,14 @@ export function Topbar({
             fontSize: fz.xs,
             color: th.soft,
             background: th.panel2,
-            border: `1px solid ${th.line}`,
+            border: `1px solid ${online ? th.line : C.alert + "55"}`,
             padding: "6px 11px",
             borderRadius: radius.md,
           }}
+          title={online ? undefined : tr("Sin conexión: seguimos con tus datos guardados", "Offline · datos cacheados")}
         >
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emerald }} />
-          <span className="mono">{tr("En línea", "8 sensores · 3 pozos")}</span>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: online ? C.emerald : C.alert }} />
+          <span className="mono">{online ? tr("En línea", "8 sensores · 3 pozos") : tr("Sin conexión", "Offline")}</span>
         </div>
         <Link
           href="/reporte"

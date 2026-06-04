@@ -36,6 +36,8 @@ export function PozosView({
   const diag = PUMP_DIAGNOSES.find((d) => d.id === diagId) ?? PUMP_DIAGNOSES[0];
   const aquiferOver = aquifer.status === "Sobreexplotado";
   const selWell = wells.find((w) => w.id === selId) ?? wells[0];
+  // Neighbor alert: a nearby concession dropping its water table unusually fast.
+  const neighborAlerts = aquifer.concessions.filter((c) => (c.levelTrendMPerYear ?? 0) <= -2.0);
 
   const numInput: React.CSSProperties = { width: "100%", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, padding: "6px 8px", color: th.ink, fontSize: fz.xs, outline: "none", fontFamily: "inherit" };
   const iconBtn: React.CSSProperties = { width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.sm, cursor: "pointer", color: th.soft, padding: 0 };
@@ -159,16 +161,38 @@ export function PozosView({
           </div>
         )}
 
-        <div style={{ ...labelStyle(th), margin: `${space.md}px 0 ${space.sm}px` }}>{tr("Concesiones cerca de ti", "Concesiones próximas")}</div>
-        {aquifer.concessions.map((c, i) => (
-          <div key={c.id} style={{ display: "flex", alignItems: "center", gap: space.md, padding: "8px 0", borderBottom: i < aquifer.concessions.length - 1 ? `1px solid ${th.line}` : "none" }}>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div style={{ fontSize: fz.sm, color: th.ink }}>{c.titular}</div>
-              <div className="mono" style={{ fontSize: fz.micro, color: th.mute }}>{c.uso} · {c.distanceKm} km{c.status !== "vigente" ? ` · ${c.status}` : ""}</div>
+        {neighborAlerts.length > 0 && (
+          <div style={{ marginTop: space.md, padding: `${space.md}px ${space.lg}px`, borderRadius: radius.md, background: `${C.critical}12`, border: `1px solid ${C.critical}40`, display: "flex", alignItems: "flex-start", gap: space.md }}>
+            <span style={{ width: 30, height: 30, borderRadius: radius.md, background: `${C.critical}1f`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon name="drop" size={16} color={C.critical} />
+            </span>
+            <div style={{ fontSize: fz.sm, color: th.ink, lineHeight: 1.5 }}>
+              <b>{tr("Alerta de vecinos", "Alerta de vecinos")}:</b>{" "}
+              {tr(
+                `${neighborAlerts[0].titular} (a ${neighborAlerts[0].distanceKm} km) muestra un descenso inusual del nivel (${neighborAlerts[0].levelTrendMPerYear} m/año). Posible sobreextracción cercana — conviene repartir tu bombeo y vigilar tu propio nivel.`,
+                `${neighborAlerts[0].titular}: abatimiento ${neighborAlerts[0].levelTrendMPerYear} m/año (anómalo) a ${neighborAlerts[0].distanceKm} km. Riesgo de interferencia de pozos.`
+              )}
             </div>
-            <span className="mono" style={{ fontSize: fz.xs, color: th.soft }}>{fmt(c.volumeM3Year)} m³/{tr("año", "a")}</span>
           </div>
-        ))}
+        )}
+
+        <div style={{ ...labelStyle(th), margin: `${space.md}px 0 ${space.sm}px` }}>{tr("Concesiones cerca de ti", "Concesiones próximas")}</div>
+        {aquifer.concessions.map((c, i) => {
+          const trend = c.levelTrendMPerYear ?? 0;
+          const trendColor = trend <= -2 ? C.critical : trend <= -1.2 ? C.alert : C.emerald;
+          return (
+            <div key={c.id} style={{ display: "flex", alignItems: "center", gap: space.md, padding: "8px 0", borderBottom: i < aquifer.concessions.length - 1 ? `1px solid ${th.line}` : "none" }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontSize: fz.sm, color: th.ink }}>{c.titular}</div>
+                <div className="mono" style={{ fontSize: fz.micro, color: th.mute }}>{c.uso} · {c.distanceKm} km{c.status !== "vigente" ? ` · ${c.status}` : ""}</div>
+              </div>
+              <span className="mono" style={{ fontSize: fz.micro, fontWeight: 600, color: trendColor }} title={tr("descenso del nivel freático", "tendencia nivel")}>
+                {trend > 0 ? "↑" : "↓"} {Math.abs(trend)} m/{tr("año", "a")}
+              </span>
+              <span className="mono" style={{ fontSize: fz.xs, color: th.soft }}>{fmt(c.volumeM3Year)} m³/{tr("año", "a")}</span>
+            </div>
+          );
+        })}
         <p style={{ fontSize: fz.micro, color: th.mute, marginTop: space.sm, lineHeight: 1.5 }}>
           {tr(
             "Concesiones de ejemplo. La información real de quién tiene derechos de agua es pública en el REPDA de CONAGUA; aquí la estructura está lista para conectarla.",

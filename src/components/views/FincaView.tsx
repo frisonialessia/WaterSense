@@ -5,8 +5,10 @@ import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, 
 import { projectYield } from "@/lib/brain/yieldModel";
 import { assessStressRisk } from "@/lib/brain/stressRisk";
 import { tariffSavingsFactor } from "@/lib/brain/irrigationFactors";
+import { marketOutlook } from "@/lib/brain/marketModel";
 import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, stressColor, type Theme } from "@/lib/theme";
 import { Icon } from "../Icon";
+import { Sparkline } from "../Sparkline";
 import type { ViewId } from "../Sidebar";
 
 function useCount(target: number, dur = 1100) {
@@ -111,6 +113,30 @@ export function FincaView({
     const pct = potential ? Math.round((revenue / potential) * 100) : 100;
     return { revenue, lost, pct };
   }, [parcels, cropMap]);
+
+  // ── Mercado: cuándo vender el cultivo principal ─────────────
+  const market = useMemo(() => {
+    const rev: Partial<Record<CropType, number>> = {};
+    for (const p of parcels) {
+      const c = cropMap[p.crop];
+      if (!c) continue;
+      const y = projectYield({ yieldKgHa: c.yieldKgHa, hectares: p.hectares, stress: p.stress, pricePerKg: c.pricePerKg });
+      rev[p.crop] = (rev[p.crop] ?? 0) + y.revenue;
+    }
+    let dominant: CropType | null = null;
+    let best = -1;
+    for (const k of Object.keys(rev) as CropType[]) {
+      const v = rev[k] ?? 0;
+      if (v > best) {
+        best = v;
+        dominant = k;
+      }
+    }
+    const profile = dominant ? cropMap[dominant] : undefined;
+    if (!dominant || !profile) return null;
+    return { crop: dominant, ...marketOutlook(profile.pricePerKg, dominant, new Date().getMonth()) };
+  }, [parcels, cropMap]);
+  const bestMonthName = market ? new Date(new Date().getFullYear(), new Date().getMonth() + market.bestMonthOffset, 1).toLocaleDateString("es-MX", { month: "long" }) : "";
 
   // ── Punto de no retorno (most-stressed parcel) ─────────────
   const risk = useMemo(() => {
@@ -225,6 +251,34 @@ export function FincaView({
             <span>23:00</span>
           </div>
         </div>
+
+        {/* market — when to sell */}
+        {market && (
+          <div className="card" style={{ ...cardStyle(th), padding: space.xl, display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div style={{ fontWeight: 600 }}>{tr("¿Cuándo vender?", "Mercado · venta")}</div>
+              <span style={{ fontSize: fz.micro, fontWeight: 600, color: market.sellNow ? C.emerald : C.alert, background: `${market.sellNow ? C.emerald : C.alert}14`, border: `1px solid ${(market.sellNow ? C.emerald : C.alert)}33`, padding: "3px 9px", borderRadius: radius.pill }}>
+                {market.sellNow ? tr("buen momento", "vender") : tr("conviene esperar", "esperar")}
+              </span>
+            </div>
+            <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>{tr("Precio de mercado", "Mercado")} · {market.crop}</div>
+            <div style={{ display: "flex", alignItems: "baseline", gap: space.sm }}>
+              <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, color: th.ink }}>${market.currentPrice.toFixed(2)}</span>
+              <span style={{ fontSize: fz.xs, color: th.soft }}>$/kg {tr("hoy", "hoy")}</span>
+              <span style={{ marginLeft: "auto", fontSize: fz.xs, fontWeight: 600, color: market.trend === "sube" ? C.emerald : market.trend === "baja" ? C.critical : th.mute }}>
+                {market.trend === "sube" ? "↑" : market.trend === "baja" ? "↓" : "="} {market.trend}
+              </span>
+            </div>
+            <div style={{ margin: `${space.md}px 0` }}>
+              <Sparkline data={market.curve} color={C.glacier} width={240} height={36} />
+            </div>
+            <div style={{ marginTop: "auto", fontSize: fz.xs, color: th.ink, padding: `${space.sm}px ${space.md}px`, borderRadius: radius.md, background: `${C.glacier}10`, border: `1px solid ${C.glacier}25`, lineHeight: 1.5 }}>
+              {market.sellNow
+                ? tr(`El precio está cerca de su punto alto — buena ventana para vender.`, `Precio cerca del máximo del horizonte.`)
+                : tr(`Mejor ventana: ${bestMonthName} (~$${market.bestMonthPrice.toFixed(2)}/kg). Si puedes almacenar, conviene esperar.`, `Pico proyectado: ${bestMonthName} · $${market.bestMonthPrice.toFixed(2)}/kg.`)}
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(340px,1fr))", gap: space.md }}>

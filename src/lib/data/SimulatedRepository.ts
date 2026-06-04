@@ -171,11 +171,11 @@ export class SimulatedRepository implements FarmRepository {
       decreeYear: 2020,
       totalUsersAprox: 2400,
       concessions: [
-        { id: "c1", titular: "Productor agrícola (vecino N)", uso: "Agrícola", volumeM3Year: 480000, distanceKm: 1.2, status: "vigente" },
-        { id: "c2", titular: "Junta de agua potable", uso: "Público urbano", volumeM3Year: 1200000, distanceKm: 3.4, status: "vigente" },
-        { id: "c3", titular: "Unión de productores (nuez)", uso: "Agrícola", volumeM3Year: 920000, distanceKm: 4.1, status: "vigente" },
-        { id: "c4", titular: "Empacadora regional", uso: "Industrial", volumeM3Year: 150000, distanceKm: 5.0, status: "en trámite" },
-        { id: "c5", titular: "Rancho ganadero (sur)", uso: "Pecuario", volumeM3Year: 90000, distanceKm: 6.3, status: "vigente" },
+        { id: "c1", titular: "Productor agrícola (vecino N)", uso: "Agrícola", volumeM3Year: 480000, distanceKm: 1.2, status: "vigente", levelTrendMPerYear: -2.4 },
+        { id: "c2", titular: "Junta de agua potable", uso: "Público urbano", volumeM3Year: 1200000, distanceKm: 3.4, status: "vigente", levelTrendMPerYear: -0.9 },
+        { id: "c3", titular: "Unión de productores (nuez)", uso: "Agrícola", volumeM3Year: 920000, distanceKm: 4.1, status: "vigente", levelTrendMPerYear: -1.3 },
+        { id: "c4", titular: "Empacadora regional", uso: "Industrial", volumeM3Year: 150000, distanceKm: 5.0, status: "en trámite", levelTrendMPerYear: -0.6 },
+        { id: "c5", titular: "Rancho ganadero (sur)", uso: "Pecuario", volumeM3Year: 90000, distanceKm: 6.3, status: "vigente", levelTrendMPerYear: -0.4 },
       ],
     };
   }

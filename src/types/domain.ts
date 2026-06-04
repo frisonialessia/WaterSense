@@ -155,6 +155,8 @@ export interface WaterConcession {
   /** distance from the farm, km */
   distanceKm: number;
   status: "vigente" | "en trámite" | "vencida";
+  /** recent change in their water table, m/year (negative = dropping fast) */
+  levelTrendMPerYear?: number;
 }
 
 /** The aquifer the farm shares + who else draws from it (REPDA/CONAGUA). */
