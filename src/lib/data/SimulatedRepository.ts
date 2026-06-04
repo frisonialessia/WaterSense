@@ -55,6 +55,10 @@ const PARCELS: Parcel[] = PARCELS_BASE.map((p, i) => ({
   boundary: p.lat != null && p.lng != null ? fieldBoundary(p.lng, p.lat, p.hectares, i + 1) : undefined,
 }));
 
+// Mutable working set so the contract methods (addParcel/removeParcel) are
+// real. The live PoC also mirrors drawn parcels in the browser (localStorage).
+let parcelStore: Parcel[] = [...PARCELS];
+
 const WELLS: Well[] = [
   { id: "grande", name: "Pozo grande", currentFlowLph: 7900, sustainableFlowLph: 8200, depthM: 78, ratedStarts: 20000, starts: 12400, ok: true, lat: 28.19, lng: -105.4775 },
   { id: "chico", name: "Pozo chico", currentFlowLph: 4300, sustainableFlowLph: 4000, depthM: 120, ratedStarts: 20000, starts: 18900, ok: false, lat: 28.1935, lng: -105.4655 },
@@ -92,7 +96,13 @@ const SCHEDULED_ACTIONS: ScheduledAction[] = [
 
 export class SimulatedRepository implements FarmRepository {
   async getParcels(): Promise<Parcel[]> {
-    return PARCELS;
+    return parcelStore;
+  }
+  async addParcel(parcel: Parcel): Promise<void> {
+    parcelStore = [...parcelStore, parcel];
+  }
+  async removeParcel(id: string): Promise<void> {
+    parcelStore = parcelStore.filter((p) => p.id !== id);
   }
   async getWells(): Promise<Well[]> {
     return WELLS;

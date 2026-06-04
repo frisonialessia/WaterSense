@@ -21,4 +21,11 @@ export interface FarmRepository {
   getScheduledActions(): Promise<ScheduledAction[]>;
   getSavings(): Promise<SavingsSummary>;
   getKpiTrends(): Promise<KpiTrends>;
+  /**
+   * Persist a parcel the farmer drew. Future contract: with Supabase this
+   * writes a row. In the PoC the dashboard also keeps drawn parcels in the
+   * browser (localStorage) for instant feedback without a backend.
+   */
+  addParcel(parcel: Parcel): Promise<void>;
+  removeParcel(id: string): Promise<void>;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import type { CostItem, Parcel, Well, Region, CropProfile, WeatherDay, ScheduledAction, SavingsSummary, KpiTrends } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
@@ -41,18 +41,40 @@ export function Dashboard({ data }: { data: DashboardData }) {
   const th = T[mode];
   const tr = makeTr(lang);
 
+  // Parcels the farmer draws live in the browser (localStorage) in the PoC.
+  // In Fase 3 these would persist via repository.addParcel/removeParcel.
+  const [userParcels, setUserParcels] = useState<Parcel[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("watersense.userParcels");
+      if (raw) setUserParcels(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("watersense.userParcels", JSON.stringify(userParcels));
+    } catch {
+      /* ignore */
+    }
+  }, [userParcels]);
+  const allParcels = useMemo(() => [...data.parcels, ...userParcels], [data.parcels, userParcels]);
+  const addParcel = (p: Parcel) => setUserParcels((prev) => [...prev, p]);
+  const removeParcel = (id: string) => setUserParcels((prev) => prev.filter((x) => x.id !== id));
+
   return (
     <div style={{ minHeight: "100vh", height: "100vh", background: th.bg, color: th.ink, display: "flex", transition: "background .35s" }}>
       <style>{`.nav:hover{background:${th.panel2}!important;color:${th.ink}!important}`}</style>
       <Sidebar th={th} mode={mode} view={view} setView={setView} tr={tr} costs={data.costs} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} />
-        <KpiStrip th={th} tr={tr} costs={data.costs} parcels={data.parcels} wells={data.wells} pumps={data.pumps} trends={data.trends} />
+        <KpiStrip th={th} tr={tr} costs={data.costs} parcels={allParcels} wells={data.wells} pumps={data.pumps} trends={data.trends} />
         <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           {view === "mapa" ? (
-            <MapView th={th} mode={mode} tr={tr} parcels={data.parcels} wells={data.wells} regions={data.regions} crops={data.crops} />
+            <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={data.wells} regions={data.regions} crops={data.crops} />
           ) : view === "costos" ? (
-            <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={data.parcels} />
+            <CostosView th={th} tr={tr} costs={data.costs} tariffCurve={data.tariffCurve} parcels={allParcels} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
           ) : view === "pozos" ? (
@@ -60,7 +82,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "docs" ? (
             <DocsView th={th} tr={tr} />
           ) : (
-            <FincaView th={th} tr={tr} setView={setView} parcels={data.parcels} forecast={data.forecast} actions={data.actions} savings={data.savings} />
+            <FincaView th={th} tr={tr} setView={setView} parcels={allParcels} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
         </div>
       </main>

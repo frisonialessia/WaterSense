@@ -32,6 +32,55 @@ export function DocsView({ th, tr }: { th: Theme; tr: (s: string, t: string) => 
         "Sensores de suelo (LoRaWAN), Sentinel-2 (Copernicus), CENACE (spot), CONAGUA (derechos). Actualmente simulado."
       ),
     },
+    {
+      q: tr("¿Puedo dibujar y guardar mis parcelas?", "Gestión de parcelas"),
+      a: tr(
+        "Sí. En el mapa toca 'Dibujar mi parcela', marca las esquinas, ponle nombre y elige el cultivo. Al elegir el cultivo, el sistema ya sabe cuánta agua y dinero necesita. Puedes borrarla cuando quieras.",
+        "Dibuja el polígono, asígnale nombre y cultivo (hereda CropProfile: lámina, frecuencia, m³/ha, costo). Se guarda en tu navegador (localStorage); con base de datos conectada, persistiría por usuario."
+      ),
+    },
+    {
+      q: tr("¿Por qué cada cultivo riega distinto?", "Riego por cultivo"),
+      a: tr(
+        "Porque cada planta bebe distinto. Un nogal pide mucha agua y riego cada ~7 días; un manzano pide menos y cada ~8. Por eso el costo y el calendario cambian según lo que siembres.",
+        "Cada cultivo tiene su perfil hídrico (lámina anual, m³/ha, frecuencia, rendimiento). El calculador y el calendario se ajustan automáticamente al cultivo de cada parcela."
+      ),
+    },
+    {
+      q: tr("¿Cómo sé qué pozos hay y quién comparte mi acuífero?", "Pozos y derechos de agua"),
+      a: tr(
+        "Los pozos y concesiones de agua en México están en un registro público de CONAGUA (REPDA). Ahí se puede ver quién tiene permiso, para qué y cuánto. En esta demo los pozos son de ejemplo; la idea es conectar ese registro para mostrarte los reales cerca de ti.",
+        "REPDA (Registro Público de Derechos de Agua, CONAGUA) lista concesiones: titular, uso, volumen y ubicación. Hoy simulado; la arquitectura está lista para cruzar REPDA por acuífero/coordenadas."
+      ),
+    },
+    {
+      q: tr("¿Cómo cuida WaterSense mis bombas?", "Mantenimiento de pozos"),
+      a: tr(
+        "Vigila los arranques y la presión de cada bomba y te avisa antes de que falle, para que no te quedes sin agua en plena temporada. En 'Mis pozos' ves la salud de cada una.",
+        "Mantenimiento predictivo: el motor estima salud y ventana de falla a partir de arranques y caída de presión. Con sensores reales por bomba, las alertas usarían desgaste medido."
+      ),
+    },
+    {
+      q: tr("¿Mis datos están seguros?", "Privacidad de datos"),
+      a: tr(
+        "En esta demostración nada sale de tu navegador: lo que dibujas se guarda solo en tu equipo. Cuando se conecte una base de datos real, tus datos serían privados y solo tuyos.",
+        "PoC sin backend: el estado del usuario vive en localStorage. En producción (Supabase) habría cuentas, RLS por usuario y datos cifrados en tránsito."
+      ),
+    },
+    {
+      q: tr("¿Esto cuesta? ¿Necesito internet?", "Uso y requisitos"),
+      a: tr(
+        "Es una demostración gratuita. Necesitas internet para ver el mapa. Todo lo demás funciona como ejemplo, sin que tengas que configurar nada.",
+        "Demo gratuita. El mapa usa teselas en línea (CARTO). El resto opera con datos simulados sin configuración."
+      ),
+    },
+    {
+      q: tr("¿Cómo cambio entre lenguaje simple y técnico?", "Modo simple vs técnico"),
+      a: tr(
+        "Arriba a la derecha hay un botón 'Simple / Técnico'. En Simple hablamos claro; en Técnico mostramos los términos y unidades de ingeniería.",
+        "El toggle Simple/Técnico (barra superior) cambia toda la terminología de la interfaz."
+      ),
+    },
   ];
   return (
     <div style={{ padding: space.x3, maxWidth: 880 }}>

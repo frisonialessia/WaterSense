@@ -14,9 +14,7 @@ const STYLE: Record<ThemeMode, string> = {
 const stressColor = (s: number) => (s > 0.6 ? C.alert : s < 0.35 ? C.emerald : C.glacier);
 
 type Layer = "stress" | "wells";
-type DrawnParcel = { pts: [number, number][]; ha: number };
 
-// Geodesic-ish polygon area in hectares (planar approx around its latitude).
 function ringHectares(pts: [number, number][]): number {
   if (pts.length < 3) return 0;
   const lat0 = pts.reduce((s, p) => s + p[1], 0) / pts.length;
@@ -38,6 +36,9 @@ export function MapView({
   mode,
   tr,
   parcels,
+  userParcels,
+  onAddParcel,
+  onRemoveParcel,
   wells,
   regions,
   crops,
@@ -46,6 +47,9 @@ export function MapView({
   mode: ThemeMode;
   tr: (s: string, t: string) => string;
   parcels: Parcel[];
+  userParcels: Parcel[];
+  onAddParcel: (p: Parcel) => void;
+  onRemoveParcel: (id: string) => void;
   wells: Well[];
   regions: Region[];
   crops: CropProfile[];
@@ -54,18 +58,19 @@ export function MapView({
   const [selId, setSelId] = useState<string>(parcels[2]?.id ?? parcels[0]?.id ?? "");
   const [regionId, setRegionId] = useState<string>("");
 
-  // search (geocoding)
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
   const [searchMsg, setSearchMsg] = useState("");
 
-  // draw parcel
+  // draw + naming
   const [drawing, setDrawing] = useState(false);
   const [drawPts, setDrawPts] = useState<[number, number][]>([]);
-  const [myParcels, setMyParcels] = useState<DrawnParcel[]>([]);
+  const [naming, setNaming] = useState(false);
+  const [formName, setFormName] = useState("");
+  const [formCrop, setFormCrop] = useState<CropType>(crops[0]?.crop ?? "Nogal pecanero");
+  const [formStress, setFormStress] = useState(0.4);
   const drawingRef = useRef(false);
   const drawPtsRef = useRef<[number, number][]>([]);
-  const myParcelsRef = useRef<DrawnParcel[]>([]);
 
   const cropMap = useMemo(() => {
     const m = {} as Record<CropType, CropProfile>;
@@ -100,7 +105,6 @@ export function MapView({
     return [lng, lat];
   }, [parcels]);
 
-  // helpers to push draw / saved geometry into the map sources
   const syncDraw = () => {
     const map = mapRef.current;
     const src = map?.getSource("draw") as maplibregl.GeoJSONSource | undefined;
@@ -116,27 +120,17 @@ export function MapView({
         : [];
       src.setData({ type: "FeatureCollection", features });
     }
-    if (ptsSrc) {
-      ptsSrc.setData({ type: "FeatureCollection", features: pts.map((p) => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: p } })) });
-    }
-  };
-  const syncMine = () => {
-    const src = mapRef.current?.getSource("myparcels") as maplibregl.GeoJSONSource | undefined;
-    if (src) {
-      src.setData({
-        type: "FeatureCollection",
-        features: myParcelsRef.current.map((mp) => ({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [[...mp.pts, mp.pts[0]]] } })),
-      });
-    }
+    if (ptsSrc) ptsSrc.setData({ type: "FeatureCollection", features: pts.map((p) => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: p } })) });
   };
 
-  // create / recreate the map (theme swap)
+  // create / recreate map (theme swap)
   useEffect(() => {
     if (!containerRef.current) return;
     setReady(false);
     drawingRef.current = false;
     drawPtsRef.current = [];
     setDrawing(false);
+    setNaming(false);
     setDrawPts([]);
     const map = new maplibregl.Map({ container: containerRef.current, style: STYLE[mode], center, zoom: 14.2, attributionControl: false });
     mapRef.current = map;
@@ -150,12 +144,6 @@ export function MapView({
       map.addLayer({ id: "parcels-sel", type: "line", source: "parcels", paint: { "line-color": ["get", "color"], "line-width": 4 }, filter: ["==", ["get", "id"], ""] });
       map.addLayer({ id: "parcels-label", type: "symbol", source: "parcels", layout: { "text-field": ["get", "name"], "text-size": 12 }, paint: { "text-color": th.ink, "text-halo-color": th.panel, "text-halo-width": 1.5 } });
 
-      // saved (drawn) parcels
-      map.addSource("myparcels", { type: "geojson", data: emptyFC });
-      map.addLayer({ id: "myparcels-fill", type: "fill", source: "myparcels", paint: { "fill-color": C.emerald, "fill-opacity": 0.25 } });
-      map.addLayer({ id: "myparcels-line", type: "line", source: "myparcels", paint: { "line-color": C.emerald, "line-width": 2.5 } });
-
-      // in-progress drawing
       map.addSource("draw", { type: "geojson", data: emptyFC });
       map.addLayer({ id: "draw-fill", type: "fill", source: "draw", paint: { "fill-color": C.glacier, "fill-opacity": 0.15 } });
       map.addLayer({ id: "draw-line", type: "line", source: "draw", paint: { "line-color": C.glacier, "line-width": 2, "line-dasharray": [2, 1.5] } });
@@ -176,7 +164,6 @@ export function MapView({
       map.on("mouseenter", "parcels-fill", () => { if (!drawingRef.current) map.getCanvas().style.cursor = "pointer"; });
       map.on("mouseleave", "parcels-fill", () => { if (!drawingRef.current) map.getCanvas().style.cursor = ""; });
 
-      syncMine();
       setReady(true);
     });
 
@@ -188,6 +175,13 @@ export function MapView({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
+
+  // keep parcels source in sync (user added / removed / stress changes)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    (map.getSource("parcels") as maplibregl.GeoJSONSource | undefined)?.setData(parcelFC);
+  }, [parcelFC, ready]);
 
   // well markers
   useEffect(() => {
@@ -207,6 +201,8 @@ export function MapView({
           <span style="width:13px;height:13px;border-radius:50%;background:${col};border:2.5px solid ${th.panel};box-shadow:${shadow.sm}"></span>`;
         return new maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([w.lng as number, w.lat as number]).addTo(map);
       });
+    if (layer === "wells") markersRef.current.forEach((m) => (m.getElement().style.display = "flex"));
+    else markersRef.current.forEach((m) => (m.getElement().style.display = "none"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, wells]);
 
@@ -220,7 +216,6 @@ export function MapView({
     markersRef.current.forEach((m) => (m.getElement().style.display = showWells ? "flex" : "none"));
   }, [layer, ready]);
 
-  // selection highlight
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -259,24 +254,46 @@ export function MapView({
     drawingRef.current = true;
     drawPtsRef.current = [];
     setDrawing(true);
+    setNaming(false);
     setDrawPts([]);
     syncDraw();
     if (mapRef.current) mapRef.current.getCanvas().style.cursor = "crosshair";
   };
-  const cancelDraw = () => {
+  const resetDraw = () => {
     drawingRef.current = false;
     drawPtsRef.current = [];
     setDrawing(false);
+    setNaming(false);
     setDrawPts([]);
+    setFormName("");
+    setFormStress(0.4);
     syncDraw();
     if (mapRef.current) mapRef.current.getCanvas().style.cursor = "";
   };
-  const saveDraw = () => {
-    if (drawPtsRef.current.length < 3) return cancelDraw();
-    myParcelsRef.current = [...myParcelsRef.current, { pts: drawPtsRef.current.slice(), ha: ringHectares(drawPtsRef.current) }];
-    setMyParcels(myParcelsRef.current.slice());
-    syncMine();
-    cancelDraw();
+  const goToNaming = () => {
+    if (drawPtsRef.current.length < 3) return;
+    drawingRef.current = false; // stop adding points while naming
+    setNaming(true);
+    if (mapRef.current) mapRef.current.getCanvas().style.cursor = "";
+  };
+  const createParcel = () => {
+    const ring = drawPtsRef.current.slice();
+    if (ring.length < 3) return resetDraw();
+    const lng = ring.reduce((s, p) => s + p[0], 0) / ring.length;
+    const lat = ring.reduce((s, p) => s + p[1], 0) / ring.length;
+    const parcel: Parcel = {
+      id: `user-${Date.now()}`,
+      name: formName.trim() || tr("Mi parcela", "Parcela"),
+      crop: formCrop,
+      hectares: Math.round(ringHectares(ring) * 10) / 10,
+      stress: formStress,
+      lat,
+      lng,
+      boundary: ring,
+    };
+    onAddParcel(parcel);
+    setSelId(parcel.id);
+    resetDraw();
   };
 
   const sel = parcels.find((p) => p.id === selId) ?? parcels[0];
@@ -342,8 +359,8 @@ export function MapView({
       <div style={{ position: "relative", flex: 1, minHeight: 480 }}>
         <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
 
-        {/* layers + draw */}
-        <div style={panel({ top: space.md, left: space.md, width: 208 })}>
+        {/* layers + draw + my parcels */}
+        <div style={panel({ top: space.md, left: space.md, width: 224, maxHeight: "calc(100% - 32px)", overflowY: "auto" })}>
           <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("¿Qué quieres ver?", "Capas")}</div>
           {([
             { id: "stress", sw: `linear-gradient(90deg,${C.emerald},${C.glacier},${C.alert})`, s: "Sed del cultivo", t: "Estrés hídrico" },
@@ -351,11 +368,7 @@ export function MapView({
           ] as { id: Layer; sw: string; s: string; t: string }[]).map((o) => {
             const active = layer === o.id;
             return (
-              <button
-                key={o.id}
-                onClick={() => setLayer(o.id)}
-                style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: space.sm, padding: "7px 8px", borderRadius: radius.md, fontSize: fz.xs, cursor: "pointer", marginBottom: 2, border: `1px solid ${active ? th.line : "transparent"}`, background: active ? th.panel2 : "transparent", color: active ? th.ink : th.soft }}
-              >
+              <button key={o.id} onClick={() => setLayer(o.id)} style={{ width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: space.sm, padding: "7px 8px", borderRadius: radius.md, fontSize: fz.xs, cursor: "pointer", marginBottom: 2, border: `1px solid ${active ? th.line : "transparent"}`, background: active ? th.panel2 : "transparent", color: active ? th.ink : th.soft }}>
                 <span style={{ width: 11, height: 11, borderRadius: 3, background: o.sw }} />
                 {tr(o.s, o.t)}
               </button>
@@ -363,10 +376,29 @@ export function MapView({
           })}
 
           <div style={{ borderTop: `1px solid ${th.line}`, marginTop: space.sm, paddingTop: space.md }}>
-            {!drawing ? (
+            {!drawing && !naming ? (
               <button onClick={startDraw} style={{ width: "100%", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: "8px 0", fontSize: fz.xs, fontWeight: 600, color: th.ink, cursor: "pointer" }}>
                 + {tr("Dibujar mi parcela", "Marcar parcela")}
               </button>
+            ) : naming ? (
+              <div>
+                <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("Datos de la parcela", "Nueva parcela")}</div>
+                <input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder={tr("Nombre (ej. Parcela del nogal)", "Nombre")} style={{ width: "100%", background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: "7px 10px", color: th.ink, fontSize: fz.xs, outline: "none", marginBottom: 6 }} />
+                <select value={formCrop} onChange={(e) => setFormCrop(e.target.value as CropType)} style={{ ...selectStyle, width: "100%", marginBottom: 6 }} aria-label={tr("Cultivo", "Cultivo")}>
+                  {crops.map((c) => (
+                    <option key={c.crop} value={c.crop}>{c.crop}</option>
+                  ))}
+                </select>
+                <div style={{ fontSize: fz.micro, color: th.mute, marginBottom: 2 }}>
+                  {tr("Sed actual", "Estrés")}: <span className="mono" style={{ color: stressColor(formStress) }}>{Math.round(formStress * 100)}%</span>
+                </div>
+                <input type="range" min={0} max={100} value={Math.round(formStress * 100)} onChange={(e) => setFormStress(+e.target.value / 100)} style={{ width: "100%", accentColor: stressColor(formStress), cursor: "pointer", marginBottom: 4 }} />
+                <div style={{ fontSize: fz.micro, color: C.emerald, fontWeight: 600, marginBottom: 8 }}>~{ringHectares(drawPts).toFixed(1)} ha · {cropMap[formCrop] ? `${fmt(Math.round((cropMap[formCrop]?.costHa ?? 0) * ringHectares(drawPts)))} $/año` : ""}</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button onClick={createParcel} style={btn(true)}>{tr("Crear", "Crear")}</button>
+                  <button onClick={resetDraw} style={btn(false)}>{tr("Cancelar", "Cancelar")}</button>
+                </div>
+              </div>
             ) : (
               <div>
                 <div style={{ fontSize: fz.micro, color: th.soft, marginBottom: space.sm, lineHeight: 1.4 }}>
@@ -374,12 +406,28 @@ export function MapView({
                   {drawPts.length >= 3 && <span style={{ display: "block", marginTop: 4, color: C.emerald, fontWeight: 600 }}>~{ringHectares(drawPts).toFixed(1)} ha</span>}
                 </div>
                 <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={saveDraw} disabled={drawPts.length < 3} style={btn(true, drawPts.length < 3)}>{tr("Guardar", "Guardar")}</button>
-                  <button onClick={cancelDraw} style={btn(false)}>{tr("Cancelar", "Cancelar")}</button>
+                  <button onClick={goToNaming} disabled={drawPts.length < 3} style={btn(true, drawPts.length < 3)}>{tr("Continuar", "Continuar")}</button>
+                  <button onClick={resetDraw} style={btn(false)}>{tr("Cancelar", "Cancelar")}</button>
                 </div>
               </div>
             )}
-            {myParcels.length > 0 && <div style={{ fontSize: fz.micro, color: th.mute, marginTop: space.sm }}>{myParcels.length} {tr("parcela(s) marcada(s)", "marcadas")}</div>}
+
+            {userParcels.length > 0 && (
+              <div style={{ marginTop: space.md, borderTop: `1px solid ${th.line}`, paddingTop: space.sm }}>
+                <div style={{ ...labelStyle(th), marginBottom: space.sm }}>{tr("Mis parcelas", "Mis parcelas")}</div>
+                {userParcels.map((p) => (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 0" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 2, background: stressColor(p.stress), flexShrink: 0 }} />
+                    <button onClick={() => setSelId(p.id)} style={{ flex: 1, textAlign: "left", background: "none", border: "none", cursor: "pointer", color: th.ink, fontSize: fz.xs, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {p.name} <span style={{ color: th.mute }}>· {p.crop}</span>
+                    </button>
+                    <button onClick={() => onRemoveParcel(p.id)} aria-label={tr("Borrar parcela", "Borrar")} title={tr("Borrar", "Borrar")} style={{ background: "none", border: "none", cursor: "pointer", color: th.mute, fontSize: 13, lineHeight: 1, padding: 2 }}>
+                      🗑
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
