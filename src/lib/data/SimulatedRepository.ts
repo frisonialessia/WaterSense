@@ -155,10 +155,13 @@ export class SimulatedRepository implements FarmRepository {
   }
   async getKpiTrends(): Promise<KpiTrends> {
     // Recent-weeks series (simulated) feeding the KPI sparklines.
+    // Endpoints match the values the KPI strip derives live: gasto = suma de
+    // rubros (39,950), salud de bombas = promedio de las 3 (48%), parcelas
+    // sanas = 3 (sed < 50%), pozos en alerta = 1 (Pozo chico).
     return {
       spend: [44200, 43100, 42600, 41800, 40900, 40200, 40100, 39950],
-      healthy: [3, 3, 2, 2, 3, 2, 2, 2],
-      pumps: [72, 70, 69, 67, 66, 65, 64, 64],
+      healthy: [3, 3, 2, 2, 3, 3, 2, 3],
+      pumps: [72, 68, 64, 60, 57, 53, 50, 48],
       alerts: [0, 0, 1, 1, 0, 1, 1, 1],
     };
   }

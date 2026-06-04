@@ -312,10 +312,13 @@ export function MapView({
   const growth = growthFromDate(sel?.plantingDate);
   const wellName = sel?.wellId ? wells.find((w) => w.id === sel.wellId)?.name : undefined;
   const totalWater = crop ? Math.round(crop.waterM3ha * sel.hectares * eff) : 0;
-  const totalCost = crop ? Math.round(crop.costHa * sel.hectares * (0.6 + 0.4 * eff)) : 0;
+  // Effective $/ha after the irrigation-system factor, so that the figures the
+  // farmer sees multiply cleanly: $/ha × ha = total, and total / kilos = $/kg.
+  const effCostHa = crop ? Math.round(crop.costHa * (0.6 + 0.4 * eff)) : 0;
+  const totalCost = Math.round(effCostHa * sel.hectares);
   const freqEff = crop ? Math.max(1, Math.round(crop.freqDays * soilF)) : 0;
   const waterSaved = crop ? Math.round(crop.waterM3ha * sel.hectares * (1 - eff)) : 0;
-  const costPerKg = crop && crop.yieldKgHa ? (crop.costHa / crop.yieldKgHa).toFixed(2) : "—";
+  const costPerKg = crop && crop.yieldKgHa ? (totalCost / (crop.yieldKgHa * sel.hectares)).toFixed(2) : "—";
 
   const collapseBtn: React.CSSProperties = { background: "none", border: "none", cursor: "pointer", color: th.mute, fontSize: 16, lineHeight: 1, padding: "0 4px", fontWeight: 700 };
   const panel = (extra: React.CSSProperties): React.CSSProperties => ({
@@ -483,7 +486,7 @@ export function MapView({
                 )}
                 <Stat l={tr("Riega cada", "Frecuencia")} v={`${freqEff || crop?.freqDays || "—"} ${tr("días", "d")}`} />
                 <Stat l={tr("Agua al año", "Agua/año")} v={`${fmt(totalWater)} m³`} />
-                <Stat l={tr("Costo por hectárea", "$/ha año")} v={`$${fmt(crop?.costHa ?? 0)}`} c={C.glacier} />
+                <Stat l={tr("Costo por hectárea", "$/ha año")} v={`$${fmt(effCostHa)}`} c={C.glacier} />
                 <Stat l={tr("Costo por kilo", "$/kg")} v={`$${costPerKg}`} c={C.emerald} />
                 <Stat l={tr("Costo total al año", "Total/año")} v={`$${fmt(totalCost)}`} c={C.glacier} />
                 <Stat l={tr("Pozo asignado", "Pozo")} v={wellName ?? tr("sin asignar", "—")} last />
