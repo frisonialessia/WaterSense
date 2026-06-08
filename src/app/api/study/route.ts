@@ -3,7 +3,9 @@
 // decision). With ANTHROPIC_API_KEY it asks Claude to write it up like an
 // agronomist; without a key it returns a structured local study. Zero-config.
 import { NextRequest, NextResponse } from "next/server";
-import { repository } from "@/lib/data/repository";
+import { getRepository } from "@/lib/data/repository";
+import { getTenantContextFromRequest } from "@/lib/security/authContext";
+import { studySchema } from "@/lib/validation/schemas";
 import { assessPump } from "@/lib/brain/pumpHealth";
 import { projectYield } from "@/lib/brain/yieldModel";
 import { projectAquifer } from "@/lib/brain/aquiferModel";
@@ -11,14 +13,17 @@ import { fmt } from "@/lib/theme";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json().catch(() => ({}))) as { ranchName?: string };
-    const ranchName = body.ranchName || "tu rancho";
+    // Cuerpo opcional: tolera vacío o malformado (default seguro).
+    const raw = await req.json().catch(() => ({}));
+    const parsed = studySchema.safeParse(raw);
+    const ranchName = (parsed.success ? parsed.data.ranchName : undefined) || "tu rancho";
 
+    const repo = getRepository(await getTenantContextFromRequest(req));
     const [parcels, wells, crops, costs] = await Promise.all([
-      repository.getParcels(),
-      repository.getWells(),
-      repository.getCrops(),
-      repository.getCosts(),
+      repo.getParcels(),
+      repo.getWells(),
+      repo.getCrops(),
+      repo.getCosts(),
     ]);
     const cropMap = Object.fromEntries(crops.map((c) => [c.crop, c]));
 

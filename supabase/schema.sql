@@ -14,6 +14,63 @@
 -- Extensiones útiles
 create extension if not exists "uuid-ossp";
 
+-- ---------- Multi-tenancy: organizaciones, miembros y roles ----------
+-- El comprador es una ORGANIZACIÓN (productor individual, agroempresa o
+-- distrito). Los ranchos cuelgan de la organización, y los usuarios entran
+-- como miembros con un rol. Las 3 membresías (ver src/lib/billing/tiers.ts)
+-- se guardan en organizations.plan. Modelar esto desde el día uno evita el
+-- refactor carísimo de meter organizaciones después de tener clientes B2B.
+
+create table if not exists organizations (
+  id          uuid primary key default uuid_generate_v4(),
+  name        text not null default 'Mi organización',
+  -- plan activo: 'productor' | 'profesional' | 'distrito' (ver tiers.ts)
+  plan        text not null default 'productor',
+  -- id de cliente en Stripe (cuando se active el cobro, Fase 1)
+  stripe_customer_id text,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists memberships (
+  id         uuid primary key default uuid_generate_v4(),
+  org_id     uuid not null references organizations (id) on delete cascade,
+  user_id    uuid not null references auth.users (id) on delete cascade,
+  -- rol dentro de la organización (mapea a MembershipRole en tiers.ts)
+  role       text not null default 'member' check (role in ('owner','admin','member','viewer')),
+  created_at timestamptz not null default now(),
+  unique (org_id, user_id)
+);
+create index if not exists memberships_user_idx on memberships (user_id);
+
+-- ¿El usuario actual pertenece a esta organización? (usado por las políticas RLS)
+create or replace function public.is_member_of(target_org uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from memberships m
+    where m.org_id = target_org and m.user_id = auth.uid()
+  );
+$$;
+
+-- ¿El usuario puede ESCRIBIR en esta organización? (owner/admin/member, no viewer)
+create or replace function public.can_write_org(target_org uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from memberships m
+    where m.org_id = target_org and m.user_id = auth.uid()
+      and m.role in ('owner','admin','member')
+  );
+$$;
+
 -- ---------- Catálogos (globales) ----------
 
 create table if not exists crops (
@@ -40,6 +97,9 @@ create table if not exists regions (
 
 create table if not exists ranches (
   id          uuid primary key default uuid_generate_v4(),
+  -- dueño del dato: la ORGANIZACIÓN. El acceso se decide por membresía.
+  org_id      uuid references organizations (id) on delete cascade,
+  -- creador (informativo); el control de acceso es por org, no por este campo.
   user_id     uuid references auth.users (id) on delete cascade,
   name        text not null default 'Mi rancho',
   owner       text default '',
@@ -153,13 +213,22 @@ create table if not exists water_concessions (
 );
 
 -- ============================================================
--- Row Level Security (cada usuario ve solo sus ranchos)
+-- Row Level Security (aislamiento por ORGANIZACIÓN + rol)
+-- ------------------------------------------------------------
+-- Regla: cada quien ve y edita solo los datos de las organizaciones a las
+-- que pertenece. LEER = is_member_of(org); ESCRIBIR = can_write_org(org)
+-- (excluye al rol 'viewer'). Esto solo funciona si en el servidor usas el
+-- cliente con el JWT DEL USUARIO (no la service role, que ignora RLS).
 -- ============================================================
-alter table ranches    enable row level security;
-alter table wells      enable row level security;
-alter table parcels    enable row level security;
-alter table cost_items enable row level security;
-alter table readings   enable row level security;
+alter table organizations enable row level security;
+alter table memberships   enable row level security;
+alter table ranches       enable row level security;
+alter table wells         enable row level security;
+alter table parcels       enable row level security;
+alter table cost_items    enable row level security;
+alter table readings      enable row level security;
+alter table cost_entries  enable row level security;
+alter table water_concessions enable row level security;
 
 -- Catálogos globales: lectura pública
 alter table crops   enable row level security;
@@ -167,37 +236,74 @@ alter table regions enable row level security;
 create policy "crops readable"   on crops   for select using (true);
 create policy "regions readable" on regions for select using (true);
 
--- Ranchos: dueño = auth.uid()
-create policy "own ranches" on ranches
-  for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+-- Organizaciones: las ve quien es miembro; las edita owner/admin.
+create policy "org readable by members" on organizations
+  for select using (is_member_of(id));
+create policy "org writable by admins" on organizations
+  for update using (
+    exists (select 1 from memberships m
+            where m.org_id = id and m.user_id = auth.uid()
+              and m.role in ('owner','admin'))
+  );
 
--- Hijos del rancho: a través de ranch_id
-create policy "own wells" on wells
-  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
-  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
-create policy "own parcels" on parcels
-  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
-  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
-create policy "own cost_items" on cost_items
-  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
-  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
-create policy "own readings" on readings
-  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
-  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
+-- Membresías: cada quien ve las suyas; owner/admin gestionan las de su org.
+create policy "own memberships readable" on memberships
+  for select using (user_id = auth.uid() or is_member_of(org_id));
+create policy "memberships managed by admins" on memberships
+  for all using (
+    exists (select 1 from memberships m
+            where m.org_id = memberships.org_id and m.user_id = auth.uid()
+              and m.role in ('owner','admin'))
+  ) with check (
+    exists (select 1 from memberships m
+            where m.org_id = memberships.org_id and m.user_id = auth.uid()
+              and m.role in ('owner','admin'))
+  );
 
-alter table cost_entries enable row level security;
-create policy "own cost_entries" on cost_entries
-  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
-  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
+-- Ranchos: por organización del usuario.
+create policy "ranches readable by members" on ranches
+  for select using (is_member_of(org_id));
+create policy "ranches writable by members" on ranches
+  for all using (can_write_org(org_id)) with check (can_write_org(org_id));
+
+-- Hijos del rancho: heredan el aislamiento a través del org_id del rancho.
+create policy "wells readable" on wells
+  for select using (ranch_id in (select id from ranches where is_member_of(org_id)));
+create policy "wells writable" on wells
+  for all using (ranch_id in (select id from ranches where can_write_org(org_id)))
+  with check (ranch_id in (select id from ranches where can_write_org(org_id)));
+
+create policy "parcels readable" on parcels
+  for select using (ranch_id in (select id from ranches where is_member_of(org_id)));
+create policy "parcels writable" on parcels
+  for all using (ranch_id in (select id from ranches where can_write_org(org_id)))
+  with check (ranch_id in (select id from ranches where can_write_org(org_id)));
+
+create policy "cost_items readable" on cost_items
+  for select using (ranch_id in (select id from ranches where is_member_of(org_id)));
+create policy "cost_items writable" on cost_items
+  for all using (ranch_id in (select id from ranches where can_write_org(org_id)))
+  with check (ranch_id in (select id from ranches where can_write_org(org_id)));
+
+create policy "readings readable" on readings
+  for select using (ranch_id in (select id from ranches where is_member_of(org_id)));
+create policy "readings writable" on readings
+  for all using (ranch_id in (select id from ranches where can_write_org(org_id)))
+  with check (ranch_id in (select id from ranches where can_write_org(org_id)));
+
+create policy "cost_entries readable" on cost_entries
+  for select using (ranch_id in (select id from ranches where is_member_of(org_id)));
+create policy "cost_entries writable" on cost_entries
+  for all using (ranch_id in (select id from ranches where can_write_org(org_id)))
+  with check (ranch_id in (select id from ranches where can_write_org(org_id)));
 
 -- Concesiones: las globales (REPDA, ranch_id nulo) son de lectura pública; las
--- que el usuario agrega (vecinos) solo las maneja su dueño.
-alter table water_concessions enable row level security;
+-- que el usuario agrega (vecinos) las maneja su organización.
 create policy "concessions readable" on water_concessions
-  for select using (ranch_id is null or ranch_id in (select id from ranches where user_id = auth.uid()));
-create policy "own concessions write" on water_concessions
-  for all using (ranch_id in (select id from ranches where user_id = auth.uid()))
-  with check (ranch_id in (select id from ranches where user_id = auth.uid()));
+  for select using (ranch_id is null or ranch_id in (select id from ranches where is_member_of(org_id)));
+create policy "concessions writable" on water_concessions
+  for all using (ranch_id in (select id from ranches where can_write_org(org_id)))
+  with check (ranch_id in (select id from ranches where can_write_org(org_id)));
 
 -- ============================================================
 -- Vistas de apoyo para métricas (gasto mensual y por parcela)

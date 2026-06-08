@@ -1,37 +1,63 @@
-// GET /api/ingest — PLANTILLA de ingesta a la tabla `readings` (Supabase).
-// La idea: un cron llama esto cada cierto tiempo, jala datos de fuentes
-// externas (CENACE, clima, CONAGUA…) y los guarda como serie temporal.
+// /api/ingest — ingesta a la tabla `readings` (Supabase).
+// GET  → cron: jala datos de fuentes externas (clima, etc.) y los guarda.
+// POST → recibe UNA lectura (sensor o captura manual) y la guarda.
+//
 // La app luego LEE de `readings` (rápido, estable) en vez de pegarle a las
 // APIs frágiles en cada request.
 //
-// Seguro por defecto: si Supabase no está configurado, no hace nada.
-// Protégelo con CRON_SECRET (Vercel Cron manda Authorization: Bearer <secret>).
+// Seguridad (endurecido):
+//   • Sin Supabase configurado → no persiste nada (modo demo).
+//   • POST: el `ranch_id` ya NO se acepta del cliente (anti-IDOR). Se deriva
+//     del contexto autenticado; para persistir se exige sesión de usuario o
+//     un token de dispositivo (INGEST_TOKEN). Rate limit por IP.
+//   • GET: protegido con CRON_SECRET (Vercel Cron manda Authorization: Bearer).
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { getTenantContextFromRequest } from "@/lib/security/authContext";
+import { ingestSchema, parseJson } from "@/lib/validation/schemas";
+import { rateLimit, clientKey, rateLimitHeaders } from "@/lib/security/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-// POST /api/ingest — recibe UNA lectura (sensor o captura manual del productor)
-// y la guarda en `readings`. Cuerpo: { source, metric, value, unit?, ranch_id? }.
-// Ej. nivel del pozo capturado a mano, arranques, kWh, caudal medido.
+const LIMIT = 120; // lecturas por minuto por IP
+const WINDOW_MS = 60_000;
+
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(clientKey(req, "ingest"), { limit: LIMIT, windowMs: WINDOW_MS });
+  if (!rl.ok) {
+    return NextResponse.json({ error: "Demasiadas lecturas." }, { status: 429, headers: rateLimitHeaders(rl, LIMIT) });
+  }
+
+  const parsed = await parseJson(req, ingestSchema);
+  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+  const b = parsed.data;
+
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  let b: { source?: string; metric?: string; value?: number; unit?: string; ranch_id?: string };
-  try {
-    b = await req.json();
-  } catch {
-    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
-  }
-  if (!b.metric || typeof b.value !== "number") {
-    return NextResponse.json({ error: "Faltan 'metric' y/o 'value' numérico" }, { status: 400 });
-  }
   if (!url || !key) {
     return NextResponse.json({ stored: false, reason: "Supabase no configurado (.env). Lectura recibida pero no persistida." });
   }
+
+  // Para PERSISTIR se exige identidad: usuario autenticado (JWT) o un token
+  // de dispositivo (INGEST_TOKEN). Sin esto, cualquiera podría envenenar la BD.
+  const ctx = await getTenantContextFromRequest(req);
+  const deviceToken = process.env.INGEST_TOKEN;
+  const authz = req.headers.get("authorization") ?? "";
+  const isDevice = Boolean(deviceToken) && authz === `Bearer ${deviceToken}`;
+  if (!ctx && !isDevice) {
+    return NextResponse.json(
+      { error: "Ingesta requiere autenticación (sesión de usuario o token de dispositivo)." },
+      { status: 401 }
+    );
+  }
+
+  // El rancho NUNCA viene del cuerpo. Se deriva del contexto / configuración.
+  // TODO(Fase 1): resolver el ranch_id real desde la membresía del usuario (ctx.orgId).
+  const ranchId = process.env.DEMO_RANCH_ID ?? null;
+
   const sb = createClient(url, key);
   const { error } = await sb.from("readings").insert({
-    ranch_id: b.ranch_id ?? process.env.DEMO_RANCH_ID ?? null,
+    ranch_id: ranchId,
     source: b.source ?? "manual",
     metric: b.metric,
     value: b.value,
@@ -39,7 +65,7 @@ export async function POST(req: NextRequest) {
     recorded_at: new Date().toISOString(),
   });
   if (error) return NextResponse.json({ stored: false, error: error.message }, { status: 500 });
-  return NextResponse.json({ stored: true });
+  return NextResponse.json({ stored: true }, { headers: rateLimitHeaders(rl, LIMIT) });
 }
 
 export async function GET(req: NextRequest) {

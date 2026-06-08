@@ -1,0 +1,32 @@
+name: CI
+
+# Calidad mínima en cada push/PR: tipos, pruebas y build de producción.
+# Gratis en GitHub Actions para repos públicos (y con cuota generosa en privados).
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Pruebas
+        run: npm test
+
+      - name: Build de producción
+        run: npm run build

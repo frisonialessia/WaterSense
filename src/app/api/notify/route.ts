@@ -7,18 +7,15 @@
 //   TWILIO_WHATSAPP_FROM=whatsapp:+14155238886   (o un From de SMS)
 // y manda { to: "+52...", body: "..." }.
 import { NextRequest, NextResponse } from "next/server";
+import { notifySchema, parseJson } from "@/lib/validation/schemas";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  let payload: { to?: string; body?: string };
-  try {
-    payload = await req.json();
-  } catch {
-    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
-  }
-  const body = (payload.body ?? "").trim();
-  if (!body) return NextResponse.json({ error: "Falta 'body'" }, { status: 400 });
+  const parsed = await parseJson(req, notifySchema);
+  if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+  const payload = parsed.data;
+  const body = payload.body.trim();
 
   const sid = process.env.TWILIO_ACCOUNT_SID;
   const token = process.env.TWILIO_AUTH_TOKEN;
