@@ -1,18 +1,25 @@
-// WaterSense logo: gota con nivel ("agua medida").
+// WaterSense logo: molinete de gotas (pivote de riego + agua + movimiento).
+// 8 gotas en círculo con un ligero giro → "cada gota cuenta" + rotación del
+// pivote. Degradado azul → verde → lima (acento). Centro en estrella negativa.
+
+const DROP = "M50 41 C 43 37, 38 30, 38 21 A12 12 0 0 1 62 21 C 62 30, 57 37, 50 41 Z";
+const N = 8;
+const LEAN = 17; // giro de cada gota → sensación de molinete
 
 export function Logo({ size = 28, light = false }: { size?: number; light?: boolean }) {
-  const gid = "wsg" + size;
+  const gid = "wsg" + size + (light ? "l" : "");
   return (
     <svg width={size} height={size} viewBox="0 0 100 100">
       <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={light ? "#8FD3F4" : "#1E83DA"} />
-          <stop offset="100%" stopColor={light ? "#6EE7B7" : "#10B981"} />
+        <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="16" y1="16" x2="84" y2="86">
+          <stop offset="0" stopColor={light ? "#8FD3F4" : "#1E83DA"} />
+          <stop offset="0.55" stopColor={light ? "#6EE7B7" : "#10B981"} />
+          <stop offset="1" stopColor={light ? "#BEF264" : "#84CC16"} />
         </linearGradient>
       </defs>
-      <path d="M50 12 C50 12 80 48 80 66 A30 30 0 1 1 20 66 C20 48 50 12 50 12 Z" fill={`url(#${gid})`} />
-      <line x1="34" y1="60" x2="66" y2="60" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" />
-      <line x1="38" y1="72" x2="62" y2="72" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" opacity="0.7" />
+      {Array.from({ length: N }, (_, i) => (
+        <path key={i} d={DROP} fill={`url(#${gid})`} transform={`rotate(${(i * 360) / N} 50 50) rotate(${LEAN} 50 25)`} />
+      ))}
     </svg>
   );
 }
