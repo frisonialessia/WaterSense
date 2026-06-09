@@ -67,8 +67,8 @@ export const TIERS: Record<TierId, Tier> = {
     name: "Productor",
     audience: "Agricultor individual",
     tagline: "Decide con fecha y precio, no a ojo.",
-    priceMxnMonthly: 299,
-    priceMxnAnnual: 2990, // 10 meses → 2 gratis
+    priceMxnMonthly: 499,
+    priceMxnAnnual: 4990, // 10 meses → 2 gratis
     trialDays: 14,
     popular: false,
     cta: "Empezar prueba",
@@ -96,8 +96,8 @@ export const TIERS: Record<TierId, Tier> = {
     name: "Profesional / Agroempresa",
     audience: "Empresa agrícola con varios ranchos",
     tagline: "Tu equipo, tus sensores y tu cumplimiento, en un solo lugar.",
-    priceMxnMonthly: 1499,
-    priceMxnAnnual: 14990, // 10 meses → 2 gratis
+    priceMxnMonthly: 2900,
+    priceMxnAnnual: 29000, // 10 meses → 2 gratis
     trialDays: 14,
     popular: true,
     cta: "Probar 14 días gratis",

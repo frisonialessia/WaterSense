@@ -85,11 +85,52 @@ export function Landing() {
         <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(100deg, ${C.brandNavy}f5 0%, ${C.brandNavy}db 40%, ${C.brandNavy}80 66%, ${C.brandNavy}1f 100%), url('/landing/hero.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }} />
         <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: `${space.x4 + space.x3}px ${space.x3}px`, minHeight: "80vh", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 360px),1fr))", gap: space.x4, alignItems: "center" }}>
           <div>
-            <span className="mono" style={{ fontSize: fz.sm, color: C.emeraldSoft, fontWeight: 600, letterSpacing: ".05em" }}>
+            <span
+              className="mono"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: fz.xs,
+                color: "#fff",
+                fontWeight: 600,
+                letterSpacing: ".08em",
+                background: "rgba(255,255,255,.12)",
+                border: "1px solid rgba(255,255,255,.22)",
+                padding: "6px 12px",
+                borderRadius: radius.pill,
+              }}
+            >
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emeraldSoft }} />
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
             </span>
-            <h1 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(34px, 7vw, 56px)", lineHeight: 1.06, letterSpacing: "-0.02em", margin: `${space.lg}px 0`, color: "#fff" }}>
-              Optimiza la <span style={{ color: C.glacierSoft }}>energía de tus pozos</span>. Maximiza la <span style={{ color: C.emeraldSoft }}>ganancia de tu rancho</span>.
+            <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(36px, 7.2vw, 60px)", lineHeight: 1.03, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
+              Optimiza la{" "}
+              <span
+                style={{
+                  background: `linear-gradient(90deg, ${C.glacierSoft}, #BFE6FA)`,
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  color: "transparent",
+                }}
+              >
+                energía de tus pozos
+              </span>
+              . Maximiza la{" "}
+              <span
+                style={{
+                  background: `linear-gradient(90deg, ${C.emeraldSoft}, #20E58A)`,
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  color: "transparent",
+                  textShadow: "0 0 34px rgba(32,229,138,.35)",
+                }}
+              >
+                ganancia de tu rancho
+              </span>
+              .
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
               Cruzamos el <b style={{ color: "#fff" }}>costo de tu luz</b>, el <b style={{ color: "#fff" }}>desperdicio de agua</b> y la <b style={{ color: "#fff" }}>salud de tu cultivo</b> para decirte
