@@ -82,7 +82,7 @@ export function Landing() {
 
       {/* Hero */}
       <section style={{ position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(100deg, ${C.brandNavy}f5 0%, ${C.brandNavy}db 40%, ${C.brandNavy}80 66%, ${C.brandNavy}1f 100%), url('/landing/hero.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(100deg, rgba(0,0,0,.68) 0%, rgba(0,0,0,.48) 36%, rgba(0,0,0,.12) 64%, rgba(0,0,0,0) 100%), url('/landing/hero.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }} />
         <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: `${space.x4 + space.x3}px ${space.x3}px`, minHeight: "80vh", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 360px),1fr))", gap: space.x4, alignItems: "center" }}>
           <div>
             <span
@@ -232,7 +232,7 @@ export function Landing() {
 
       {/* Stat band — contained card, with air around it */}
       <section id="fuentes" style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px` }}>
-        <div style={{ borderRadius: radius.lg, overflow: "hidden", boxShadow: shadow.lg, color: "#fff", backgroundImage: `linear-gradient(110deg,${C.brandNavy}f2,${C.glacier}cc 60%,${C.emerald}cc), url('/landing/agua.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div style={{ borderRadius: radius.lg, overflow: "hidden", boxShadow: shadow.lg, color: "#fff", backgroundImage: `linear-gradient(110deg,${C.brandNavy}f2,${C.glacier}cc 60%,${C.emerald}cc), url('/landing/riego.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <div style={{ padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 220px),1fr))", gap: space.xl }}>
             {[
               { v: "3", l: "motores de decisión", s: "riego, acuífero y salud de pozos" },
