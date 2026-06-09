@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, CropType, TariffType } from "@/types/domain";
 import { projectYield } from "@/lib/brain/yieldModel";
 import { assessStressRisk } from "@/lib/brain/stressRisk";
-import { tariffSavingsFactor } from "@/lib/brain/irrigationFactors";
 import { marketOutlook } from "@/lib/brain/marketModel";
+// Nota: el ahorro operativo del mes es la fuente única de verdad (savings).
+// Las cifras de luz/hora se derivan de él para que NO se contradigan.
 import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, stressColor, type Theme } from "@/lib/theme";
 import { Icon } from "../Icon";
 import { Sparkline } from "../Sparkline";
@@ -151,14 +152,26 @@ export function FincaView({
   // ── What-if: hora de riego → ahorro en vivo ────────────────
   const cheapest = useMemo(() => (tariffCurve.length ? tariffCurve.indexOf(Math.min(...tariffCurve)) : 2), [tariffCurve]);
   const peakPrice = useMemo(() => (tariffCurve.length ? Math.max(...tariffCurve) : 2.6), [tariffCurve]);
+  const minPrice = useMemo(() => (tariffCurve.length ? Math.min(...tariffCurve) : 0.6), [tariffCurve]);
   const [waterHour, setWaterHour] = useState(cheapest);
   useEffect(() => setWaterHour(cheapest), [cheapest]);
-  const monthlyKwh = 9000; // representative monthly pumping energy
+
+  // ── Una sola historia de "ahorro operativo" (luz + agua) ─────
+  // Fuente única: el ahorro mensual del repositorio. Todo lo demás se
+  // deriva de él para que las cifras NO se contradigan entre tarjetas:
+  //   • cover         = ahorro del mes (regar en la ventana barata)
+  //   • what-if(hora) = ese ahorro escalado por lo barata que sea la hora
+  //                     (máximo en la más barata, 0 en la más cara)
+  //   • acción de hoy = la parte de una noche (≈ mes / 30)
+  const opSavingMonth = savings.amountThisMonth;
+  const nightlySaving = Math.max(1, Math.round(opSavingMonth / 30));
   const priceAt = tariffCurve[waterHour] ?? 1.8;
-  const whatIfSaved = Math.max(0, Math.round((peakPrice - priceAt) * monthlyKwh * tariffSavingsFactor(tariffType)));
+  const hourSpan = Math.max(0.001, peakPrice - minPrice);
+  const hourFactor = Math.max(0, Math.min(1, (peakPrice - priceAt) / hourSpan));
+  const whatIfSaved = Math.round(opSavingMonth * hourFactor);
 
   const cards = [
-    { l: tr("Hoy debes regar", "Acción prioritaria"), v: risk?.parcel.name ?? tr("Parcela del chile", "Parcela chile"), s: tr("a las 2am · ahorras $90", "tarifa baja · 02:00"), c: C.alert, action: done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar"), onAct: () => setDone(true), solid: !done },
+    { l: tr("Hoy debes regar", "Acción prioritaria"), v: risk?.parcel.name ?? tr("Parcela del chile", "Parcela chile"), s: tr(`a las 2am · ahorras ~$${fmt(nightlySaving)}`, "tarifa baja · 02:00"), c: C.alert, action: done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar"), onAct: () => setDone(true), solid: !done },
     { l: tr("Tus cultivos", "Salud general"), v: `${healthy} ${tr("sanos", "OK")}`, s: `${parcels.length} ${tr("parcelas", "zonas")}`, c: C.emerald, action: tr("Ver mapa", "Ver mapa"), onAct: () => setView("mapa"), solid: false },
     { l: tr("Tus pozos", "Acuífero"), v: tr("1 en cuidado", "1 alerta"), s: tr("el pozo chico baja", "sobreexplotación"), c: C.glacier, action: tr("Revisar pozos", "Revisar"), onAct: () => setView("pozos"), solid: false },
   ];
@@ -167,7 +180,7 @@ export function FincaView({
     <div style={{ padding: space.x3 }}>
       {/* cover — the dashboard's one brand-gradient moment */}
       <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: `${space.x2}px ${space.x2}px`, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff" }}>
-        <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes", "Auditoría contrafactual")}</p>
+        <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes en luz y agua", "Ahorro operativo del mes · OPEX (luz + agua)")}</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: space.md, flexWrap: "wrap" }}>
           <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(28px, 9vw, 40px)" }}>${fmt(saved)}</span>
           <span style={{ fontSize: fz.md, color: "rgba(255,255,255,.9)" }}>{tr("vs. regar como antes, sin WaterSense", "frente a patrón histórico")}</span>
@@ -186,8 +199,8 @@ export function FincaView({
           <div style={{ flex: 1, fontSize: fz.sm, color: th.ink, lineHeight: 1.5 }}>
             <b>{risk.parcel.name}</b>{" "}
             {tr(
-              `alcanzará punto crítico de sed en ~${risk.hoursToCritical} h. Si no riegas, pérdida proyectada: `,
-              `→ umbral crítico en ~${risk.hoursToCritical} h. Pérdida proyectada por inacción: `
+              `llega a punto crítico de sed en ~${risk.hoursToCritical} h. Cosecha en riesgo si no riegas: `,
+              `→ umbral crítico en ~${risk.hoursToCritical} h. Valor de cosecha en riesgo: `
             )}
             <b className="mono" style={{ color: riskColor }}>${fmt(risk.projectedLoss)}</b>.
           </div>
@@ -217,7 +230,7 @@ export function FincaView({
             <div style={{ fontWeight: 600 }}>{tr("Cosecha proyectada", "Proyección de rendimiento")}</div>
             <span className="mono" style={{ fontSize: fz.xs, color: harvest.pct >= 80 ? C.emerald : harvest.pct >= 60 ? C.alert : C.critical }}>{harvest.pct}% {tr("del potencial", "del potencial")}</span>
           </div>
-          <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>{tr("Si riegas bien, esto vale tu cosecha", "Valor estimado de la producción según riego")}</div>
+          <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>{tr("Lo que vale tu cosecha (valor de producción, no es ahorro)", "Valor estimado de la producción según riego")}</div>
           <div style={{ display: "flex", alignItems: "baseline", gap: space.sm }}>
             <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, color: th.ink }}>${fmt(harvest.revenue)}</span>
             <span style={{ fontSize: fz.xs, color: th.soft }}>{tr("ingreso estimado", "ingreso proyectado")}</span>
@@ -227,9 +240,9 @@ export function FincaView({
             <div style={{ height: "100%", width: `${harvest.pct}%`, background: C.emerald, borderRadius: 4 }} />
           </div>
           <div style={{ fontSize: fz.xs, color: th.soft }}>
-            {tr("Estás dejando de ganar ", "Merma por estrés hídrico: ")}
+            {tr("Valor de cosecha en riesgo por sed: ", "Merma por estrés hídrico: ")}
             <b className="mono" style={{ color: C.alert }}>${fmt(harvest.lost)}</b>
-            {tr(" por sed de los cultivos.", " (recuperable con mejor riego).")}
+            {tr(" — recuperable si riegas a tiempo.", " (recuperable con mejor riego).")}
           </div>
         </div>
 
