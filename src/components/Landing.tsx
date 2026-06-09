@@ -120,12 +120,12 @@ export function Landing() {
               . Maximiza la{" "}
               <span
                 style={{
-                  background: `linear-gradient(90deg, ${C.emeraldSoft}, #20E58A)`,
+                  background: `linear-gradient(90deg, ${C.emerald}, ${C.emeraldSoft})`,
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   color: "transparent",
-                  textShadow: "0 0 34px rgba(32,229,138,.35)",
+                  textShadow: "0 0 30px rgba(15,168,104,.3)",
                 }}
               >
                 ganancia de tu rancho
@@ -134,7 +134,7 @@ export function Landing() {
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
               Cruzamos el <b style={{ color: "#fff" }}>costo de tu luz</b>, el <b style={{ color: "#fff" }}>desperdicio de agua</b> y la <b style={{ color: "#fff" }}>salud de tu cultivo</b> para decirte
-              qué regar, cuándo y a qué hora — y cuántos años le quedan a tu pozo. Hecho simple, para el campo de Chihuahua.
+              qué regar, cuándo y a qué hora — y cuántos años le quedan a tu pozo.
             </p>
             <div style={{ display: "flex", gap: space.md, marginTop: space.xl, flexWrap: "wrap" }}>
               <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
@@ -146,7 +146,7 @@ export function Landing() {
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: space.xl, fontSize: fz.xs, color: "rgba(255,255,255,.85)", background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", padding: "6px 12px", borderRadius: radius.pill }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emeraldSoft }} />
-              Prototipo · todos los datos son simulados, con rangos reales de Chihuahua
+              Prototipo · datos simulados con rangos reales
             </div>
           </div>
 
