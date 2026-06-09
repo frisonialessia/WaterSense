@@ -220,7 +220,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
         <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} ranch={ranch} regions={data.regions} ranches={ranches} activeRanchId={activeRanchId} onSwitchRanch={setActiveRanchId} onAddRanch={addRanch} onMenu={isMobile ? () => setNavOpen((o) => !o) : undefined} />
         <KpiStrip th={th} tr={tr} costs={costItems} parcels={allParcels} wells={wells} pumps={pumps} trends={data.trends} onNavigate={go} />
-        <div style={{ flex: 1, overflow: "auto", minHeight: 0, paddingBottom: isMobile ? 96 : 0 }}>
+        <div style={{ flex: 1, overflow: "auto", minHeight: 0, paddingBottom: isMobile ? 96 : 24 }}>
           {view === "mapa" ? (
             <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={wells} regions={data.regions} crops={data.crops} />
           ) : view === "costos" ? (

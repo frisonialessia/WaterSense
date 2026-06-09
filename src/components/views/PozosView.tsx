@@ -168,6 +168,20 @@ export function PozosView({
         </div>
       )}
 
+      {wells.length === 0 ? (
+        <div className="card" style={{ ...cardStyle(th), padding: `${space.x3}px ${space.xl}px`, textAlign: "center", marginBottom: space.md }}>
+          <span style={{ width: 46, height: 46, borderRadius: radius.lg, background: th.panel2, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: space.md }}>
+            <Icon name="wrench" size={22} color={th.mute} />
+          </span>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("Aún no tienes pozos", "Sin pozos registrados")}</div>
+          <div style={{ fontSize: fz.sm, color: th.soft, maxWidth: 400, margin: "0 auto", lineHeight: 1.55 }}>
+            {tr("Agrega tu primer pozo para vigilar su salud y avisarte de una falla antes de que ocurra.", "Agrega un pozo para iniciar el mantenimiento predictivo.")}
+          </div>
+          <button onClick={onAdd} style={{ marginTop: space.lg, border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: "pointer" }}>
+            + {tr("Agregar pozo", "Agregar pozo")}
+          </button>
+        </div>
+      ) : (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 440px),1fr))", gap: space.md, marginBottom: space.md }}>
         {wells.map((w, i) => {
           const p = byId.get(w.id);
@@ -240,6 +254,7 @@ export function PozosView({
           );
         })}
       </div>
+      )}
 
       {/* Manual reading capture — works offline, no cloud (LocalRepository) */}
       <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginTop: space.md }}>
