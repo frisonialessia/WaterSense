@@ -101,12 +101,11 @@ export function Landing() {
                 borderRadius: radius.pill,
               }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emeraldSoft }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(255,255,255,.9)" }} />
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
             </span>
             <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(33px, 6.6vw, 58px)", lineHeight: 1.04, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
-              Optimiza la energía de tus pozos. Maximiza la{" "}
-              <span style={{ color: C.emeraldSoft }}>ganancia de tu rancho</span>.
+              Optimiza la energía de tus pozos. Maximiza la ganancia de tu rancho.
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
               Cruzamos el <b style={{ color: "#fff" }}>costo de tu luz</b>, el <b style={{ color: "#fff" }}>desperdicio de agua</b> y la <b style={{ color: "#fff" }}>salud de tu cultivo</b> para decirte
