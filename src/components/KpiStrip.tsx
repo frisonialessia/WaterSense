@@ -4,6 +4,7 @@ import type { Parcel, Well, CostItem, KpiTrends } from "@/types/domain";
 import type { PumpHealth } from "@/lib/brain/pumpHealth";
 import { C, fmt, space, fz, labelStyle, type Theme } from "@/lib/theme";
 import { Sparkline } from "./Sparkline";
+import type { ViewId } from "./Sidebar";
 
 // The signature control-room element: a tight, monospaced metric strip.
 // Numbers are neutral; the single alert (wells over the limit) is the only
@@ -17,6 +18,7 @@ export function KpiStrip({
   wells,
   pumps,
   trends,
+  onNavigate,
 }: {
   th: Theme;
   tr: (s: string, t: string) => string;
@@ -25,17 +27,19 @@ export function KpiStrip({
   wells: Well[];
   pumps: PumpHealth[];
   trends: KpiTrends;
+  onNavigate?: (v: ViewId) => void;
 }) {
   const total = costs.reduce((s, c) => s + c.month, 0);
   const healthy = parcels.filter((p) => p.stress < 0.5).length;
   const wellsAlert = wells.filter((w) => !w.ok).length;
   const avgHealth = pumps.length ? Math.round(pumps.reduce((s, p) => s + p.health, 0) / pumps.length) : 0;
 
-  const items: { label: string; value: string; sub?: string; danger?: boolean; series: number[] }[] = [
-    { label: tr("Gasto del mes", "Costo mensual"), value: `$${fmt(total)}`, sub: tr("5 rubros", "OPEX"), series: trends.spend },
-    { label: tr("Parcelas sanas", "Salud cultivos"), value: `${healthy}/${parcels.length}`, sub: tr("sed < 50%", "stress < .5"), series: trends.healthy },
-    { label: tr("Salud de bombas", "Pump health"), value: `${avgHealth}%`, sub: tr("promedio", "media"), series: trends.pumps },
-    { label: tr("Pozos en alerta", "Wells alert"), value: `${wellsAlert}`, sub: tr("sobre el límite", "over limit"), danger: wellsAlert > 0, series: trends.alerts },
+  // Cada KPI lleva a su vista (las tarjetas duplicadas se quitaron del panel).
+  const items: { label: string; value: string; sub?: string; danger?: boolean; series: number[]; to: ViewId }[] = [
+    { label: tr("Gasto del mes", "Costo mensual"), value: `$${fmt(total)}`, sub: tr("5 rubros", "OPEX"), series: trends.spend, to: "costos" },
+    { label: tr("Parcelas sanas", "Salud cultivos"), value: `${healthy}/${parcels.length}`, sub: tr("sed < 50%", "stress < .5"), series: trends.healthy, to: "mapa" },
+    { label: tr("Salud de bombas", "Pump health"), value: `${avgHealth}%`, sub: tr("promedio", "media"), series: trends.pumps, to: "pozos" },
+    { label: tr("Pozos en alerta", "Wells alert"), value: `${wellsAlert}`, sub: tr("sobre el límite", "over limit"), danger: wellsAlert > 0, series: trends.alerts, to: "pozos" },
   ];
 
   return (
@@ -52,13 +56,28 @@ export function KpiStrip({
       {items.map((it, i) => (
         <div
           key={it.label}
-          className="kpi-cell"
+          className={"kpi-cell" + (onNavigate ? " kpi-click" : "")}
+          onClick={onNavigate ? () => onNavigate(it.to) : undefined}
+          onKeyDown={
+            onNavigate
+              ? (e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onNavigate(it.to);
+                  }
+                }
+              : undefined
+          }
+          role={onNavigate ? "button" : undefined}
+          tabIndex={onNavigate ? 0 : undefined}
+          title={onNavigate ? tr("Abrir detalle", "Abrir") : undefined}
           style={{
             padding: `${space.md}px ${space.x2}px`,
             borderLeft: i === 0 ? "none" : `1px solid ${th.line}`,
             display: "flex",
             flexDirection: "column",
             gap: 4,
+            cursor: onNavigate ? "pointer" : "default",
           }}
         >
           <span style={labelStyle(th)}>{it.label}</span>

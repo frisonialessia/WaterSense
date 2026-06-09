@@ -219,7 +219,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
       <Sidebar th={th} mode={mode} view={view} setView={go} tr={tr} costs={costItems} ranch={ranch} regions={data.regions} mobile={isMobile} open={navOpen} lang={lang} setLang={setLang} />
       <main style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
         <Topbar th={th} mode={mode} setMode={setMode} lang={lang} setLang={setLang} tr={tr} view={view} ranch={ranch} regions={data.regions} ranches={ranches} activeRanchId={activeRanchId} onSwitchRanch={setActiveRanchId} onAddRanch={addRanch} onMenu={isMobile ? () => setNavOpen((o) => !o) : undefined} />
-        <KpiStrip th={th} tr={tr} costs={costItems} parcels={allParcels} wells={wells} pumps={pumps} trends={data.trends} />
+        <KpiStrip th={th} tr={tr} costs={costItems} parcels={allParcels} wells={wells} pumps={pumps} trends={data.trends} onNavigate={go} />
         <div style={{ flex: 1, overflow: "auto", minHeight: 0, paddingBottom: isMobile ? 96 : 0 }}>
           {view === "mapa" ? (
             <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={wells} regions={data.regions} crops={data.crops} />
@@ -236,7 +236,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "ajustes" ? (
             <SettingsView th={th} tr={tr} ranch={ranch} setRanch={setRanch} regions={data.regions} crops={data.crops} ranches={ranches} activeRanchId={activeRanchId} onSwitchRanch={setActiveRanchId} onAddRanch={addRanch} onRemoveRanch={removeRanch} />
           ) : (
-            <FincaView th={th} tr={tr} setView={go} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} lat={ranch.lat} lng={ranch.lng} forecast={data.forecast} actions={data.actions} savings={data.savings} />
+            <FincaView th={th} tr={tr} lang={lang} setView={go} parcels={allParcels} crops={data.crops} tariffCurve={data.tariffCurve} tariffType={ranch.tariffType} lat={ranch.lat} lng={ranch.lng} forecast={data.forecast} actions={data.actions} savings={data.savings} />
           )}
         </div>
       </main>

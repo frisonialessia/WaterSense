@@ -65,10 +65,11 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
     return (
       <button
         onClick={() => setOpen(true)}
-        aria-label={tr("Abrir asistente", "Abrir asistente")}
+        aria-label={tr("Pregúntale a WaterSense", "Abrir asistente")}
+        title={tr("Pregúntale a WaterSense", "Asistente IA")}
         style={{ position: "fixed", bottom: 24, right: 24, width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg,${C.glacier},${C.emerald})`, cursor: "pointer", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: shadow.lg, border: "none" }}
       >
-        <Logo size={30} light />
+        <Logo size={30} light animated={false} />
       </button>
     );
   }

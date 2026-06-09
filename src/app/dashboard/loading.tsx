@@ -41,13 +41,11 @@ export default function DashboardLoading() {
           ))}
         </div>
 
-        {/* content */}
+        {/* content — refleja el panel "Mi rancho": decisión + ahorro + toggle */}
         <div style={{ flex: 1, padding: space.x3, display: "flex", flexDirection: "column", gap: space.md, overflow: "hidden" }}>
-          <Sk h={150} r={radius.lg} />
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 300px),1fr))", gap: space.md }}>
-            <Sk h={230} r={radius.lg} />
-            <Sk h={230} r={radius.lg} />
-          </div>
+          <Sk h={132} r={radius.lg} />
+          <Sk h={108} r={radius.lg} />
+          <Sk h={44} r={radius.md} />
         </div>
       </div>
     </div>

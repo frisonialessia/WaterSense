@@ -7,7 +7,7 @@ import { assessStressRisk } from "@/lib/brain/stressRisk";
 import { marketOutlook } from "@/lib/brain/marketModel";
 // Nota: el ahorro operativo del mes es la fuente única de verdad (savings).
 // Las cifras de luz/hora se derivan de él para que NO se contradigan.
-import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, stressColor, type Theme } from "@/lib/theme";
+import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, stressColor, type Theme, type Lang } from "@/lib/theme";
 import { Icon } from "../Icon";
 import { Sparkline } from "../Sparkline";
 import type { ViewId } from "../Sidebar";
@@ -33,6 +33,7 @@ const TONE: Record<ScheduledAction["tone"], string> = { emerald: C.emerald, aler
 export function FincaView({
   th,
   tr,
+  lang,
   setView,
   parcels,
   crops,
@@ -46,6 +47,7 @@ export function FincaView({
 }: {
   th: Theme;
   tr: (s: string, t: string) => string;
+  lang: Lang;
   setView: (v: ViewId) => void;
   parcels: Parcel[];
   crops: CropProfile[];
@@ -59,7 +61,10 @@ export function FincaView({
 }) {
   const saved = useCount(savings.amountThisMonth);
   const [done, setDone] = useState(false);
-  const healthy = parcels.filter((p) => p.stress < 0.5).length;
+  // Modo Simple = una decisión arriba y el detalle analítico colapsado.
+  // Técnico = todo desplegado. El usuario puede alternar.
+  const [showDetail, setShowDetail] = useState(lang === "tech");
+  useEffect(() => setShowDetail(lang === "tech"), [lang]);
 
   // Real Chihuahua weather via Open-Meteo (free, no key). Falls back to the
   // simulated forecast if the call fails (offline / blocked).
@@ -148,6 +153,8 @@ export function FincaView({
     return { ...r, parcel: driest };
   }, [parcels, cropMap]);
   const riskColor = risk ? stressColor(risk.parcel.stress) : C.alert;
+  // Riesgo urgente = la decisión del día. Si no hay, el panel se ve "en orden".
+  const urgentRisk = risk && risk.level !== "ok" ? risk : null;
 
   // ── What-if: hora de riego → ahorro en vivo ────────────────
   const cheapest = useMemo(() => (tariffCurve.length ? tariffCurve.indexOf(Math.min(...tariffCurve)) : 2), [tariffCurve]);
@@ -170,16 +177,53 @@ export function FincaView({
   const hourFactor = Math.max(0, Math.min(1, (peakPrice - priceAt) / hourSpan));
   const whatIfSaved = Math.round(opSavingMonth * hourFactor);
 
-  const cards = [
-    { l: tr("Hoy debes regar", "Acción prioritaria"), v: risk?.parcel.name ?? tr("Parcela del chile", "Parcela chile"), s: tr(`a las 2am · ahorras ~$${fmt(nightlySaving)}`, "tarifa baja · 02:00"), c: C.alert, action: done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar"), onAct: () => setDone(true), solid: !done },
-    { l: tr("Tus cultivos", "Salud general"), v: `${healthy} ${tr("sanos", "OK")}`, s: `${parcels.length} ${tr("parcelas", "zonas")}`, c: C.emerald, action: tr("Ver mapa", "Ver mapa"), onAct: () => setView("mapa"), solid: false },
-    { l: tr("Tus pozos", "Acuífero"), v: tr("1 en cuidado", "1 alerta"), s: tr("el pozo chico baja", "sobreexplotación"), c: C.glacier, action: tr("Revisar pozos", "Revisar"), onAct: () => setView("pozos"), solid: false },
-  ];
+  const decisionColor = urgentRisk ? riskColor : C.emerald;
 
   return (
     <div style={{ padding: space.x3 }}>
-      {/* cover — the dashboard's one brand-gradient moment */}
-      <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: `${space.x2}px ${space.x2}px`, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff" }}>
+      {/* ── Decisión de hoy (héroe): la acción prioritaria, no una franja ── */}
+      <div className="card" style={{ ...cardStyle(th), marginBottom: space.md, padding: 0, overflow: "hidden", display: "flex" }}>
+        <div style={{ width: 6, background: decisionColor, flexShrink: 0 }} />
+        <div style={{ flex: 1, padding: space.x2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: space.sm, marginBottom: space.sm }}>
+            <span style={{ width: 30, height: 30, borderRadius: radius.md, background: `${decisionColor}1f`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon name="drop" size={17} color={decisionColor} />
+            </span>
+            <span style={labelStyle(th)}>{tr("Tu decisión de hoy", "Acción prioritaria")}</span>
+          </div>
+          <div style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, color: th.ink, lineHeight: 1.15 }}>
+            {urgentRisk ? tr(`Riega ${urgentRisk.parcel.name}`, urgentRisk.parcel.name) : tr("Todo en orden hoy", "Sin acciones críticas")}
+          </div>
+          <p style={{ fontSize: fz.sm, color: th.soft, marginTop: 4, lineHeight: 1.5 }}>
+            {urgentRisk
+              ? tr(`Riégala de madrugada (~${cheapest}:00, tarifa baja) y ahorras ~$${fmt(nightlySaving)} esta noche.`, `Ventana óptima ${cheapest}:00 (tarifa baja) · ahorro ~$${fmt(nightlySaving)}.`)
+              : tr(`Riega en la ventana barata (~${cheapest}:00) y ahorras ~$${fmt(nightlySaving)} esta noche.`, `Ventana óptima ${cheapest}:00 · ahorro ~$${fmt(nightlySaving)}.`)}
+          </p>
+          {urgentRisk && (
+            <div style={{ marginTop: space.md, display: "inline-flex", alignItems: "center", gap: 8, fontSize: fz.xs, color: th.ink, background: `${riskColor}12`, border: `1px solid ${riskColor}33`, borderRadius: radius.md, padding: "7px 12px", lineHeight: 1.4 }}>
+              <Icon name="drop" size={13} color={riskColor} />
+              <span>
+                {tr(`Si no riegas en ~${urgentRisk.hoursToCritical} h, pones en riesgo `, `Umbral crítico en ~${urgentRisk.hoursToCritical} h · cosecha en riesgo `)}
+                <b className="mono" style={{ color: riskColor }}>${fmt(urgentRisk.projectedLoss)}</b>
+                {tr(" de cosecha.", ".")}
+              </span>
+            </div>
+          )}
+          <div style={{ display: "flex", gap: space.sm, marginTop: space.lg, flexWrap: "wrap" }}>
+            <button onClick={() => setDone(true)} disabled={done} style={{ border: "none", background: done ? C.emerald : C.glacier, color: "#fff", borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: done ? "default" : "pointer", transition: ".2s" }}>
+              {done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar riego")}
+            </button>
+            {urgentRisk && (
+              <button onClick={() => setView("mapa")} style={{ background: th.panel2, border: `1px solid ${th.line}`, color: th.ink, borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: "pointer" }}>
+                {tr("Ver parcela", "Ver parcela")}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Ahorro del mes (la recompensa, en degradado de marca) ── */}
+      <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: space.x2, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff" }}>
         <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes en luz y agua", "Ahorro operativo del mes · OPEX (luz + agua)")}</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: space.md, flexWrap: "wrap" }}>
           <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(28px, 9vw, 40px)" }}>${fmt(saved)}</span>
@@ -190,37 +234,19 @@ export function FincaView({
         </span>
       </div>
 
-      {/* point-of-no-return alert (the one alert element) */}
-      {risk && risk.level !== "ok" && (
-        <div className="card" style={{ display: "flex", alignItems: "center", gap: space.md, background: `${riskColor}12`, border: `1px solid ${riskColor}44`, borderRadius: radius.lg, padding: `${space.md}px ${space.lg}px`, marginBottom: space.md }}>
-          <span style={{ width: 34, height: 34, borderRadius: radius.md, background: `${riskColor}1f`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <Icon name="drop" size={18} color={riskColor} />
-          </span>
-          <div style={{ flex: 1, fontSize: fz.sm, color: th.ink, lineHeight: 1.5 }}>
-            <b>{risk.parcel.name}</b>{" "}
-            {tr(
-              `llega a punto crítico de sed en ~${risk.hoursToCritical} h. Cosecha en riesgo si no riegas: `,
-              `→ umbral crítico en ~${risk.hoursToCritical} h. Valor de cosecha en riesgo: `
-            )}
-            <b className="mono" style={{ color: riskColor }}>${fmt(risk.projectedLoss)}</b>.
-          </div>
-          <button onClick={() => setView("mapa")} style={{ border: "none", background: riskColor, color: "#fff", borderRadius: radius.md, padding: "8px 14px", fontSize: fz.xs, fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>
-            {tr("Ver parcela", "Ver")}
-          </button>
-        </div>
-      )}
+      {/* ── Detalle analítico: colapsado en Simple, abierto en Técnico ── */}
+      <button
+        onClick={() => setShowDetail((s) => !s)}
+        style={{ width: "100%", marginBottom: space.md, background: th.panel, border: `1px solid ${th.line}`, color: th.ink, borderRadius: radius.md, padding: "11px 16px", fontSize: fz.sm, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+      >
+        {showDetail ? tr("Ocultar el detalle", "Ocultar detalle") : tr("Ver más: cosecha, energía y clima", "Ver detalle analítico")}
+        <span style={{ transform: showDetail ? "rotate(-90deg)" : "rotate(90deg)", transition: ".2s", display: "inline-flex" }}>
+          <Icon name="arrow" size={14} color={th.soft} />
+        </span>
+      </button>
 
-      {/* action cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 240px),1fr))", gap: space.md, marginBottom: space.md }}>
-        {cards.map((x, i) => (
-          <div key={i} className="card" style={{ ...cardStyle(th), animationDelay: `${i * 0.06}s`, padding: space.xl, display: "flex", flexDirection: "column" }}>
-            <p style={{ fontSize: fz.xs, color: th.mute, marginBottom: 6 }}>{x.l}</p>
-            <p style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.xl, color: x.c }}>{x.v}</p>
-            <p style={{ fontSize: fz.xs, color: th.soft, marginTop: 6, marginBottom: space.lg }}>{x.s}</p>
-            <button onClick={x.onAct} style={{ marginTop: "auto", border: x.solid ? "none" : `1px solid ${th.line}`, background: x.solid ? C.glacier : th.panel2, color: x.solid ? "#fff" : th.ink, borderRadius: radius.md, padding: "9px 0", fontSize: fz.sm, fontWeight: 600, cursor: "pointer", transition: ".2s" }}>{x.action}</button>
-          </div>
-        ))}
-      </div>
+      {showDetail && (
+        <>
 
       {/* yield projection + what-if */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 340px),1fr))", gap: space.md, marginBottom: space.md }}>
@@ -374,6 +400,8 @@ export function FincaView({
           ))}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
