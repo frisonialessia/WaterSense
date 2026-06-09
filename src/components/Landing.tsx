@@ -144,10 +144,6 @@ export function Landing() {
                 Cómo funciona
               </a>
             </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: space.xl, fontSize: fz.xs, color: "rgba(255,255,255,.85)", background: "rgba(255,255,255,.12)", border: "1px solid rgba(255,255,255,.22)", padding: "6px 12px", borderRadius: radius.pill }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emeraldSoft }} />
-              Prototipo · datos simulados con rangos reales
-            </div>
           </div>
 
           {/* Interactive water-future simulator */}
