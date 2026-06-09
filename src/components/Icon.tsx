@@ -26,6 +26,7 @@ const PATHS: Record<string, string> = {
   file: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6",
   menu: "M3 6h18M3 12h18M3 18h18",
   close: "M6 6l12 12M18 6L6 18",
+  check: "M4 12.5l5 5L20 6.5",
 };
 
 export type IconName = keyof typeof PATHS;

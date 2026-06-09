@@ -64,6 +64,7 @@ export function Landing() {
               { href: "#pilares", label: "Qué hace" },
               { href: "#porque", label: "Por qué WaterSense" },
               { href: "#fuentes", label: "Datos" },
+              { href: "/precios", label: "Precios" },
             ].map((l) => (
               <a key={l.href} href={l.href} className="lnav" style={{ fontSize: fz.sm, color: th.soft, textDecoration: "none", fontWeight: 500, whiteSpace: "nowrap" }}>
                 {l.label}

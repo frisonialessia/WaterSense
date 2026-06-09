@@ -26,6 +26,8 @@ create table if not exists organizations (
   name        text not null default 'Mi organización',
   -- plan activo: 'productor' | 'profesional' | 'distrito' (ver tiers.ts)
   plan        text not null default 'productor',
+  -- fin de la prueba gratis (null = sin prueba activa); ver isTrialActive()
+  trial_ends_at timestamptz,
   -- id de cliente en Stripe (cuando se active el cobro, Fase 1)
   stripe_customer_id text,
   created_at  timestamptz not null default now()

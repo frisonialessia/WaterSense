@@ -42,8 +42,18 @@ export interface Tier {
   id: TierId;
   name: string;
   audience: string;
+  /** resumen de una línea para la tarjeta de precios */
+  tagline: string;
   /** precio orientativo MXN/mes (ajústalo a tu mercado; 0 = a cotizar) */
   priceMxnMonthly: number;
+  /** precio MXN/año (recomendado: 10× el mensual = 2 meses gratis; 0 = a cotizar) */
+  priceMxnAnnual: number;
+  /** días de prueba gratis al iniciar (0 = sin prueba) */
+  trialDays: number;
+  /** destacar como "el más popular" en la página de precios */
+  popular: boolean;
+  /** texto del botón de acción */
+  cta: string;
   limits: TierLimits;
   /** bullets para la página de precios */
   features: string[];
@@ -56,7 +66,12 @@ export const TIERS: Record<TierId, Tier> = {
     id: "productor",
     name: "Productor",
     audience: "Agricultor individual",
+    tagline: "Decide con fecha y precio, no a ojo.",
     priceMxnMonthly: 299,
+    priceMxnAnnual: 2990, // 10 meses → 2 gratis
+    trialDays: 14,
+    popular: false,
+    cta: "Empezar prueba",
     limits: {
       maxRanches: 3,
       maxMembers: 1,
@@ -80,7 +95,12 @@ export const TIERS: Record<TierId, Tier> = {
     id: "profesional",
     name: "Profesional / Agroempresa",
     audience: "Empresa agrícola con varios ranchos",
+    tagline: "Tu equipo, tus sensores y tu cumplimiento, en un solo lugar.",
     priceMxnMonthly: 1499,
+    priceMxnAnnual: 14990, // 10 meses → 2 gratis
+    trialDays: 14,
+    popular: true,
+    cta: "Probar 14 días gratis",
     limits: {
       maxRanches: 25,
       maxMembers: 10,
@@ -93,18 +113,23 @@ export const TIERS: Record<TierId, Tier> = {
       regionalAggregation: false,
     },
     features: [
+      "Todo lo de Productor, y además:",
       "Hasta 25 ranchos y 10 usuarios con roles",
       "Telemetría de sensores (nivel, caudal, presión, kWh)",
       "Cumplimiento CONAGUA/REPDA (índice de concesión)",
-      "Alertas por WhatsApp",
-      "Asistente IA (200 mensajes/día)",
+      "Alertas por WhatsApp · Asistente IA (200 msg/día)",
     ],
   },
   distrito: {
     id: "distrito",
     name: "Distrito / Enterprise",
     audience: "Distritos de riego, gobierno, cooperativas",
+    tagline: "Una región entera, con trazabilidad para CONAGUA.",
     priceMxnMonthly: 0, // a cotizar
+    priceMxnAnnual: 0, // a cotizar
+    trialDays: 0,
+    popular: false,
+    cta: "Hablar con ventas",
     limits: {
       maxRanches: INF,
       maxMembers: INF,
@@ -117,10 +142,10 @@ export const TIERS: Record<TierId, Tier> = {
       regionalAggregation: true,
     },
     features: [
+      "Todo lo de Profesional, y además:",
       "Ranchos y usuarios ilimitados",
       "Agregación regional por acuífero",
-      "API y SSO",
-      "Cumplimiento y trazabilidad para CONAGUA",
+      "API y SSO (inicio de sesión único)",
       "Soporte y SLA dedicados",
     ],
   },
@@ -147,4 +172,23 @@ export function withinLimit(
   current: number
 ): boolean {
   return current < (tier.limits[key] as number);
+}
+
+/** Meses gratis al pagar anual (vs 12× el mensual). 0 si no aplica. */
+export function annualMonthsFree(tier: Tier): number {
+  if (tier.priceMxnMonthly <= 0 || tier.priceMxnAnnual <= 0) return 0;
+  const free = 12 - tier.priceMxnAnnual / tier.priceMxnMonthly;
+  return Math.max(0, Math.round(free));
+}
+
+/** ¿La prueba gratis sigue vigente? `trialEndsAt` = ISO date o null. */
+export function isTrialActive(trialEndsAt: string | null | undefined): boolean {
+  if (!trialEndsAt) return false;
+  const end = Date.parse(trialEndsAt);
+  return Number.isFinite(end) && end > Date.now();
+}
+
+/** Formatea un precio MXN para la UI (sin decimales). */
+export function formatMxn(amount: number): string {
+  return amount.toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
 }
