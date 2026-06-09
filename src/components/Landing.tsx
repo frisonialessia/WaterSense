@@ -101,7 +101,7 @@ export function Landing() {
                 borderRadius: radius.pill,
               }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emeraldSoft }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
             </span>
             <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(36px, 7.2vw, 60px)", lineHeight: 1.03, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
@@ -125,7 +125,7 @@ export function Landing() {
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   color: "transparent",
-                  textShadow: "0 0 30px rgba(15,168,104,.3)",
+                  textShadow: "0 0 30px rgba(16,185,129,.32)",
                 }}
               >
                 ganancia de tu rancho
