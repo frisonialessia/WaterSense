@@ -6,23 +6,28 @@
 
 import type { CSSProperties } from "react";
 
-/** Brand palette. Glacier = brand/actions, emerald = positive/health. */
+/** Brand palette — "Agua Viva" + acento lima.
+ *  Glacier = marca/acciones (azul vivo), emerald = salud/positivo (verde vivo),
+ *  accent (lima) = energía/crecimiento para resaltes puntuales. */
 export const C = {
-  glacier: "#2270B8",
-  glacierDeep: "#1A5A9A",
-  glacierSoft: "#7FC4E8",
-  emerald: "#0FA868",
-  emeraldSoft: "#74E0AC",
-  brandNavy: "#1B3A6B",
-  alert: "#E0902E",
-  critical: "#D8607A",
-  // aliases used across the reference UI
-  cyanDeep: "#1A5A9A",
-  cyan: "#2270B8",
-  teal: "#0FA868",
-  tealLight: "#74E0AC",
-  lime: "#0FA868",
-  limeSoft: "#74E0AC",
+  glacier: "#1E83DA",
+  glacierDeep: "#1565B0",
+  glacierSoft: "#8FD3F4",
+  emerald: "#10B981",
+  emeraldSoft: "#6EE7B7",
+  brandNavy: "#0F2E5E",
+  alert: "#F59E0B",
+  critical: "#F43F6E",
+  // Acento (lima de "Campo Vivo") — úsalo con moderación para dar vida.
+  accent: "#84CC16",
+  accentSoft: "#BEF264",
+  // aliases (compat; hoy sin uso, quedan alineados a la nueva paleta)
+  cyanDeep: "#1565B0",
+  cyan: "#1E83DA",
+  teal: "#10B981",
+  tealLight: "#6EE7B7",
+  lime: "#84CC16",
+  limeSoft: "#BEF264",
 } as const;
 
 export type ThemeMode = "dark" | "light";

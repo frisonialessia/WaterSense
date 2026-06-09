@@ -6,8 +6,8 @@ export function Logo({ size = 28, light = false }: { size?: number; light?: bool
     <svg width={size} height={size} viewBox="0 0 100 100">
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={light ? "#7FC4E8" : "#2270B8"} />
-          <stop offset="100%" stopColor={light ? "#74E0AC" : "#0FA868"} />
+          <stop offset="0%" stopColor={light ? "#8FD3F4" : "#1E83DA"} />
+          <stop offset="100%" stopColor={light ? "#6EE7B7" : "#10B981"} />
         </linearGradient>
       </defs>
       <path d="M50 12 C50 12 80 48 80 66 A30 30 0 1 1 20 66 C20 48 50 12 50 12 Z" fill={`url(#${gid})`} />
