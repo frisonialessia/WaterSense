@@ -6,10 +6,10 @@ const DROP = "M50 41 C 43 37, 38 30, 38 21 A12 12 0 0 1 62 21 C 62 30, 57 37, 50
 const N = 8;
 const LEAN = 17; // giro de cada gota → sensación de molinete
 
-export function Logo({ size = 28, light = false }: { size?: number; light?: boolean }) {
+export function Logo({ size = 28, light = false, animated = true }: { size?: number; light?: boolean; animated?: boolean }) {
   const gid = "wsg" + size + (light ? "l" : "");
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100">
+    <svg className={animated ? "ws-logo" : undefined} width={size} height={size} viewBox="0 0 100 100">
       <defs>
         <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="16" y1="16" x2="84" y2="86">
           <stop offset="0" stopColor={light ? "#8FD3F4" : "#1E83DA"} />

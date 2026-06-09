@@ -119,6 +119,27 @@ button {
   }
 }
 
+/* Logo: el molinete gira lento como un pivote de riego, y acelera al pasar
+   el cursor. Se detiene si el usuario prefiere menos movimiento. */
+.ws-logo {
+  transform-origin: 50% 50%;
+  animation: ws-logo-spin 22s linear infinite;
+  will-change: transform;
+}
+.ws-logo:hover {
+  animation-duration: 2.4s;
+}
+@keyframes ws-logo-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ws-logo {
+    animation: none;
+  }
+}
+
 /* On phones, hide the secondary nav links (keep logo + CTA). */
 @media (max-width: 760px) {
   .lnav-group {
