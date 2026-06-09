@@ -101,37 +101,12 @@ export function Landing() {
                 borderRadius: radius.pill,
               }}
             >
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.emeraldSoft }} />
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
             </span>
             <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(33px, 6.6vw, 58px)", lineHeight: 1.04, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
-              Optimiza la{" "}
-              <span
-                style={{
-                  background: `linear-gradient(90deg, ${C.glacier}, ${C.glacierSoft})`,
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  color: "transparent",
-                  textShadow: "0 0 30px rgba(30,131,218,.32)",
-                }}
-              >
-                energía de tus pozos
-              </span>
-              . Maximiza la{" "}
-              <span
-                style={{
-                  background: `linear-gradient(90deg, ${C.emerald}, ${C.emeraldSoft})`,
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  color: "transparent",
-                  textShadow: "0 0 30px rgba(16,185,129,.32)",
-                }}
-              >
-                ganancia de tu rancho
-              </span>
-              .
+              Optimiza la energía de tus pozos. Maximiza la{" "}
+              <span style={{ color: C.emeraldSoft }}>ganancia de tu rancho</span>.
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
               Cruzamos el <b style={{ color: "#fff" }}>costo de tu luz</b>, el <b style={{ color: "#fff" }}>desperdicio de agua</b> y la <b style={{ color: "#fff" }}>salud de tu cultivo</b> para decirte
