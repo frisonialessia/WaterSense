@@ -106,16 +106,43 @@ button {
 }
 /* On phones the text spans full width, so switch to a vertical, darker
    gradient (dark at top under the headline) and frame the spray. */
-@media (max-width: 760px) {
+@media (max-width: 960px) {
   .hero-overlay {
     background-image: linear-gradient(
         180deg,
-        rgba(0, 0, 0, 0.72) 0%,
-        rgba(0, 0, 0, 0.55) 42%,
-        rgba(0, 0, 0, 0.42) 100%
+        rgba(0, 0, 0, 0.74) 0%,
+        rgba(0, 0, 0, 0.58) 44%,
+        rgba(0, 0, 0, 0.45) 100%
       ),
       url("/landing/hero.jpg");
-    background-position: 50% 38%;
+    background-position: 50% 36%;
+  }
+}
+
+/* Hero layout: dos columnas en escritorio; apilado y más compacto al bajar. */
+.hero-grid {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 80px 32px;
+  min-height: 80vh;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: center;
+}
+@media (max-width: 960px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    min-height: 0;
+    padding: 56px 24px 48px;
+  }
+}
+@media (max-width: 560px) {
+  .hero-grid {
+    padding: 38px 18px 34px;
+    gap: 22px;
   }
 }
 

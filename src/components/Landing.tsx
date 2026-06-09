@@ -83,7 +83,7 @@ export function Landing() {
       {/* Hero */}
       <section style={{ position: "relative", overflow: "hidden" }}>
         <div className="hero-overlay" style={{ position: "absolute", inset: 0 }} />
-        <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: `${space.x4 + space.x3}px ${space.x3}px`, minHeight: "80vh", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 360px),1fr))", gap: space.x4, alignItems: "center" }}>
+        <div className="hero-grid">
           <div>
             <span
               className="mono"
@@ -104,15 +104,16 @@ export function Landing() {
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.accent }} />
               CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
             </span>
-            <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(36px, 7.2vw, 60px)", lineHeight: 1.03, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
+            <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(33px, 6.6vw, 58px)", lineHeight: 1.04, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
               Optimiza la{" "}
               <span
                 style={{
-                  background: `linear-gradient(90deg, ${C.glacierSoft}, #BFE6FA)`,
+                  background: `linear-gradient(90deg, ${C.glacier}, ${C.glacierSoft})`,
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   color: "transparent",
+                  textShadow: "0 0 30px rgba(30,131,218,.32)",
                 }}
               >
                 energía de tus pozos
