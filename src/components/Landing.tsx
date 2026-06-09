@@ -82,7 +82,7 @@ export function Landing() {
 
       {/* Hero */}
       <section style={{ position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `linear-gradient(100deg, rgba(0,0,0,.68) 0%, rgba(0,0,0,.48) 36%, rgba(0,0,0,.12) 64%, rgba(0,0,0,0) 100%), url('/landing/hero.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }} />
+        <div className="hero-overlay" style={{ position: "absolute", inset: 0 }} />
         <div style={{ position: "relative", maxWidth: 1280, margin: "0 auto", padding: `${space.x4 + space.x3}px ${space.x3}px`, minHeight: "80vh", display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 360px),1fr))", gap: space.x4, alignItems: "center" }}>
           <div>
             <span
