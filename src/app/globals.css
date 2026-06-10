@@ -179,6 +179,29 @@ button {
   outline-offset: -2px;
 }
 
+/* Futuro del agua: palancas a la izquierda, gráfica a la derecha y sticky,
+   para ver la proyección cambiar mientras se deslizan los parámetros.
+   En móvil la gráfica se coloca arriba (las palancas debajo). */
+.futuro-grid {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 861px) {
+  .futuro-grid {
+    grid-template-columns: 1fr 1.05fr;
+    align-items: start;
+  }
+  .futuro-chart-col {
+    position: sticky;
+    top: 12px;
+  }
+}
+@media (max-width: 860px) {
+  .futuro-chart-col {
+    order: -1;
+  }
+}
+
 /* On phones, hide the secondary nav links (keep logo + CTA). */
 @media (max-width: 760px) {
   .lnav-group {

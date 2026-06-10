@@ -69,7 +69,7 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
         title={tr("Pregúntale a WaterSense", "Asistente IA")}
         style={{ position: "fixed", bottom: "calc(24px + env(safe-area-inset-bottom))", right: "calc(24px + env(safe-area-inset-right))", width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg,${C.glacier},${C.emerald})`, cursor: "pointer", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: shadow.lg, border: "none" }}
       >
-        <Logo size={30} light animated={false} />
+        <Logo size={30} solid="#fff" animated />
       </button>
     );
   }

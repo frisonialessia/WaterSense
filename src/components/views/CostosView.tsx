@@ -269,7 +269,7 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
               <div onClick={() => setOpen(isOpen ? null : c.id)} style={{ padding: `${space.md}px ${space.xl}px`, display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", background: isOpen ? th.panel2 : "transparent", transition: "background .2s" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: space.md }}>
                   <span style={{ width: 32, height: 32, borderRadius: radius.md, background: th.panel2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon name={c.icon} size={16} color={c.id === "luz" ? C.alert : c.id === "agua" ? C.glacier : th.soft} />
+                    <Icon name={c.icon === "bolt" ? "bolt2" : c.icon} size={16} color={th.soft} />
                   </span>
                   <div>
                     <div style={{ fontSize: fz.sm, fontWeight: 500, display: "flex", alignItems: "center", gap: 8 }}>

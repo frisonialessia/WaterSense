@@ -146,7 +146,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
         ))}
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: space.lg }}>
+      <div className="futuro-grid">
         {/* levers */}
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("Mueve las palancas", "Variables del escenario")}</div>
@@ -166,7 +166,7 @@ export function FuturoView({ th, tr }: { th: Theme; tr: (s: string, t: string) =
         </div>
 
         {/* right column: projection chart + consequence simulator (fills height) */}
-        <div style={{ display: "flex", flexDirection: "column", gap: space.lg, minWidth: 0 }}>
+        <div className="futuro-chart-col" style={{ display: "flex", flexDirection: "column", gap: space.lg, minWidth: 0 }}>
         <div className="card" style={{ ...cardStyle(th), padding: space.xl }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <div style={{ fontWeight: 600, marginBottom: 4 }}>{tr("Nivel del agua bajo tierra", "Profundidad del nivel freático")}</div>

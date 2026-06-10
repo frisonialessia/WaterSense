@@ -147,7 +147,7 @@ export function Sidebar({
         {costs.map((c) => (
           <div key={c.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "4px 6px", fontSize: fz.xs }}>
             <span style={{ color: th.soft, display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
-              <Icon name={c.icon} size={12} color={th.mute} />
+              <Icon name={c.icon === "bolt" ? "bolt2" : c.icon} size={12} color={th.mute} />
               <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tr(c.label.split(" ")[0], c.label)}</span>
             </span>
             <span className="mono" style={{ color: th.soft }}>${(c.month / 1000).toFixed(1)}k</span>

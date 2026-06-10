@@ -19,7 +19,7 @@ export function HeroSimulator() {
     rechargeMPerYear: 2.2,
     baseExtractionM: 3.4,
     extractionFactor: ext / 100,
-    neighbors: 3,
+    neighbors: 2,
     neighborDrawM: 0.9,
     rainReuse: 0,
     drainReuse: 0,
