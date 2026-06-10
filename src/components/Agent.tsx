@@ -67,7 +67,7 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
         onClick={() => setOpen(true)}
         aria-label={tr("Pregúntale a WaterSense", "Abrir asistente")}
         title={tr("Pregúntale a WaterSense", "Asistente IA")}
-        style={{ position: "fixed", bottom: 24, right: 24, width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg,${C.glacier},${C.emerald})`, cursor: "pointer", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: shadow.lg, border: "none" }}
+        style={{ position: "fixed", bottom: "calc(24px + env(safe-area-inset-bottom))", right: "calc(24px + env(safe-area-inset-right))", width: 56, height: 56, borderRadius: "50%", background: `linear-gradient(135deg,${C.glacier},${C.emerald})`, cursor: "pointer", zIndex: 30, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: shadow.lg, border: "none" }}
       >
         <Logo size={30} light animated={false} />
       </button>
@@ -78,7 +78,7 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
     <div
       style={mobile
         ? { position: "fixed", left: 0, right: 0, bottom: 0, width: "100%", height: "88dvh", background: th.panel, borderTop: `1px solid ${th.line}`, borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg, zIndex: 41, display: "flex", flexDirection: "column", boxShadow: shadow.lg, overflow: "hidden" }
-        : { position: "fixed", bottom: 24, right: 24, width: 380, maxWidth: "calc(100vw - 32px)", height: 540, maxHeight: "calc(100dvh - 48px)", background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, zIndex: 31, display: "flex", flexDirection: "column", boxShadow: shadow.lg, overflow: "hidden" }}
+        : { position: "fixed", bottom: "calc(24px + env(safe-area-inset-bottom))", right: "calc(24px + env(safe-area-inset-right))", width: 380, maxWidth: "calc(100vw - 32px)", height: 540, maxHeight: "calc(100dvh - 48px)", background: th.panel, border: `1px solid ${th.line}`, borderRadius: radius.lg, zIndex: 31, display: "flex", flexDirection: "column", boxShadow: shadow.lg, overflow: "hidden" }}
     >
       <div style={{ padding: `${space.md}px ${space.lg}px`, borderBottom: `1px solid ${th.line}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: space.sm }}>
@@ -112,7 +112,7 @@ export function Agent({ th, tr }: { th: Theme; tr: (s: string, t: string) => str
         )}
       </div>
 
-      <div style={{ padding: space.md, borderTop: `1px solid ${th.line}`, display: "flex", gap: space.sm }}>
+      <div style={{ padding: space.md, paddingBottom: `calc(${space.md}px + env(safe-area-inset-bottom))`, borderTop: `1px solid ${th.line}`, display: "flex", gap: space.sm }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}

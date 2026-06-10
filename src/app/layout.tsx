@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Montserrat, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -35,6 +35,15 @@ export const metadata: Metadata = {
     images: ["/og.jpg"],
   },
   robots: { index: true, follow: true },
+};
+
+// viewport-fit=cover es necesario para que env(safe-area-inset-*) aplique
+// en iPhones con notch / barra de inicio (botón flotante y hojas no quedan tapados).
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#1E83DA",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
