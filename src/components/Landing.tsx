@@ -3,12 +3,32 @@ import { C, T, FONT, space, fz, radius, shadow } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 import { HeroSimulator } from "./HeroSimulator";
+import { TIERS, formatMxn } from "@/lib/billing/tiers";
 
 // Marketing landing — light mode, brand palette, one gradient hero moment.
 // Leads with the emotional anchor from CLAUDE.md: "¿tu finca sobrevive
 // la próxima década?". Honest that everything is simulated.
 
 const th = T.light;
+
+const STEPS = [
+  { icon: "map", n: "1", t: "Conecta tu rancho", b: "Dibuja tus parcelas y pozos en el mapa, o arranca con el rancho de ejemplo. Sin hardware para empezar." },
+  { icon: "chart", n: "2", t: "Mira tu futuro", b: "Cruzamos el costo de tu luz, el desperdicio de agua y la salud del cultivo: qué regar, cuándo y cuántos años le quedan a tu pozo." },
+  { icon: "coin", n: "3", t: "Decide con dinero", b: "Riega en la hora barata, recibe alertas antes de una falla y gana años de pozo — con cada decisión puesta en pesos." },
+];
+
+function FooterCol({ title, links }: { title: string; links: [string, string][] }) {
+  return (
+    <div>
+      <div className="mono" style={{ fontSize: fz.micro, color: th.mute, letterSpacing: ".08em", marginBottom: space.md, textTransform: "uppercase" }}>{title}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: space.sm }}>
+        {links.map(([label, href]) => (
+          <Link key={href} href={href} className="lnav" style={{ fontSize: fz.sm, color: th.soft, textDecoration: "none" }}>{label}</Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const PILLARS = [
   {
@@ -115,7 +135,7 @@ export function Landing() {
               <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
                 Ver el panel en vivo <Icon name="arrow" size={16} color="#fff" />
               </Link>
-              <a href="#pilares" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
+              <a href="#como" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
                 Cómo funciona
               </a>
             </div>
@@ -144,6 +164,30 @@ export function Landing() {
               <div style={{ fontSize: fz.sm, color: th.soft, lineHeight: 1.6 }}>{p.body}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Cómo funciona — 3 pasos */}
+      <section id="como" style={{ background: th.panel, borderTop: `1px solid ${th.line}`, borderBottom: `1px solid ${th.line}` }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px` }}>
+          <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".05em" }}>EN 3 PASOS</span>
+          <h2 style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.xl, letterSpacing: "-0.01em", margin: `${space.sm}px 0 ${space.xl}px` }}>
+            De tus datos a una decisión con dinero
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 280px),1fr))", gap: space.lg }}>
+            {STEPS.map((s) => (
+              <div key={s.n}>
+                <div style={{ display: "flex", alignItems: "center", gap: space.md, marginBottom: space.md }}>
+                  <span style={{ width: 46, height: 46, borderRadius: radius.lg, background: `${C.glacier}12`, border: `1px solid ${C.glacier}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon name={s.icon} size={20} color={C.glacier} />
+                  </span>
+                  <span className="mono" style={{ fontSize: fz.micro, color: th.mute, letterSpacing: ".08em" }}>PASO {s.n}</span>
+                </div>
+                <div style={{ fontFamily: FONT.title, fontWeight: 600, fontSize: fz.md, marginBottom: 6 }}>{s.t}</div>
+                <div style={{ fontSize: fz.sm, color: th.soft, lineHeight: 1.6 }}>{s.b}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -236,6 +280,36 @@ export function Landing() {
         </div>
       </section>
 
+      {/* Planes — teaser hacia /precios */}
+      <section id="planes" style={{ background: th.panel2, borderTop: `1px solid ${th.line}` }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x4}px ${space.x3}px`, textAlign: "center" }}>
+          <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(24px,4.5vw,32px)", letterSpacing: "-0.01em", marginBottom: space.sm }}>
+            Un plan para cada tamaño de operación
+          </h2>
+          <p style={{ fontSize: fz.md, color: th.soft, maxWidth: 560, margin: `0 auto ${space.x2}px`, lineHeight: 1.6 }}>
+            Empieza con la demo, sin registro. Cuando estés listo, 14 días de prueba — sin tarjeta.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,240px),1fr))", gap: space.md, maxWidth: 920, margin: "0 auto", textAlign: "left" }}>
+            {Object.values(TIERS).map((t) => (
+              <div key={t.id} className="lcard" style={{ background: th.panel, border: `1px solid ${t.popular ? C.glacier : th.line}`, borderRadius: radius.lg, padding: space.xl, boxShadow: t.popular ? shadow.md : "none" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: space.sm }}>
+                  <div style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.md }}>{t.name}</div>
+                  {t.popular && <span className="mono" style={{ fontSize: 9, fontWeight: 700, color: "#fff", background: C.glacier, borderRadius: radius.pill, padding: "2px 8px", flexShrink: 0 }}>POPULAR</span>}
+                </div>
+                <div style={{ fontSize: fz.xs, color: th.mute, marginTop: 2, marginBottom: space.md }}>{t.audience}</div>
+                <div className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl }}>
+                  {t.priceMxnMonthly > 0 ? formatMxn(t.priceMxnMonthly) : "A cotizar"}
+                  {t.priceMxnMonthly > 0 && <span style={{ fontSize: fz.xs, color: th.soft, fontWeight: 400 }}> /mes</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link href="/precios" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginTop: space.x2, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none" }}>
+            Ver todos los planes <Icon name="arrow" size={16} color="#fff" />
+          </Link>
+        </div>
+      </section>
+
       {/* Closing CTA — full-bleed agave, generous space */}
       <section style={{ position: "relative", backgroundImage: `linear-gradient(${C.brandNavy}e6, ${C.brandNavy}cc), url('/landing/agave.jpg')`, backgroundSize: "cover", backgroundPosition: "center" }}>
         <div style={{ maxWidth: 920, margin: "0 auto", padding: `${space.x4 + space.x2}px ${space.x3}px`, textAlign: "center" }}>
@@ -255,13 +329,25 @@ export function Landing() {
       </section>
 
       {/* Footer */}
-      <footer style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px`, borderTop: `1px solid ${th.line}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: space.md, flexWrap: "wrap" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: space.sm, color: th.soft, fontSize: fz.xs }}>
-          <Logo size={18} /> WaterSense · Chihuahua, México
+      <footer style={{ background: th.panel, borderTop: `1px solid ${th.line}` }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x3}px ${space.x3}px ${space.x2}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,200px),1fr))", gap: space.x2 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: space.sm }}>
+              <Logo size={22} /> <b style={{ fontFamily: FONT.title, fontSize: fz.md }}>WaterSense</b>
+            </div>
+            <p style={{ fontSize: fz.xs, color: th.soft, marginTop: space.sm, lineHeight: 1.6, maxWidth: 260 }}>
+              Auditor de riego y futuro del agua para la agricultura de alto rendimiento. Delicias, Chihuahua.
+            </p>
+          </div>
+          <FooterCol title="Producto" links={[["Qué hace", "/#pilares"], ["Cómo funciona", "/#como"], ["Datos", "/#fuentes"], ["Precios", "/precios"], ["Entrar a la demo", "/dashboard"]]} />
+          <FooterCol title="Legal" links={[["Privacidad", "/privacidad"], ["Términos", "/terminos"]]} />
         </div>
-        <Link href="/dashboard" style={{ color: C.glacier, fontSize: fz.sm, fontWeight: 600, textDecoration: "none" }}>
-          Entrar a la demo →
-        </Link>
+        <div style={{ borderTop: `1px solid ${th.line}` }}>
+          <div style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.md}px ${space.x3}px`, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: space.sm, fontSize: fz.micro, color: th.mute }}>
+            <span>© {new Date().getFullYear()} WaterSense · Chihuahua, México</span>
+            <span>Prototipo · datos simulados con rangos reales</span>
+          </div>
+        </div>
       </footer>
     </div>
   );

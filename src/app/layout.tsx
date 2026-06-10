@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     siteName: "WaterSense",
     title: TITLE,
     description: DESCRIPTION,
-    images: [{ url: "/landing/hero.jpg", width: 1200, height: 630, alt: "WaterSense — panel de riego y pozos para Chihuahua" }],
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "WaterSense — optimiza la energía de tus pozos y maximiza la ganancia de tu rancho" }],
   },
   twitter: {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
-    images: ["/landing/hero.jpg"],
+    images: ["/og.jpg"],
   },
   robots: { index: true, follow: true },
 };
