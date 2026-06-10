@@ -52,6 +52,7 @@ export type StudyBody = z.infer<typeof studySchema>;
 const unit = z.number().min(0).max(1);
 export const aquiferSchema = z.object({
   extractionFactor: z.number().min(0).max(3).optional(),
+  irrigationTech: unit.optional(),
   neighbors: z.number().int().min(0).max(1000).optional(),
   rainReuse: unit.optional(),
   drainReuse: unit.optional(),

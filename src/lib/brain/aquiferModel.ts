@@ -16,6 +16,8 @@ export interface AquiferInputs {
   baseExtractionM: number;
   /** 0..1+ multiplier on your extraction (the lever) */
   extractionFactor: number;
+  /** 0..1 fracción de agua ahorrada al tecnificar el riego (goteo/aspersión) */
+  irrigationTech?: number;
   /** number of neighbors sharing the aquifer */
   neighbors: number;
   /** per-neighbor drop contribution, meters/year */
@@ -48,7 +50,7 @@ export interface AquiferProjection {
 }
 
 export function projectAquifer(i: AquiferInputs): AquiferProjection {
-  const yourDraw = i.baseExtractionM * i.extractionFactor;
+  const yourDraw = i.baseExtractionM * i.extractionFactor * (1 - (i.irrigationTech ?? 0) * 0.35);
   const neighborDraw = i.neighborDrawM * i.neighbors;
   // Each lever offsets the annual drop. Coefficients (m/yr at 100%) reflect
   // how much each method puts back / saves: direct recharge (MAR) is strongest,

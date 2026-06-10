@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
   const inputs: AquiferInputs = {
     ...DEFAULTS,
     extractionFactor: body.extractionFactor ?? 1,
+    irrigationTech: body.irrigationTech ?? 0,
     neighbors: body.neighbors ?? 3,
     rainReuse: body.rainReuse ?? 0,
     drainReuse: body.drainReuse ?? 0,
