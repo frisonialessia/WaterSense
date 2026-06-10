@@ -122,7 +122,7 @@ export function Landing() {
               }}
             >
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(255,255,255,.9)" }} />
-              CHIHUAHUA · AGRICULTURA DE ALTO RENDIMIENTO
+              AGRICULTURA DE ALTO RENDIMIENTO
             </span>
             <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(33px, 6.6vw, 58px)", lineHeight: 1.04, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
               Optimiza la energía de tus pozos. Maximiza la ganancia de tu rancho.
@@ -178,8 +178,8 @@ export function Landing() {
             {STEPS.map((s) => (
               <div key={s.n}>
                 <div style={{ display: "flex", alignItems: "center", gap: space.md, marginBottom: space.md }}>
-                  <span style={{ width: 46, height: 46, borderRadius: radius.lg, background: `${C.glacier}12`, border: `1px solid ${C.glacier}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon name={s.icon} size={20} color={C.glacier} />
+                  <span style={{ width: 46, height: 46, borderRadius: radius.lg, background: `${C.emerald}12`, border: `1px solid ${C.emerald}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Icon name={s.icon} size={20} color={C.emerald} />
                   </span>
                   <span className="mono" style={{ fontSize: fz.micro, color: th.mute, letterSpacing: ".08em" }}>PASO {s.n}</span>
                 </div>
@@ -200,7 +200,7 @@ export function Landing() {
         <div style={{ position: "relative", maxWidth: 980, margin: "0 auto", padding: `${space.x4 + space.lg}px ${space.x3}px ${space.x4}px`, textAlign: "center" }}>
           <span className="mono" style={{ fontSize: fz.sm, fontWeight: 700, letterSpacing: ".12em", color: C.emeraldSoft }}>LA PREGUNTA QUE IMPORTA</span>
           <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(30px, 5vw, 48px)", letterSpacing: "-0.02em", lineHeight: 1.1, margin: `${space.md}px 0` }}>
-            ¿Tu finca <span style={{ color: C.glacierSoft }}>sobrevive</span> la próxima década?
+            ¿Tu rancho <span style={{ color: C.glacierSoft }}>sobrevive</span> la próxima década?
           </h2>
           <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", maxWidth: 680, margin: "0 auto", lineHeight: 1.6 }}>
             WaterSense le pone <b style={{ color: "#fff" }}>fecha</b> y <b style={{ color: "#fff" }}>precio</b> a esa pregunta — y te muestra cómo ganar años de pozo.

@@ -10,6 +10,7 @@ import { Topbar } from "./Topbar";
 import { KpiStrip } from "./KpiStrip";
 import { DocsView } from "./views/DocsView";
 import { CostosView } from "./views/CostosView";
+import { RiegoView } from "./views/RiegoView";
 import { FincaView } from "./views/FincaView";
 import { PozosView } from "./views/PozosView";
 import { SettingsView } from "./views/SettingsView";
@@ -225,6 +226,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
             <MapView th={th} mode={mode} tr={tr} parcels={allParcels} userParcels={userParcels} onAddParcel={addParcel} onRemoveParcel={removeParcel} wells={wells} regions={data.regions} crops={data.crops} />
           ) : view === "costos" ? (
             <CostosView th={th} tr={tr} costs={costItems} tariffCurve={data.tariffCurve} parcels={allParcels} crops={data.crops} onUpdateCost={updateCost} onAddCost={addCost} onRemoveCost={removeCost} />
+          ) : view === "riego" ? (
+            <RiegoView th={th} tr={tr} parcels={allParcels} tariffCurve={data.tariffCurve} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
           ) : view === "estudio" ? (

@@ -81,6 +81,7 @@ export function Topbar({
     mapa: tr("Mapa del campo", "Command map · campo"),
     finca: tr("Mi rancho", "Auditoría"),
     costos: tr("Costos", "Costos operativos"),
+    riego: tr("Bitácora de riego", "Bitácora · riegos"),
     futuro: tr("Futuro del agua", "Proyección del acuífero"),
     estudio: tr("Estudio de riego (IA)", "Estudio de riego asistido por IA"),
     pozos: tr("Mis pozos", "Salud de pozos"),

@@ -6,7 +6,7 @@ import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 
-export type ViewId = "finca" | "mapa" | "costos" | "futuro" | "estudio" | "pozos" | "docs" | "ajustes";
+export type ViewId = "finca" | "mapa" | "costos" | "riego" | "futuro" | "estudio" | "pozos" | "docs" | "ajustes";
 
 type Item = { id: ViewId; icon: string; s: string; t: string };
 
@@ -14,6 +14,7 @@ const TOP_ITEMS: Item[] = [
   { id: "finca", icon: "home", s: "Mi rancho", t: "Auditoría" },
   { id: "mapa", icon: "map", s: "Mapa del campo", t: "Command map" },
   { id: "costos", icon: "coin", s: "Costos", t: "Costos" },
+  { id: "riego", icon: "drop", s: "Bitácora de riego", t: "Bitácora · riegos" },
   { id: "futuro", icon: "chart", s: "Futuro del agua", t: "Proyección acuífero" },
   { id: "estudio", icon: "file", s: "Estudio de riego (IA)", t: "Estudio de riego (IA)" },
 ];

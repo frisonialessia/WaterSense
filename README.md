@@ -163,24 +163,49 @@ Todas las variables de entorno son **opcionales** y están documentadas en
 
 ## APIs y fuentes que se pueden conectar
 
-| Fuente | Qué aporta | Estado |
-|---|---|---|
-| **Open-Meteo** | Pronóstico, temperatura, lluvia | ✅ conectado (cliente) |
-| **CENACE** (PML) | Precio de luz por hora ($/kWh) | ✅ en vivo con respaldo (`/api/tariff`) |
-| **Anthropic (Claude)** | Asistente y estudio de riego con IA | ✅ opcional (`/api/agent`, `/api/study`) |
-| **MapLibre + teselas** (MapTiler/Mapbox) | Mapa y capas del campo | ✅ MapLibre (teselas configurables) |
-| **Supabase / Postgres / PocketBase** | Persistencia multi-usuario + auth | 🔌 `schema.sql` + contrato listos |
-| **CONAGUA · REPDA** | Concesiones y vecinos del acuífero | 🔌 estructura lista (`water_concessions`) |
-| **CONAGUA · Disponibilidad (DOF)** | Estado del acuífero, recarga vs. extracción | 🔌 por conectar (alimenta `aquiferModel`) |
-| **CONAGUA · red piezométrica** | Niveles freáticos / abatimiento | 🔌 por conectar (tabla `readings`) |
-| **CFE** (servicio/RPU, carga kW) | Desglose energético del recibo | 🔌 campos ya en Ajustes |
-| **SIAP / precios de mercado** | $/kg por cultivo, "¿cuándo vender?" | 🔌 por conectar (alimenta `marketModel`) |
-| **Twilio** (WhatsApp/SMS) | Envío real de alertas | 🔌 endpoint `/api/notify` listo |
-| **Sensores IoT** (LoRaWAN/MQTT → `/api/ingest`) | Nivel, caudal, presión, kWh, humedad | 🔌 POST de ingesta listo |
+Cada fuente alimenta una vista concreta del dashboard. Por eso la lista no es
+una "wishlist": cada integración tiene un lugar y un para qué.
 
-> ✅ = conectado o listo para usar · 🔌 = contrato/estructura ya en el código, solo
-> falta la credencial o la fuente. Todas las variables viven en `.env.example` y
-> son **opcionales**: sin ninguna, la demo funciona completa con datos simulados.
+| Fuente | Qué aporta | Alimenta (vista) | Estado |
+|---|---|---|---|
+| **Open-Meteo** | Pronóstico, temperatura, lluvia | Mi rancho · clima | ✅ conectado |
+| **CENACE** (PML) | Precio de luz por hora ($/kWh) | Costos · Bitácora de riego | ✅ en vivo (`/api/tariff`) |
+| **Anthropic (Claude)** | Asistente y estudio de riego con IA | Asistente · Estudio | ✅ opcional |
+| **MapLibre + teselas** (MapTiler/Mapbox) | Mapa y capas del campo | Mapa del campo | ✅ |
+| **Supabase / Postgres** | Persistencia multi-usuario + auth | Todo el dashboard | 🔌 `schema.sql` listo |
+| **CONAGUA · REPDA** | Concesiones y vecinos del acuífero | Mis pozos · Futuro del agua | 🔌 estructura lista |
+| **CONAGUA · Disponibilidad (DOF)** | Recarga vs. extracción del acuífero | Futuro del agua | 🔌 `aquiferModel` |
+| **CONAGUA · red piezométrica** | Niveles freáticos / abatimiento real | Futuro del agua · Pozos | 🔌 tabla `readings` |
+| **CFE** (servicio/RPU, carga kW) | Desglose del recibo eléctrico | Costos · Ajustes | 🔌 campos en Ajustes |
+| **SIAP / precios de mercado** | $/kg por cultivo, "¿cuándo vender?" | Mi rancho · mercado | 🔌 `marketModel` |
+| **Twilio** (WhatsApp/SMS) | Envío real de alertas | Mis pozos · alertas | 🔌 `/api/notify` |
+| **Sensores IoT** (LoRaWAN/MQTT) | Nivel, caudal, presión, kWh, humedad | Pozos · Bitácora · Futuro | 🔌 `/api/ingest` |
+| 🥇 **OpenET** (evapotranspiración satelital) | Cuánta agua *necesitó/usó* el cultivo | Mi rancho · Bitácora · Futuro | 🆕 por conectar |
+| 🥇 **Tarifas agrícolas CFE** (9/9N/9CU) | Tarifa de estímulo agrícola real | Costos · Bitácora de riego | 🆕 por conectar |
+| 🥇 **Sentinel-2 / Landsat** (NDVI) | Vigor y estrés del cultivo (sin sensores) | Mapa del campo · Mi rancho | 🆕 por conectar |
+| 🥈 **SMAP** (humedad de suelo satelital) | Humedad del suelo por zona | Mapa del campo · Mi rancho | 🆕 por conectar |
+| 🥈 **NASA POWER / SMN** | ET0, radiación, clima oficial (respaldo) | Mi rancho · clima | 🆕 por conectar |
+| 🥈 **SNIIM** (precios mayoristas MX) | Precio real por cultivo | Mi rancho · mercado | 🆕 por conectar |
+| 🥉 **INEGI / RAN** (catastro, uso de suelo) | Límites de parcela y padrón | Mapa del campo | 🆕 por conectar |
+| 🥉 **Conekta / Mercado Pago** | Cobro local mexicano | Planes / billing | 🆕 por conectar |
+| 🥉 **FIRA / FND** | Financiamiento + huella hídrica para crédito | Estudio · Costos | 🆕 por conectar |
+
+> ✅ = conectado · 🔌 = contrato/estructura ya en el código, falta la credencial ·
+> 🆕 = recomendada, por diseñar el enchufe. 🥇🥈🥉 = prioridad sugerida.
+> Todas las variables viven en `.env.example` y son **opcionales**.
+
+### Roadmap de integraciones (por prioridad de valor)
+
+- **🥇 Oro — convierten el demo en herramienta imprescindible.** Le dicen al
+  agrónomo, con datos reales y **sin hardware**, cuánta agua necesita el cultivo
+  y cuánto cuesta sacarla: **OpenET** (ET satelital), **tarifa agrícola CFE**
+  (costo de bombeo exacto) y **NDVI Sentinel** (vigor/estrés del cultivo).
+- **🥈 Plata — precisión y confianza.** Humedad de suelo (**SMAP**), clima oficial
+  (**NASA POWER / SMN**) y precios reales de mercado (**SNIIM/SIAP**).
+- **🥉 Bronce — operación y negocio.** Catastro (**INEGI/RAN**), cobro local
+  (**Conekta / Mercado Pago**) y financiamiento (**FIRA / FND**).
+- **Telemetría (transversal).** Los **sensores IoT** vía `/api/ingest` son el
+  salto de "simulado" a "real" y alimentan Pozos, Bitácora y Futuro del agua.
 
 ---
 
