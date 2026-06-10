@@ -227,7 +227,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
           ) : view === "costos" ? (
             <CostosView th={th} tr={tr} costs={costItems} tariffCurve={data.tariffCurve} parcels={allParcels} crops={data.crops} onUpdateCost={updateCost} onAddCost={addCost} onRemoveCost={removeCost} />
           ) : view === "riego" ? (
-            <RiegoView th={th} tr={tr} parcels={allParcels} tariffCurve={data.tariffCurve} />
+            <RiegoView th={th} tr={tr} parcels={allParcels} wells={wells} tariffCurve={data.tariffCurve} ranch={ranch} />
           ) : view === "futuro" ? (
             <FuturoView th={th} tr={tr} />
           ) : view === "estudio" ? (
