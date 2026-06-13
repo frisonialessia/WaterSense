@@ -57,7 +57,7 @@ export default async function ReportePage() {
           <Logo size={40} />
           <div style={{ flex: 1 }}>
             <div style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl, letterSpacing: "-0.01em" }}>Reporte de Eficiencia de Riego</div>
-            <div style={{ fontSize: fz.sm, color: th.soft }}>Rancho El Álamo · Delicias, Chihuahua · {Cap}</div>
+            <div style={{ fontSize: fz.sm, color: th.soft }}>Rancho de ejemplo · Delicias, Chihuahua · {Cap}</div>
           </div>
           <div style={{ textAlign: "right", fontSize: fz.micro, color: th.mute }}>WaterSense<br />Generado {new Date().toLocaleDateString("es-MX")}</div>
         </div>

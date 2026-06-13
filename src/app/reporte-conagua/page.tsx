@@ -24,7 +24,7 @@ interface Riego {
 }
 
 const FALLBACK: Pick<RanchConfig, "name" | "owner" | "concessionM3Year" | "concessionTitle"> = {
-  name: "Rancho El Álamo",
+  name: "Rancho de ejemplo",
   owner: "",
   concessionM3Year: 320000,
   concessionTitle: "",

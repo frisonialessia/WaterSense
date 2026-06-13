@@ -18,7 +18,7 @@ import { StudyView } from "./views/StudyView";
 import { Agent } from "./Agent";
 import { WelcomeModal } from "./WelcomeModal";
 
-const DEFAULT_RANCH: RanchConfig = { id: "ranch-1", name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "", concessionM3Year: 320000, concessionTitle: "", contractedKw: 110, cfeService: "", phone: "" };
+const DEFAULT_RANCH: RanchConfig = { id: "ranch-1", name: "Rancho de ejemplo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "", concessionM3Year: 320000, concessionTitle: "", contractedKw: 110, cfeService: "", phone: "" };
 
 const loader = (label: string) => () => <div style={{ padding: 30, fontSize: 13, color: "#84A0A8" }}>{label}</div>;
 
