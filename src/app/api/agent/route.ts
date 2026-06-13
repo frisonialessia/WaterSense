@@ -37,18 +37,23 @@ export async function POST(req: NextRequest) {
   // 3) Datos del rancho desde el repositorio scopeado al tenant (demo → simulado).
   const ctx = await getTenantContextFromRequest(req);
   const repo = getRepository(ctx);
-  const [parcels, wells, costs] = await Promise.all([
+  const [parcels, wells, costs, savings, crops, tariffCurve, aquifer] = await Promise.all([
     repo.getParcels(),
     repo.getWells(),
     repo.getCosts(),
+    repo.getSavings(),
+    repo.getCrops(),
+    repo.getTariffCurve(),
+    repo.getAquiferNeighborhood(),
   ]);
+  const facts = { parcels, wells, costs, savings, crops, tariffCurve, aquifer };
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   // Sin clave → fallback local, así el PoC siempre funciona.
   if (!apiKey) {
     return NextResponse.json(
-      { text: localAgentAnswer(lastUser, { parcels, wells, costs }), mode: "local" },
+      { text: localAgentAnswer(lastUser, facts), mode: "local" },
       { headers: rateLimitHeaders(rl, LIMIT) }
     );
   }
@@ -78,13 +83,13 @@ Recuerda: todos los datos son simulados (demostración). Si te preguntan algo fu
       (data.content ?? [])
         .filter((b: { type: string }) => b.type === "text")
         .map((b: { text: string }) => b.text)
-        .join("\n") || localAgentAnswer(lastUser, { parcels, wells, costs });
+        .join("\n") || localAgentAnswer(lastUser, facts);
     return NextResponse.json({ text, mode: "claude" }, { headers: rateLimitHeaders(rl, LIMIT) });
   } catch (e) {
     // network/API failure → still answer locally
     logger.warn("agent: fallo llamando a Anthropic, usando fallback local", { error: String(e) });
     return NextResponse.json(
-      { text: localAgentAnswer(lastUser, { parcels, wells, costs }), mode: "local" },
+      { text: localAgentAnswer(lastUser, facts), mode: "local" },
       { headers: rateLimitHeaders(rl, LIMIT) }
     );
   }
