@@ -167,6 +167,26 @@ button {
   }
 }
 
+/* La curva del simulador del hero se "dibuja" al cargar (una sola vez). */
+.hs-draw {
+  stroke-dasharray: 1000;
+  animation: hs-draw 1.3s ease forwards;
+}
+@keyframes hs-draw {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hs-draw {
+    animation: none;
+    stroke-dasharray: none;
+  }
+}
+
 /* KPI cells that navigate: subtle hover + keyboard focus affordance. */
 .kpi-click {
   transition: background 0.15s ease;
