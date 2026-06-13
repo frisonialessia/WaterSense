@@ -5,6 +5,7 @@ import type { CostItem, RanchConfig, Region } from "@/types/domain";
 import { C, FONT, fmt, radius, space, fz, labelStyle, type Theme, type ThemeMode, type Lang } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
+import { resetDemo } from "@/lib/demo";
 
 export type ViewId = "finca" | "mapa" | "costos" | "riego" | "futuro" | "estudio" | "pozos" | "docs" | "ajustes";
 
@@ -163,6 +164,14 @@ export function Sidebar({
       <div style={{ marginTop: "auto", paddingTop: space.md }}>
         {BOTTOM_ITEMS.map(renderItem)}
       </div>
+
+      <button
+        onClick={resetDemo}
+        title={tr("Borra tus cambios y vuelve a los datos de ejemplo", "Reiniciar a datos sembrados")}
+        style={{ marginTop: space.md, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "transparent", border: `1px solid ${th.line}`, color: th.soft, borderRadius: radius.md, padding: "7px 0", fontSize: fz.micro, fontWeight: 600, cursor: "pointer" }}
+      >
+        ↻ {tr("Reiniciar demo", "Reiniciar demo")}
+      </button>
 
       <div style={{ display: "flex", alignItems: "center", gap: space.sm, padding: `${space.md}px ${space.xs}px 0`, marginTop: space.sm, borderTop: `1px solid ${th.line}` }}>
         <div

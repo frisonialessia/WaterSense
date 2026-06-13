@@ -16,6 +16,7 @@ import { PozosView } from "./views/PozosView";
 import { SettingsView } from "./views/SettingsView";
 import { StudyView } from "./views/StudyView";
 import { Agent } from "./Agent";
+import { WelcomeModal } from "./WelcomeModal";
 
 const DEFAULT_RANCH: RanchConfig = { id: "ranch-1", name: "Rancho El Álamo", owner: "", regionId: "delicias", lat: 28.19, lng: -105.47, altitudeM: 1170, hectares: 38, mainCrop: "Nogal pecanero", tariffType: "Nocturna (CFE)", notes: "", concessionM3Year: 320000, concessionTitle: "", contractedKw: 110, cfeService: "", phone: "" };
 
@@ -244,6 +245,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
         </div>
       </main>
       <Agent th={th} tr={tr} />
+      <WelcomeModal th={th} tr={tr} />
     </div>
   );
 }
