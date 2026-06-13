@@ -20,7 +20,9 @@ import { Icon } from "../Icon";
 interface Riego {
   id: string;
   parcelId: string;
+  parcelName: string;
   wellId: string;
+  wellName: string;
   date: string; // yyyy-mm-dd
   hours: number;
   m3: number;
@@ -85,7 +87,9 @@ export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: 
     const raw = parseFloat(val) || 0;
     if (!parcelId || !wellId || raw <= 0) return;
     const c = compute(raw, mode, hour);
-    setRiegos((prev) => [{ id: `riego-${Date.now()}`, parcelId, wellId, date, hour, ...c }, ...prev]);
+    const parcelName = parcels.find((p) => p.id === parcelId)?.name ?? "Parcela";
+    const wellName = wells.find((w) => w.id === wellId)?.name ?? "Pozo";
+    setRiegos((prev) => [{ id: `riego-${Date.now()}`, parcelId, parcelName, wellId, wellName, date, hour, ...c }, ...prev]);
     setVal("");
   };
   const remove = (id: string) => setRiegos((prev) => prev.filter((r) => r.id !== id));
@@ -111,11 +115,16 @@ export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: 
 
   return (
     <div style={{ padding: space.x3 }}>
-      <div style={{ fontSize: fz.sm, color: th.mute, maxWidth: 660, marginBottom: space.lg }}>
-        {tr(
-          "Apunta cada riego: qué parcela, qué pozo, cuánto bombeaste y cuándo. WaterSense estima la energía, los derechos de agua y cuánto llevas de tu concesión del año.",
-          "Registro de extracciones · energía (CENACE) + derechos (CONAGUA) + control de concesión. Local."
-        )}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: space.md, flexWrap: "wrap", marginBottom: space.lg }}>
+        <div style={{ fontSize: fz.sm, color: th.mute, maxWidth: 560 }}>
+          {tr(
+            "Apunta cada riego: qué parcela, qué pozo, cuánto bombeaste y cuándo. WaterSense estima la energía, los derechos de agua y cuánto llevas de tu concesión del año.",
+            "Registro de extracciones · energía (CENACE) + derechos (CONAGUA) + control de concesión. Local."
+          )}
+        </div>
+        <a href="/reporte-conagua" target="_blank" style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7, background: th.panel, border: `1px solid ${th.line}`, color: th.ink, borderRadius: radius.md, padding: "9px 14px", fontSize: fz.xs, fontWeight: 600, textDecoration: "none" }}>
+          <Icon name="file" size={14} color={C.glacier} /> {tr("Reporte CONAGUA", "Reporte CONAGUA")}
+        </a>
       </div>
 
       {/* Concesión — la cabecera que importa en Chihuahua */}
