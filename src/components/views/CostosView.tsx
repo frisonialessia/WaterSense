@@ -200,12 +200,17 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
       yieldKg += cp.yieldKgHa * p.hectares;
     }
     const annualCost = (fixedBaseline + recurringMonthly) * 12;
+    const ton = yieldKg / 1000;
+    const pumpKwh = water * 0.55; // ~0.55 kWh/m³ bombeado (~80 m)
     return {
       water: Math.round(water),
       yieldKg: Math.round(yieldKg),
       costPerM3: water ? annualCost / water : 0,
       kgPerM3: water ? yieldKg / water : 0,
       costPerKg: yieldKg ? annualCost / yieldKg : 0,
+      // Huella: agua por tonelada y CO₂ del bombeo por tonelada (red MX ~0.42 kgCO₂/kWh)
+      m3PerTon: ton ? water / ton : 0,
+      co2PerTon: ton ? (pumpKwh * 0.42) / ton : 0,
     };
   }, [parcels, cropMap, fixedBaseline, recurringMonthly]);
 
@@ -247,6 +252,26 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
             <Metric label={tr("Cosecha por m³", "kg/m³")} value={`${prod.kgPerM3.toFixed(1)} kg`} color={C.emerald} />
             <Metric label={tr("Costo por m³", "$/m³")} value={`$${prod.costPerM3.toFixed(2)}`} color={C.glacier} />
             <Metric label={tr("Costo por kilo", "$/kg")} value={`$${prod.costPerKg.toFixed(2)}`} color={C.glacier} />
+          </div>
+        </div>
+      )}
+
+      {/* Huella hídrica y de carbono — para compradores y financiamiento */}
+      {prod.yieldKg > 0 && (
+        <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginBottom: space.md }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: space.sm, marginBottom: space.md }}>
+            <div style={{ fontWeight: 600 }}>{tr("Huella hídrica y de carbono", "Huella · m³/ton y CO₂/ton")}</div>
+            <span style={{ fontSize: fz.xs, color: th.mute }}>{tr("para compradores y financiamiento", "trazabilidad ESG")}</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 160px),1fr))", gap: space.md }}>
+            <Metric label={tr("Agua por tonelada", "m³/ton")} value={`${fmt(Math.round(prod.m3PerTon))} m³`} color={C.glacier} />
+            <Metric label={tr("CO₂ del bombeo por tonelada", "kgCO₂e/ton")} value={`${fmt(Math.round(prod.co2PerTon))} kg`} color={C.emerald} />
+          </div>
+          <div style={{ fontSize: fz.xs, color: th.soft, marginTop: space.md, lineHeight: 1.5 }}>
+            {tr(
+              "Cada vez más compradores y bancos (FIRA) piden cuánta agua y energía hay detrás de cada tonelada. Riega eficiente y bajas las dos.",
+              "m³/ton y kgCO₂e/ton del bombeo · insumo para reportes a compradores y crédito.",
+            )}
           </div>
         </div>
       )}
