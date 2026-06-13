@@ -42,6 +42,16 @@ function dayOfYear(d = new Date()) {
   return Math.ceil((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86_400_000);
 }
 
+// Lectura del medidor volumétrico (CONAGUA exige medidor en el pozo).
+// La diferencia entre dos lecturas = extracción real del periodo.
+interface Lectura {
+  id: string;
+  wellId: string;
+  wellName: string;
+  date: string;
+  reading: number; // m³ acumulados que marca el medidor
+}
+
 export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: Theme; tr: (s: string, t: string) => string; parcels: Parcel[]; wells: Well[]; tariffCurve: number[]; ranch: RanchConfig }) {
   const [riegos, setRiegos] = useState<Riego[]>([]);
   useEffect(() => {
@@ -59,6 +69,24 @@ export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: 
       /* ignore */
     }
   }, [riegos]);
+
+  // Lecturas del medidor volumétrico
+  const [lecturas, setLecturas] = useState<Lectura[]>([]);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("watersense.medidor");
+      if (raw) setLecturas(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem("watersense.medidor", JSON.stringify(lecturas));
+    } catch {
+      /* ignore */
+    }
+  }, [lecturas]);
 
   const cheapest = useMemo(() => (tariffCurve.length ? tariffCurve.indexOf(Math.min(...tariffCurve)) : 2), [tariffCurve]);
   const [parcelId, setParcelId] = useState(parcels[0]?.id ?? "");
@@ -94,6 +122,27 @@ export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: 
   };
   const remove = (id: string) => setRiegos((prev) => prev.filter((r) => r.id !== id));
   const parcelName = (id: string) => parcels.find((p) => p.id === id)?.name ?? tr("Parcela", "Parcela");
+
+  // ── Medidor volumétrico ──
+  const [medWellId, setMedWellId] = useState(wells[0]?.id ?? "");
+  const [medDate, setMedDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [medReading, setMedReading] = useState("");
+  useEffect(() => { if (!medWellId && wells[0]) setMedWellId(wells[0].id); }, [wells, medWellId]);
+  const addLectura = () => {
+    const reading = parseFloat(medReading);
+    if (!medWellId || !Number.isFinite(reading) || reading < 0) return;
+    const wellName = wells.find((w) => w.id === medWellId)?.name ?? "Pozo";
+    setLecturas((prev) => [{ id: `med-${Date.now()}`, wellId: medWellId, wellName, date: medDate, reading: Math.round(reading) }, ...prev]);
+    setMedReading("");
+  };
+  const removeLectura = (id: string) => setLecturas((prev) => prev.filter((l) => l.id !== id));
+  // Por pozo: última lectura y extracción desde la anterior (delta de lecturas)
+  const medByWell = wells
+    .map((w) => {
+      const ls = lecturas.filter((l) => l.wellId === w.id).sort((a, b) => (a.date < b.date ? 1 : -1));
+      return { well: w, last: ls[0], prev: ls[1], delta: ls[0] && ls[1] ? ls[0].reading - ls[1].reading : null };
+    })
+    .filter((x) => x.last);
 
   // ── Resumen del mes ──
   const monthKey = new Date().toISOString().slice(0, 7);
@@ -219,6 +268,52 @@ export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: 
             <span>{tr("Energía", "Energía")} <b className="mono" style={{ color: C.emerald }}>${fmt(live.energyCost)}</b></span>
             <span>{tr("Agua", "Agua")} <b className="mono" style={{ color: th.ink }}>${fmt(live.waterCost)}</b></span>
             <span>{tr("Total", "Total")} <b className="mono" style={{ color: th.ink }}>${fmt(live.energyCost + live.waterCost)}</b></span>
+          </div>
+        )}
+      </div>
+
+      {/* Medidor volumétrico (CONAGUA) */}
+      <div className="card" style={{ ...cardStyle(th), padding: space.xl, marginBottom: space.md }}>
+        <div style={{ fontWeight: 600, marginBottom: 3 }}>{tr("Medidor volumétrico", "Medidor volumétrico (CONAGUA)")}</div>
+        <div style={{ fontSize: fz.xs, color: th.mute, marginBottom: space.md }}>
+          {tr("CONAGUA exige medidor en tu pozo. Apunta la lectura; la diferencia entre dos lecturas es tu extracción real.", "Lectura del medidor (m³ acumulados). El delta entre lecturas = extracción real, más exacta que estimar.")}
+        </div>
+        <div style={{ display: "flex", gap: space.sm, flexWrap: "wrap", alignItems: "flex-end", marginBottom: medByWell.length ? space.lg : 0 }}>
+          <label style={{ fontSize: fz.xs, color: th.soft }}>
+            <div style={{ marginBottom: 4 }}>{tr("Pozo", "Pozo")}</div>
+            <select value={medWellId} onChange={(e) => setMedWellId(e.target.value)} style={{ ...inputStyle, minWidth: 150 }}>
+              {wells.map((w) => (<option key={w.id} value={w.id}>{w.name}</option>))}
+            </select>
+          </label>
+          <label style={{ fontSize: fz.xs, color: th.soft }}>
+            <div style={{ marginBottom: 4 }}>{tr("Fecha", "Fecha")}</div>
+            <input type="date" value={medDate} onChange={(e) => setMedDate(e.target.value)} style={inputStyle} />
+          </label>
+          <label style={{ fontSize: fz.xs, color: th.soft }}>
+            <div style={{ marginBottom: 4 }}>{tr("Lectura del medidor (m³)", "Lectura (m³ acum.)")}</div>
+            <input type="number" value={medReading} onChange={(e) => setMedReading(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addLectura()} placeholder="0" style={{ ...inputStyle, width: 150 }} />
+          </label>
+          <button onClick={addLectura} disabled={!medReading} style={{ border: "none", background: C.glacier, color: "#fff", borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: medReading ? "pointer" : "default", opacity: medReading ? 1 : 0.5 }}>
+            {tr("Registrar lectura", "Guardar")}
+          </button>
+        </div>
+        {medByWell.length > 0 && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,220px),1fr))", gap: space.md }}>
+            {medByWell.map(({ well, last, delta }) => (
+              <div key={well.id} style={{ background: th.panel2, border: `1px solid ${th.line}`, borderRadius: radius.md, padding: space.md }}>
+                <div style={{ fontSize: fz.sm, fontWeight: 600 }}>{well.name}</div>
+                <div style={{ fontSize: fz.xs, color: th.mute, marginTop: 2 }}>
+                  {tr("Última lectura", "Última")}: <b className="mono" style={{ color: th.ink }}>{fmt(last!.reading)} m³</b> · {new Date(`${last!.date}T12:00`).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
+                </div>
+                <div style={{ fontSize: fz.xs, color: th.soft, marginTop: 4 }}>
+                  {delta != null ? (
+                    <>{tr("Extraído desde la anterior:", "Δ desde la anterior:")} <b className="mono" style={{ color: C.glacier }}>{fmt(delta)} m³</b></>
+                  ) : (
+                    tr("Registra otra lectura para medir el consumo.", "Falta una 2ª lectura para el delta.")
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
