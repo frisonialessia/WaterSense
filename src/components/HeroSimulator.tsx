@@ -67,7 +67,7 @@ export function HeroSimulator() {
           <span style={{ fontSize: fz.xs, color: th.ink, fontWeight: 500 }}>Cuánta agua extraes</span>
           <span className="mono" style={{ fontSize: fz.sm, fontWeight: 700, color: planColor }}>{ext}%</span>
         </div>
-        <input type="range" min={50} max={130} value={ext} onChange={(e) => setExt(+e.target.value)} style={{ width: "100%", accentColor: planColor, cursor: "pointer" }} />
+        <input type="range" min={50} max={130} value={ext} onChange={(e) => setExt(+e.target.value)} style={{ width: "100%", accentColor: C.glacier, cursor: "pointer" }} />
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: th.mute, marginBottom: space.md }}>
           <span>cuidas el agua</span>
           <span>sobreexplotas</span>
