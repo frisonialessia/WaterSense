@@ -129,8 +129,8 @@ export function Landing() {
               Optimiza la energía de tus pozos. Maximiza la ganancia de tu rancho.
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
-              Cruzamos el <b style={{ color: "#fff" }}>costo de tu luz</b>, el <b style={{ color: "#fff" }}>desperdicio de agua</b> y la <b style={{ color: "#fff" }}>salud de tu cultivo</b> para decirte
-              qué regar, cuándo y a qué hora — y cuántos años le quedan a tu pozo.
+              Te decimos a qué hora regar para <b style={{ color: "#fff" }}>pagar menos luz</b>, <b style={{ color: "#fff" }}>desperdiciar menos agua</b> y <b style={{ color: "#fff" }}>cuidar tu cosecha</b>
+              — y cuántos años le quedan a tu pozo.
             </p>
             <div style={{ display: "flex", gap: space.md, marginTop: space.xl, flexWrap: "wrap" }}>
               <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
