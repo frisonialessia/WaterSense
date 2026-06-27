@@ -92,28 +92,30 @@ button {
 }
 /* Hero background: aerial irrigation photo + black gradient for legibility.
    Desktop: lateral gradient (dark left where the text sits, clear right). */
+/* Duotono de marca: la foto teñida de navy → emerald, + una sombra lateral
+   para que el titular blanco se lea. (Capas: sombra-texto / duotono / foto.) */
 .hero-overlay {
   background-image: linear-gradient(
-      100deg,
-      rgba(0, 0, 0, 0.74) 0%,
-      rgba(0, 0, 0, 0.56) 36%,
-      rgba(0, 0, 0, 0.2) 64%,
-      rgba(0, 0, 0, 0.04) 100%
+      105deg,
+      rgba(0, 0, 0, 0.42) 0%,
+      rgba(0, 0, 0, 0.08) 55%,
+      rgba(0, 0, 0, 0) 80%
     ),
+    linear-gradient(135deg, rgba(15, 46, 94, 0.92) 0%, rgba(15, 46, 94, 0.62) 55%, rgba(16, 185, 129, 0.5) 100%),
     url("/landing/hero.jpg");
   background-size: cover;
   background-position: center;
 }
-/* On phones the text spans full width, so switch to a vertical, darker
-   gradient (dark at top under the headline) and frame the spray. */
+/* En móvil el texto ocupa todo el ancho: más sombra arriba + el mismo duotono. */
 @media (max-width: 960px) {
   .hero-overlay {
     background-image: linear-gradient(
         180deg,
-        rgba(0, 0, 0, 0.78) 0%,
-        rgba(0, 0, 0, 0.62) 44%,
-        rgba(0, 0, 0, 0.5) 100%
+        rgba(0, 0, 0, 0.55) 0%,
+        rgba(0, 0, 0, 0.32) 45%,
+        rgba(0, 0, 0, 0.22) 100%
       ),
+      linear-gradient(150deg, rgba(15, 46, 94, 0.93) 0%, rgba(15, 46, 94, 0.66) 55%, rgba(16, 185, 129, 0.52) 100%),
       url("/landing/hero.jpg");
     background-position: 50% 50%;
   }
