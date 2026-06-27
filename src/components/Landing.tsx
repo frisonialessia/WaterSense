@@ -3,6 +3,7 @@ import { C, T, FONT, space, fz, radius, shadow } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 import { HeroSimulator } from "./HeroSimulator";
+import { AquiferLookup } from "./AquiferLookup";
 import { TIERS, formatMxn } from "@/lib/billing/tiers";
 
 // Marketing landing — light mode, brand palette, one gradient hero moment.
@@ -145,6 +146,9 @@ export function Landing() {
           <HeroSimulator />
         </div>
       </section>
+
+      {/* Wow: lectura instantánea de tu acuífero + compartir */}
+      <AquiferLookup />
 
       {/* Pillars */}
       <section id="pilares" style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px ${space.x4}px` }}>
