@@ -3,7 +3,7 @@ import { C, T, FONT, space, fz, radius, shadow } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 import { HeroSimulator } from "./HeroSimulator";
-import { AquiferLookup } from "./AquiferLookup";
+import { AquiferHero } from "./AquiferHero";
 import { TIERS, formatMxn } from "@/lib/billing/tiers";
 
 // Marketing landing — light mode, brand palette, one gradient hero moment.
@@ -126,29 +126,43 @@ export function Landing() {
               AGRICULTURA DE ALTO RENDIMIENTO
             </span>
             <h1 style={{ fontFamily: FONT.title, fontWeight: 800, fontSize: "clamp(33px, 6.6vw, 58px)", lineHeight: 1.04, letterSpacing: "-0.03em", margin: `${space.lg}px 0`, color: "#fff" }}>
-              Optimiza la energía de tus pozos. Maximiza la ganancia de tu rancho.
+              El agua de tu pozo se está acabando. ¿Sabes qué tan rápido?
             </h1>
             <p style={{ fontSize: fz.lg, color: "rgba(255,255,255,.9)", lineHeight: 1.6, maxWidth: 540 }}>
-              Te decimos a qué hora regar para <b style={{ color: "#fff" }}>pagar menos luz</b>, <b style={{ color: "#fff" }}>desperdiciar menos agua</b> y <b style={{ color: "#fff" }}>cuidar tu cosecha</b>
-              — y cuántos años le quedan a tu pozo.
+              Elige tu municipio y míralo con datos reales de CONAGUA — y a qué hora regar para <b style={{ color: "#fff" }}>pagar menos luz</b>.
             </p>
             <div style={{ display: "flex", gap: space.md, marginTop: space.xl, flexWrap: "wrap" }}>
               <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
                 Ver el panel en vivo <Icon name="arrow" size={16} color="#fff" />
               </Link>
-              <a href="#como" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
+              <a href="#balance" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
                 Cómo funciona
               </a>
             </div>
           </div>
 
-          {/* Interactive water-future simulator */}
-          <HeroSimulator />
+          {/* Gancho: lectura instantánea del acuífero del visitante (datos CONAGUA) */}
+          <AquiferHero />
         </div>
       </section>
 
-      {/* Wow: lectura instantánea de tu acuífero + compartir */}
-      <AquiferLookup />
+      {/* Profundidad: el balance del acuífero — ¿cuánto tendría que cambiar? */}
+      <section id="balance" style={{ background: th.panel2, borderTop: `1px solid ${th.line}`, borderBottom: `1px solid ${th.line}` }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto", padding: `${space.x4}px ${space.x3}px` }}>
+          <div style={{ textAlign: "center", marginBottom: space.x2 }}>
+            <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".08em" }}>EL FUTURO DEL AGUA · DATOS REALES</span>
+            <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(26px,4.6vw,38px)", letterSpacing: "-0.02em", lineHeight: 1.1, margin: `${space.sm}px 0` }}>
+              ¿Cuánto tendría que cambiar para que <span style={{ color: C.glacier }}>el agua alcance</span>?
+            </h2>
+            <p style={{ fontSize: fz.md, color: th.soft, maxWidth: 580, margin: "0 auto", lineHeight: 1.6 }}>
+              Mueve la extracción de la región y mira el balance del acuífero acercarse al equilibrio.
+            </p>
+          </div>
+          <div style={{ maxWidth: 440, margin: "0 auto" }}>
+            <HeroSimulator />
+          </div>
+        </div>
+      </section>
 
       {/* Pillars */}
       <section id="pilares" style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px ${space.x4}px` }}>
