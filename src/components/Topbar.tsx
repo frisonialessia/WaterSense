@@ -79,7 +79,7 @@ export function Topbar({
 }) {
   const titles: Record<ViewId, string> = {
     mapa: tr("Mapa del campo", "Command map · campo"),
-    finca: tr("Mi rancho", "Auditoría"),
+    finca: tr("Mi rancho", "Mi rancho"),
     costos: tr("Costos", "Costos operativos"),
     riego: tr("Bitácora de riego", "Bitácora · riegos"),
     futuro: tr("Futuro del agua", "Proyección del acuífero"),

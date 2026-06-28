@@ -2,7 +2,6 @@ import Link from "next/link";
 import { C, T, FONT, space, fz, radius, shadow } from "@/lib/theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
-import { HeroSimulator } from "./HeroSimulator";
 import { AquiferHero } from "./AquiferHero";
 import { LuzStrip } from "./LuzStrip";
 import { TIERS, formatMxn } from "@/lib/billing/tiers";
@@ -136,7 +135,7 @@ export function Landing() {
               <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
                 Entrar a la demo <Icon name="arrow" size={16} color="#fff" />
               </Link>
-              <a href="#balance" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
+              <a href="#como" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
                 Cómo funciona
               </a>
             </div>
@@ -149,24 +148,6 @@ export function Landing() {
 
       {/* La otra mitad de la promesa: el precio de la luz en vivo (CENACE) */}
       <LuzStrip />
-
-      {/* Profundidad: el balance del acuífero — ¿cuánto tendría que cambiar? */}
-      <section id="balance" style={{ background: th.panel2, borderTop: `1px solid ${th.line}`, borderBottom: `1px solid ${th.line}` }}>
-        <div style={{ maxWidth: 1080, margin: "0 auto", padding: `${space.x4}px ${space.x3}px` }}>
-          <div style={{ textAlign: "center", marginBottom: space.x2 }}>
-            <span className="mono" style={{ fontSize: fz.xs, color: C.emerald, fontWeight: 600, letterSpacing: ".08em" }}>EL FUTURO DEL AGUA · DATOS REALES</span>
-            <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(26px,4.6vw,38px)", letterSpacing: "-0.02em", lineHeight: 1.1, margin: `${space.sm}px 0` }}>
-              ¿Cuánto tendría que cambiar para que <span style={{ color: C.glacier }}>el agua alcance</span>?
-            </h2>
-            <p style={{ fontSize: fz.md, color: th.soft, maxWidth: 580, margin: "0 auto", lineHeight: 1.6 }}>
-              Mueve la extracción de la región y mira el balance del acuífero acercarse al equilibrio.
-            </p>
-          </div>
-          <div style={{ maxWidth: 440, margin: "0 auto" }}>
-            <HeroSimulator />
-          </div>
-        </div>
-      </section>
 
       {/* Pillars */}
       <section id="pilares" style={{ maxWidth: 1180, margin: "0 auto", padding: `${space.x2}px ${space.x3}px ${space.x4}px` }}>

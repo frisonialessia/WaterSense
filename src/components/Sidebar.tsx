@@ -12,7 +12,7 @@ export type ViewId = "finca" | "mapa" | "costos" | "riego" | "futuro" | "estudio
 type Item = { id: ViewId; icon: string; s: string; t: string };
 
 const TOP_ITEMS: Item[] = [
-  { id: "finca", icon: "home", s: "Mi rancho", t: "Auditoría" },
+  { id: "finca", icon: "home", s: "Mi rancho", t: "Mi rancho" },
   { id: "mapa", icon: "map", s: "Mapa del campo", t: "Command map" },
   { id: "costos", icon: "coin", s: "Costos", t: "Costos" },
   { id: "riego", icon: "drop", s: "Bitácora de riego", t: "Bitácora · riegos" },

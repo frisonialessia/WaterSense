@@ -9,9 +9,9 @@
 //   DMA negativa  → déficit / sobreexplotado
 //   DMA positiva  → todavía con disponibilidad
 //
-// Una sola fuente de verdad: la consumen el AquiferLookup (landing) y el
-// HeroSimulator. Cuando conectemos la BD, esto se reemplaza por la tabla real
-// de acuíferos (o por el cálculo por-pozo con piezometría de CONAGUA).
+// Una sola fuente de verdad: la consume el AquiferHero (landing). Cuando
+// conectemos la BD, esto se reemplaza por la tabla real de acuíferos (o por el
+// cálculo por-pozo con piezometría de CONAGUA).
 
 export interface Aquifer {
   id: string;
