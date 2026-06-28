@@ -57,7 +57,7 @@ export function LuzStrip() {
             Y CUANDO RIEGAS · LUZ EN VIVO
           </span>
           <h2 style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(24px,4.2vw,34px)", letterSpacing: "-0.02em", lineHeight: 1.12, margin: `${space.sm}px 0 0` }}>
-            Te decimos <span style={{ color: C.glacier }}>a qué hora</span> sale más barato bombear
+            Te decimos <span style={{ color: C.glacier }}>a qué hora</span> sale más barato regar
           </h2>
         </div>
 
