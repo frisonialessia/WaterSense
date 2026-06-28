@@ -97,7 +97,7 @@ export function AquiferHero() {
             {/* Sequía: contexto que refuerza que el déficit es estructural, no del clima */}
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: space.md, fontSize: fz.xs, color: th.soft }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: aq.drought.active ? C.alert : C.emerald }} />
-              Sequía hoy: <b style={{ color: aq.drought.active ? C.alert : th.ink }}>{aq.drought.label}</b> <span style={{ color: th.mute }}>· jun 2026</span>
+              Sequía: <b style={{ color: aq.drought.active ? C.alert : th.ink }}>{aq.drought.label}</b> <span style={{ color: th.mute }}>· Monitor CONAGUA, jun 2026</span>
             </div>
 
             {over && (

@@ -468,8 +468,19 @@ export function MapView({
                     <button onClick={() => setSelId(p.id)} style={{ flex: 1, textAlign: "left", background: "none", border: "none", cursor: "pointer", color: th.ink, fontSize: fz.xs, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {p.name} <span style={{ color: th.mute }}>· {p.crop}</span>
                     </button>
+                    <button
+                      onClick={() => { if (selId === p.id) setSelId(""); onRemoveParcel(p.id); }}
+                      aria-label={tr(`Eliminar ${p.name}`, `Eliminar ${p.name}`)}
+                      title={tr("Eliminar parcela", "Eliminar")}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: th.mute, fontSize: 13, padding: "0 2px", flexShrink: 0, lineHeight: 1 }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
+                <div style={{ fontSize: fz.micro, color: th.mute, marginTop: 6, lineHeight: 1.4 }}>
+                  {tr("Borra las de ejemplo y dibuja las tuyas para hacerlo tu rancho.", "Edita el set: borra y vuelve a dibujar las tuyas.")}
+                </div>
               </div>
             )}
           </div>

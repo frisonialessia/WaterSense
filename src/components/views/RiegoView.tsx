@@ -15,6 +15,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Parcel, Well, RanchConfig } from "@/types/domain";
 import { C, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
+import { KWH_PER_M3, WATER_RATE } from "@/lib/brain/energyWater";
 import { Icon } from "../Icon";
 
 interface Riego {
@@ -32,11 +33,8 @@ interface Riego {
   waterCost: number;
 }
 
-// Energía por m³ bombeado (~80 m de elevación) y cuota de agua por m³
-// (derechos CONAGUA, uso agrícola). Con datos reales se calculan del pozo
-// y de tu título de concesión.
-const KWH_PER_M3 = 0.55;
-const WATER_RATE = 0.25; // $/m³ (derechos CONAGUA, representativo)
+// Energía por m³ y cuota de agua por m³: ver src/lib/brain/energyWater.ts
+// (fuente única, compartida con Costos y Mi rancho).
 
 function dayOfYear(d = new Date()) {
   return Math.ceil((d.getTime() - new Date(d.getFullYear(), 0, 0).getTime()) / 86_400_000);
@@ -127,13 +125,23 @@ export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: 
   const [medWellId, setMedWellId] = useState(wells[0]?.id ?? "");
   const [medDate, setMedDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [medReading, setMedReading] = useState("");
+  const [medError, setMedError] = useState("");
   useEffect(() => { if (!medWellId && wells[0]) setMedWellId(wells[0].id); }, [wells, medWellId]);
   const addLectura = () => {
     const reading = parseFloat(medReading);
     if (!medWellId || !Number.isFinite(reading) || reading < 0) return;
     const wellName = wells.find((w) => w.id === medWellId)?.name ?? "Pozo";
+    // El medidor es acumulado: una lectura no puede ser menor que la anterior.
+    const lastForWell = lecturas
+      .filter((l) => l.wellId === medWellId)
+      .sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+    if (lastForWell && reading < lastForWell.reading) {
+      setMedError(tr(`La lectura debe ser mayor o igual a la última (${fmt(lastForWell.reading)} m³): el medidor solo sube.`, `Lectura < última (${fmt(lastForWell.reading)} m³). El medidor es acumulado.`));
+      return;
+    }
     setLecturas((prev) => [{ id: `med-${Date.now()}`, wellId: medWellId, wellName, date: medDate, reading: Math.round(reading) }, ...prev]);
     setMedReading("");
+    setMedError("");
   };
   const removeLectura = (id: string) => setLecturas((prev) => prev.filter((l) => l.id !== id));
   // Por pozo: última lectura y extracción desde la anterior (delta de lecturas)
@@ -297,6 +305,11 @@ export function RiegoView({ th, tr, parcels, wells, tariffCurve, ranch }: { th: 
             {tr("Registrar lectura", "Guardar")}
           </button>
         </div>
+        {medError && (
+          <div role="alert" style={{ marginBottom: space.md, fontSize: fz.xs, color: C.critical, background: `${C.critical}10`, border: `1px solid ${C.critical}33`, borderRadius: radius.md, padding: "8px 11px" }}>
+            {medError}
+          </div>
+        )}
         {medByWell.length > 0 && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,220px),1fr))", gap: space.md }}>
             {medByWell.map(({ well, last, delta }) => (

@@ -134,7 +134,7 @@ export function Landing() {
             </p>
             <div style={{ display: "flex", gap: space.md, marginTop: space.xl, flexWrap: "wrap" }}>
               <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: C.glacier, color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md }}>
-                Ver el panel en vivo <Icon name="arrow" size={16} color="#fff" />
+                Entrar a la demo <Icon name="arrow" size={16} color="#fff" />
               </Link>
               <a href="#balance" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,.12)", color: "#fff", fontSize: fz.md, fontWeight: 600, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", border: "1px solid rgba(255,255,255,.3)" }}>
                 Cómo funciona
@@ -228,12 +228,12 @@ export function Landing() {
             WaterSense le pone <b style={{ color: "#fff" }}>fecha</b> y <b style={{ color: "#fff" }}>precio</b> a esa pregunta — y te muestra cómo ganar años de pozo.
           </p>
           <div style={{ display: "flex", gap: space.sm, justifyContent: "center", flexWrap: "wrap", margin: `${space.xl}px 0` }}>
-            {["Acuífero · sobreexplotado", "+12 años con el plan", "Riego en la hora más barata"].map((t) => (
+            {["Acuífero · sobreexplotado", "Gana años de pozo", "Riego en la hora más barata"].map((t) => (
               <span key={t} style={{ fontSize: fz.sm, fontWeight: 600, background: "rgba(255,255,255,.13)", border: "1px solid rgba(255,255,255,.25)", borderRadius: radius.pill, padding: "8px 16px" }}>{t}</span>
             ))}
           </div>
           <Link href="/dashboard" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 8, maxWidth: "100%", background: "#fff", color: C.brandNavy, fontSize: fz.md, fontWeight: 700, padding: "12px 22px", borderRadius: radius.md, textDecoration: "none", boxShadow: shadow.md, lineHeight: 1.3 }}>
-            Ver el panel en vivo <Icon name="arrow" size={16} color={C.brandNavy} />
+            Entrar a la demo <Icon name="arrow" size={16} color={C.brandNavy} />
           </Link>
         </div>
       </section>
@@ -273,8 +273,8 @@ export function Landing() {
           <div style={{ padding: `${space.x3}px ${space.x3}px`, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(min(100%, 220px),1fr))", gap: space.xl }}>
             {[
               { v: "3", l: "motores de decisión", s: "riego, acuífero y salud de pozos" },
-              { v: "100%", l: "simulado, hoy", s: "estructurado para datos reales" },
-              { v: "CFE · CONAGUA · CENACE", l: "fuentes previstas", s: "energía, derechos y precio spot" },
+              { v: "9", l: "acuíferos con datos oficiales", s: "CONAGUA · déficit real del DOF" },
+              { v: "CENACE · CONAGUA · Open-Meteo", l: "fuentes de datos", s: "precio de luz, agua y clima en vivo" },
             ].map((s) => (
               <div key={s.l}>
                 <div className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: fz.xl }}>{s.v}</div>

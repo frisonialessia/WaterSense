@@ -5,8 +5,10 @@ import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, 
 import { projectYield } from "@/lib/brain/yieldModel";
 import { assessStressRisk } from "@/lib/brain/stressRisk";
 import { marketOutlook } from "@/lib/brain/marketModel";
-// Nota: el ahorro operativo del mes es la fuente única de verdad (savings).
-// Las cifras de luz/hora se derivan de él para que NO se contradigan.
+import { KWH_PER_M3, WATER_RATE, M3_PER_HA_EVENT, OPEX_SHIFT_KWH_HA_MONTH } from "@/lib/brain/energyWater";
+// El ahorro operativo del mes se ESTIMA de los datos reales del usuario
+// (superficie de sus parcelas × diferencial tarifario en vivo). Todo lo demás
+// (acción de hoy, what-if por hora) se deriva de él para que NO se contradiga.
 import { C, FONT, cardStyle, fmt, space, fz, radius, labelStyle, stressColor, type Theme, type Lang } from "@/lib/theme";
 import { Icon } from "../Icon";
 import { Sparkline } from "../Sparkline";
@@ -59,7 +61,6 @@ export function FincaView({
   actions: ScheduledAction[];
   savings: SavingsSummary;
 }) {
-  const saved = useCount(savings.amountThisMonth);
   const [done, setDone] = useState(false);
   // Modo Simple = una decisión arriba y el detalle analítico colapsado.
   // Técnico = todo desplegado. El usuario puede alternar.
@@ -164,20 +165,60 @@ export function FincaView({
   useEffect(() => setWaterHour(cheapest), [cheapest]);
 
   // ── Una sola historia de "ahorro operativo" (luz + agua) ─────
-  // Fuente única: el ahorro mensual del repositorio. Todo lo demás se
-  // deriva de él para que las cifras NO se contradigan entre tarjetas:
+  // Se ESTIMA de los datos reales del usuario: su superficie total × los kWh/ha
+  // que se pueden mover al horario barato × el diferencial tarifario en vivo
+  // (pico − barato). Reacciona cuando el usuario agrega/edita parcelas o cuando
+  // cambia el precio de luz. Todo lo demás se deriva de aquí:
   //   • cover         = ahorro del mes (regar en la ventana barata)
   //   • what-if(hora) = ese ahorro escalado por lo barata que sea la hora
-  //                     (máximo en la más barata, 0 en la más cara)
   //   • acción de hoy = la parte de una noche (≈ mes / 30)
-  const opSavingMonth = savings.amountThisMonth;
+  const totalHa = useMemo(() => parcels.reduce((s, p) => s + p.hectares, 0), [parcels]);
+  const opSavingMonth = useMemo(
+    () => Math.round(totalHa * OPEX_SHIFT_KWH_HA_MONTH * Math.max(0, peakPrice - minPrice)),
+    [totalHa, peakPrice, minPrice]
+  );
   const nightlySaving = Math.max(1, Math.round(opSavingMonth / 30));
+  const saved = useCount(opSavingMonth);
   const priceAt = tariffCurve[waterHour] ?? 1.8;
   const hourSpan = Math.max(0.001, peakPrice - minPrice);
   const hourFactor = Math.max(0, Math.min(1, (peakPrice - priceAt) / hourSpan));
   const whatIfSaved = Math.round(opSavingMonth * hourFactor);
 
   const decisionColor = urgentRisk ? riskColor : C.emerald;
+
+  // "Programar riego" registra de verdad el riego recomendado en la Bitácora
+  // (localStorage 'watersense.riegos'): cuenta en el control de concesión y
+  // aparece en el reporte CONAGUA. No es un botón decorativo.
+  const programar = () => {
+    if (done) return;
+    const p = urgentRisk?.parcel ?? [...parcels].sort((a, b) => b.stress - a.stress)[0];
+    if (p) {
+      try {
+        const raw = localStorage.getItem("watersense.riegos");
+        const list = raw ? JSON.parse(raw) : [];
+        const m3 = Math.round(p.hectares * M3_PER_HA_EVENT);
+        const kwh = Math.round(m3 * KWH_PER_M3);
+        const entry = {
+          id: `riego-${Date.now()}`,
+          parcelId: p.id,
+          parcelName: p.name,
+          wellId: "",
+          wellName: "—",
+          date: new Date().toISOString().slice(0, 10),
+          hours: Math.round((m3 / 6) * 10) / 10,
+          m3,
+          hour: cheapest,
+          kwh,
+          energyCost: Math.round(kwh * (tariffCurve[cheapest] ?? 1.5)),
+          waterCost: Math.round(m3 * WATER_RATE),
+        };
+        localStorage.setItem("watersense.riegos", JSON.stringify([entry, ...(Array.isArray(list) ? list : [])]));
+      } catch {
+        /* ignore */
+      }
+    }
+    setDone(true);
+  };
 
   return (
     <div style={{ padding: space.x3 }}>
@@ -210,14 +251,18 @@ export function FincaView({
             </div>
           )}
           <div style={{ display: "flex", gap: space.sm, marginTop: space.lg, flexWrap: "wrap" }}>
-            <button onClick={() => setDone(true)} disabled={done} style={{ border: "none", background: done ? C.emerald : C.glacier, color: "#fff", borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: done ? "default" : "pointer", transition: ".2s" }}>
+            <button onClick={programar} disabled={done} style={{ border: "none", background: done ? C.emerald : C.glacier, color: "#fff", borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: done ? "default" : "pointer", transition: ".2s" }}>
               {done ? tr("Riego programado ✓", "Programado ✓") : tr("Programar riego", "Programar riego")}
             </button>
-            {urgentRisk && (
+            {done ? (
+              <button onClick={() => setView("riego")} style={{ background: th.panel2, border: `1px solid ${th.line}`, color: th.ink, borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: "pointer" }}>
+                {tr("Ver en la bitácora", "Ver en bitácora")}
+              </button>
+            ) : urgentRisk ? (
               <button onClick={() => setView("mapa")} style={{ background: th.panel2, border: `1px solid ${th.line}`, color: th.ink, borderRadius: radius.md, padding: "10px 18px", fontSize: fz.sm, fontWeight: 600, cursor: "pointer" }}>
                 {tr("Ver parcela", "Ver parcela")}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
@@ -230,7 +275,9 @@ export function FincaView({
           <span style={{ fontSize: fz.md, color: "rgba(255,255,255,.9)" }}>{tr("vs. regar como antes, sin WaterSense", "frente a patrón histórico")}</span>
         </div>
         <span style={{ display: "inline-block", marginTop: space.md, fontSize: fz.xs, fontWeight: 600, background: "rgba(255,255,255,.2)", padding: "4px 11px", borderRadius: radius.pill }}>
-          ↑ +{savings.vsLastMonthPct}% {tr("que el mes pasado", "vs. mes anterior")}
+          {totalHa > 0
+            ? tr(`Estimado con tus ${fmt(totalHa)} ha y el precio de luz de hoy`, `Estimación · ${fmt(totalHa)} ha × diferencial tarifario CENACE`)
+            : tr("Agrega tus parcelas para estimar tu ahorro", "Sin parcelas · agrega para estimar")}
         </span>
       </div>
 
@@ -377,8 +424,8 @@ export function FincaView({
             <Icon name={rainDay ? "leaf" : "sun"} size={15} color={rainDay ? C.emerald : C.alert} />
             {rainDay
               ? tr(
-                  `Lloverá el ${rainDay.day.toLowerCase()} (${rainDay.rainMm}mm). Cubre el riego de 2 parcelas — pausamos y ahorras ~$210.`,
-                  `Precipitación ${rainDay.rainMm}mm el ${rainDay.day}. Riego pausado en 2 zonas · ahorro estimado $210.`
+                  `Lloverá el ${rainDay.day.toLowerCase()} (${rainDay.rainMm}mm). Cubre el riego de ${parcels.length} ${parcels.length === 1 ? "parcela" : "parcelas"} — pausamos y ahorras ~$${fmt(nightlySaving)}.`,
+                  `Precipitación ${rainDay.rainMm}mm el ${rainDay.day}. Riego pausado en ${parcels.length} ${parcels.length === 1 ? "zona" : "zonas"} · ahorro estimado $${fmt(nightlySaving)}.`
                 )
               : tr(
                   `Semana seca y calurosa (hasta ${maxTemp}°). Conviene regar de madrugada para perder menos agua por evaporación.`,

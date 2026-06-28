@@ -67,13 +67,18 @@ export function Dashboard({ data }: { data: DashboardData }) {
     setNavOpen(false);
   };
 
-  // Parcels the farmer draws live in the browser (localStorage) in the PoC.
-  // In Fase 3 these would persist via repository.addParcel/removeParcel.
-  const [userParcels, setUserParcels] = useState<Parcel[]>([]);
+  // Las parcelas viven en un solo store editable (localStorage). En el primer
+  // arranque se siembran con el ejemplo (data.parcels); a partir de ahí el
+  // usuario puede editarlas o borrarlas y dejar solo las suyas — "su rancho".
+  // En Fase 3 esto persiste vía repository.addParcel/removeParcel.
+  const [userParcels, setUserParcels] = useState<Parcel[]>(data.parcels);
   useEffect(() => {
     try {
       const raw = localStorage.getItem("watersense.userParcels");
-      if (raw) setUserParcels(JSON.parse(raw));
+      if (raw) {
+        const stored = JSON.parse(raw);
+        if (Array.isArray(stored)) setUserParcels(stored);
+      }
     } catch {
       /* ignore */
     }
@@ -85,7 +90,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
       /* ignore */
     }
   }, [userParcels]);
-  const allParcels = useMemo(() => [...data.parcels, ...userParcels], [data.parcels, userParcels]);
+  const allParcels = userParcels;
   const addParcel = (p: Parcel) => setUserParcels((prev) => [...prev, p]);
   const removeParcel = (id: string) => setUserParcels((prev) => prev.filter((x) => x.id !== id));
 

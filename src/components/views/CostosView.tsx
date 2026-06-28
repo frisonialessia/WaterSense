@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CostItem, Parcel, CropProfile } from "@/types/domain";
 import { C, cardStyle, fmt, space, fz, radius, labelStyle, type Theme } from "@/lib/theme";
 import { irrigationEfficiency } from "@/lib/brain/irrigationFactors";
+import { KWH_PER_M3 } from "@/lib/brain/energyWater";
 import { Icon } from "../Icon";
 import { HourlyPrices } from "./HourlyPrices";
 
@@ -201,7 +202,7 @@ export function CostosView({ th, tr, costs, tariffCurve, parcels, crops, onUpdat
     }
     const annualCost = (fixedBaseline + recurringMonthly) * 12;
     const ton = yieldKg / 1000;
-    const pumpKwh = water * 0.55; // ~0.55 kWh/m³ bombeado (~80 m)
+    const pumpKwh = water * KWH_PER_M3;
     return {
       water: Math.round(water),
       yieldKg: Math.round(yieldKg),
