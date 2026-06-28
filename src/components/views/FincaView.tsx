@@ -245,7 +245,7 @@ export function FincaView({
 
       {/* ── Ahorro del mes (la recompensa, en degradado de marca) ── */}
       <div className="card" style={{ background: `linear-gradient(110deg,${C.brandNavy},${C.glacier} 60%,${C.emerald})`, borderRadius: radius.lg, padding: space.x2, marginBottom: space.md, position: "relative", overflow: "hidden", color: "#fff" }}>
-        <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes en luz y agua", "Ahorro operativo del mes · OPEX (luz + agua)")}</p>
+        <p style={{ fontSize: fz.sm, color: "rgba(255,255,255,.85)", marginBottom: space.sm }}>{tr("Lo que llevas ahorrado este mes en luz y agua", "Ahorro operativo del mes · gasto de luz + agua")}</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: space.md, flexWrap: "wrap" }}>
           <span className="mono" style={{ fontFamily: FONT.title, fontWeight: 700, fontSize: "clamp(28px, 9vw, 40px)" }}>${fmt(saved)}</span>
           <span style={{ fontSize: fz.md, color: "rgba(255,255,255,.9)" }}>{tr("vs. regar como antes, sin WaterSense", "frente a patrón histórico")}</span>
