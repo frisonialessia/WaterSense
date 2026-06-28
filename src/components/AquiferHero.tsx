@@ -26,10 +26,13 @@ export function AquiferHero() {
 
   const share = () => {
     if (!aq) return;
-    const url = typeof window !== "undefined" ? window.location.origin : "https://watersense-theta.vercel.app";
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://watersense-theta.vercel.app";
+    // Compartimos el link por-acuífero: al reenviarse, WhatsApp muestra la
+    // tarjeta-imagen (opengraph-image) con el dato real — el motor viral.
+    const url = `${origin}/tu-pozo/${aq.id}`;
     const text = over
-      ? `Mi acuífero (${aq.name}) en Chihuahua saca ${overPct}% más agua de la que se recarga — un déficit de ${fmt(deficit)} millones de m³ al año (CONAGUA). Revisa el de tu rancho en WaterSense 👉 ${url}`
-      : `Mi acuífero (${aq.name}) en Chihuahua todavía tiene disponibilidad oficial (CONAGUA). Cuidarlo ahora es lo que lo mantiene así. Revisa el de tu rancho en WaterSense 👉 ${url}`;
+      ? `Mi acuífero (${aq.name}) en Chihuahua saca ${overPct}% más agua de la que se recarga — un déficit de ${fmt(deficit)} millones de m³ al año (CONAGUA). Revisa el de tu rancho 👉 ${url}`
+      : `Mi acuífero (${aq.name}) en Chihuahua todavía tiene disponibilidad oficial (CONAGUA). Revisa el de tu rancho 👉 ${url}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };
 
