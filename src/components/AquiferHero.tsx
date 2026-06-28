@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { track } from "@vercel/analytics";
 import { C, T, FONT, fz, space, radius, shadow } from "@/lib/theme";
 import { CHIHUAHUA_AQUIFERS, isOverexploited, overdraftPct, deficitHm3 } from "@/lib/data/aquifers";
 import { Icon } from "./Icon";
@@ -26,6 +27,7 @@ export function AquiferHero() {
 
   const share = () => {
     if (!aq) return;
+    track("whatsapp_share", { id: aq.id, overexploited: over });
     const origin = typeof window !== "undefined" ? window.location.origin : "https://watersense-theta.vercel.app";
     // Compartimos el link por-acuífero: al reenviarse, WhatsApp muestra la
     // tarjeta-imagen (opengraph-image) con el dato real — el motor viral.
@@ -46,7 +48,7 @@ export function AquiferHero() {
       <div style={{ padding: space.lg }}>
         <select
           value={id}
-          onChange={(e) => setId(e.target.value)}
+          onChange={(e) => { setId(e.target.value); if (e.target.value) track("aquifer_selected", { id: e.target.value }); }}
           aria-label="Elige tu municipio o acuífero"
           style={{ width: "100%", fontFamily: FONT.body, fontSize: fz.md, fontWeight: 600, color: id ? th.ink : th.mute, background: th.panel2, border: `1px solid ${id ? C.glacier : th.line}`, borderRadius: radius.md, padding: "13px 14px", cursor: "pointer", outline: "none" }}
         >

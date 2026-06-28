@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Montserrat, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 import { PWARegister } from "@/components/PWARegister";
 
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-montserrat", display: "swap" });
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         {children}
         <PWARegister />
+        <Analytics />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { track } from "@vercel/analytics";
 import type { Parcel, WeatherDay, ScheduledAction, SavingsSummary, CropProfile, CropType, TariffType } from "@/types/domain";
 import { projectYield } from "@/lib/brain/yieldModel";
 import { assessStressRisk } from "@/lib/brain/stressRisk";
@@ -165,6 +166,7 @@ export function FincaView({
   // aparece en el reporte CONAGUA. No es un botón decorativo.
   const programar = () => {
     if (done) return;
+    track("programar_riego");
     const p = urgentRisk?.parcel ?? [...parcels].sort((a, b) => b.stress - a.stress)[0];
     if (p) {
       try {
