@@ -94,9 +94,19 @@ export function AquiferHero() {
               ))}
             </div>
 
+            {/* Sequía: contexto que refuerza que el déficit es estructural, no del clima */}
+            <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: space.md, fontSize: fz.xs, color: th.soft }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: aq.drought.active ? C.alert : C.emerald }} />
+              Sequía hoy: <b style={{ color: aq.drought.active ? C.alert : th.ink }}>{aq.drought.label}</b> <span style={{ color: th.mute }}>· jun 2026</span>
+            </div>
+
             {over && (
-              <div style={{ fontSize: fz.xs, color: th.soft, marginTop: space.md, lineHeight: 1.5 }}>
-                Son <b style={{ color: th.ink }}>{fmt(deficit)} millones de m³</b> que no vuelven cada año. Tu pozo cada vez está más hondo y más caro de bombear.
+              <div style={{ fontSize: fz.xs, color: th.soft, marginTop: space.sm, lineHeight: 1.5 }}>
+                {aq.drought.active ? (
+                  <>Y encima, sequía este año. Son <b style={{ color: th.ink }}>{fmt(deficit)} millones de m³</b> que no vuelven — tu pozo cada vez más hondo y caro de bombear.</>
+                ) : (
+                  <>Buen año de lluvias y <b style={{ color: th.ink }}>aun así en déficit</b>: no es el clima, es la sobreexplotación. {fmt(deficit)} millones de m³ que no vuelven cada año.</>
+                )}
               </div>
             )}
 
@@ -112,6 +122,7 @@ export function AquiferHero() {
             <div style={{ fontSize: fz.micro, color: th.mute, marginTop: space.md, lineHeight: 1.5 }}>
               Fuente: CONAGUA · Disponibilidad media anual (DOF {aq.dataYear}).{" "}
               <a href={aq.sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: C.glacier, fontWeight: 600 }}>Ver acuerdo →</a>
+              <br />Sequía: Monitor de Sequía de México (CONAGUA/SMN), al 15 jun 2026; cambia cada 15 días.
             </div>
           </div>
         )}

@@ -201,6 +201,14 @@ button {
   outline-offset: -2px;
 }
 
+/* Franja de luz del landing: cifra + sparkline lado a lado; apila en móvil. */
+@media (max-width: 720px) {
+  .luz-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+}
+
 /* Futuro del agua: palancas a la izquierda, gráfica a la derecha y sticky,
    para ver la proyección cambiar mientras se deslizan los parámetros.
    En móvil la gráfica se coloca arriba (las palancas debajo). */

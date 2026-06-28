@@ -4,6 +4,7 @@ import { Icon } from "./Icon";
 import { Logo } from "./Logo";
 import { HeroSimulator } from "./HeroSimulator";
 import { AquiferHero } from "./AquiferHero";
+import { LuzStrip } from "./LuzStrip";
 import { TIERS, formatMxn } from "@/lib/billing/tiers";
 
 // Marketing landing — light mode, brand palette, one gradient hero moment.
@@ -145,6 +146,9 @@ export function Landing() {
           <AquiferHero />
         </div>
       </section>
+
+      {/* La otra mitad de la promesa: el precio de la luz en vivo (CENACE) */}
+      <LuzStrip />
 
       {/* Profundidad: el balance del acuífero — ¿cuánto tendría que cambiar? */}
       <section id="balance" style={{ background: th.panel2, borderTop: `1px solid ${th.line}`, borderBottom: `1px solid ${th.line}` }}>
